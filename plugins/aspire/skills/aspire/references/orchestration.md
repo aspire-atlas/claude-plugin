@@ -514,12 +514,16 @@ person asks something close, use the nearest code, and its wording (never the co
 | I6 | How did the program do this quarter? Keep, grow, or cut? | `leadership` | `atlas-quarterly-signal` | Ready |
 | I11 | How is the program doing this month, and what should I change? | `team` | `atlas-program-dashboard` | Ready |
 | I12 | Which affiliates are driving sales, and what do we owe in commission? | `team` | `atlas-affiliate-manager` | Ready |
+| I13 | Which creators on this slate talk to camera? | `team` | None | Waiting on the talks to camera screen |
 | P1 | Which creator posts should we run as ads, and how do we cut them? | `performance`, then `creative` | `atlas-ad-reuse` | Ready |
 | P2 | There's profanity in this video. Can it run on paid? | `performance` | `atlas-post-analysis` | Ready |
 | P3 | Which posts do we still have rights to, and when do they expire? | `performance` | `atlas-content-library` | Ready |
 | P4 | Cast creators into a partnership ads plan. | `leadership` (the budget owner) | `atlas-ppa-pitch` | Ready |
 | P5 | What would 50K, 100K or 200K buy on YouTube? | `leadership` | None | Waiting on a connected Meta ad account |
 | P6 | The campaign softened. Is it the creative or the setup? | `growth` | None | Waiting on a connected Meta ad account |
+| P7 | Pitch a creator ad campaign for {brand} from one prompt. | `leadership` (the client's budget owner) | None | Waiting on the creator ad pitch deck |
+| P8 | Build the creative packet for {brand}'s campaign. | `campaign` | None | Waiting on the creative packet |
+| P9 | Start a creator ad campaign for {brand}. | `team` | None | Waiting on the campaign intake and kickoff |
 | O1 | Why did last week's Reels do so well? | `team` | `atlas-profile-analyst` | Ready |
 | O2 | What are creators saying about us compared with our biggest competitors? | `team` | `atlas-market-signal` | Ready |
 | O3 | Leadership wants to know where we stand against competitors, and what to do. | `leadership` | `atlas-market-signal` | Ready |
@@ -527,6 +531,13 @@ person asks something close, use the nearest code, and its wording (never the co
 | O5 | Break down this one post. | `team` | `atlas-post-analysis` | Ready |
 | O6 | Tell us about a risky post before it spreads. | `brand` (brand and legal) | `atlas-daily-insights-report` | Ready |
 | A1 | Can I show leadership how much Atlas is saving us? | `leadership` | None | Waiting on a record of each completed job (**9**) |
+
+Until their own agents are ready, an ask that matches P7, P8 or P9 runs the flow that covers it
+today instead of stopping on "waiting": P7 runs P4 (`atlas-ppa-pitch`), P8 runs the **CAS campaign**
+flow's Master Brief, and P9 runs the **CAS campaign** flow (the `cas campaign` shortcut, **4**).
+The run carries the code of the flow it runs, never the waiting code: a P7 ask launches as P4, so
+its page carries P4's required metrics, and the CAS campaign flow carries the code it carries today.
+I13 has no flow yet, so it says what it waits on and offers I1.
 
 These codes name questions, not flow steps. Flow question ids that share a letter (program
 setup's P1 to P9, outreach's O1 to O4) are a different series. Both series are for this skill, the

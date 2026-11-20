@@ -87,7 +87,8 @@ run.
 
 | Phase | Tool | Purpose | Notes |
 | ----- | ---- | ------- | ----- |
-| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session. Also returns `aspireUser`, `dashboardUrl`, `setup` and `work`. `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
+| 2, 3 | `get_status` | Orgs, selected org, profiles, channels, expired auths, next-step links | Call once per session (**Invited first turn**, **2**, may add one call for an invited person's other organization; that call's card gets no line of its own). Also returns `caller` (the person's name), `aspireUser`, `dashboardUrl`, `setup`, `work` and `firstRun` (what the selected organization's onboarding already answered: **Invited first turn**). `asOrganizationId` to switch org. Keep the organization and profile `id`s it returns. |
+| 3 | `get_onboarding_report` | The brand snapshot report Atlas built for the brand, drawn as the report widget | Read only. `asOrganizationId`; the newest report exists only for an organization with exactly one live profile, else pass `reportId`. `kind` is `report` or `building` (with the build `steps`). Used per **Invited first turn**. |
 | 3 | `get_dashboard` | The organization dashboard: the same view as `get_status`, drawn as the dashboard widget | Only for **Organization dashboard**, never the session's first call. The widget reads the rest itself: counts that read no posts for every profile, and a profile's newest posts and accounts only when its tab is opened. Absent on an older server: use `get_status`. |
 | 2 | `list_my_organizations` | Cheap org re-check | |
 | 3 | `list_my_profiles` | Cheap profile re-check | Every organization the caller can act on, each with its live profiles (`id`, `slug`, `name`) in one call |
@@ -333,7 +334,7 @@ the run does not use.
 
 | Tool | What it draws | Needs a click | The line |
 | ---- | ------------- | ------------- | -------- |
-| `get_status`, the first call of a bare interactive run where the caller has more than one organization, before one is picked | The organization picker | Yes | "Pick the organization above, then say continue." |
+| `get_status`, the first call of a bare interactive run where the caller has more than one organization, before one is picked | The organization picker | Yes, unless **Invited first turn**, **2**, settled on an invited organization (already selected, or switched to): then no, and its line is "I've opened {org}, the organization you were invited to. Say /aspire:aspire org to switch." | "Pick the organization above, then say continue." |
 | `get_status`, every other call, including the one that follows the pick | The status card | No | "The status card above is for reference. I'm carrying on with {next step}." |
 | `connect_channel`, the call that starts a connection | The connect panel with the sign-in button | Yes | "Use the button above to sign in to {network}. I'll keep watching for it to finish." Then only the resume calls, with no line after each. |
 | `connect_channel`, a resume call that returns awaiting-selection | The connect panel with the account picker | Yes | "Use the button above to pick the accounts to link. I'll keep watching for it to finish." Then only the resume calls. |
@@ -344,7 +345,7 @@ the run does not use.
 | `get_cas_campaign` | The campaign dashboard | No: its buttons post a chat message and are optional | "The campaign dashboard above is for reference. Next, one question about {the campaign's next move}." |
 | `get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_cas_results` | The campaign step's screen | No: its buttons post a chat message and are optional | "The {step} screen above is for reference. Next, one question about {the step's next move}." |
 | `lookup_creators`, `lookup_posts`, `show_ads`, `show_partnership_content`, `get_creator`, when the person asked to see cards | The cards they asked for | No | "The cards above are for reference." Then the readout. |
-| `get_onboarding_report` | The brand report | No | "The report above is for reference. I'm carrying on with {next step}." |
+| `get_onboarding_report` | The brand report, or its build steps while it is being built; a report for a brand with no Instagram linked has a panel with a connect button | No: the button is optional | "The report above is for reference. I'm carrying on with {next step}." |
 | Any other call whose result shows a widget: a tool above called for another reason (`lookup_creators` for a refresh or a vetting list), `list_channels`, `list_ad_accounts`, `list_hashtags`, `add_hashtags`, `remove_hashtags`, `unlink_channel`, `switch_billing_account`, `search_calibrations`, `get_brand_context`, `search_insights`, `get_job_status`, `start_business_discovery`, or a tool not listed here | A card of what was read or changed | No | "The card above is for reference. I'm carrying on with {next step}.", once per reply (step 3 above) |
 
 A call is never in both groups. A new tool whose widget must be pressed before the run can go

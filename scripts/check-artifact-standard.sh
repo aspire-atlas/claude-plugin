@@ -225,7 +225,9 @@ else
     grep -qF 'recommendations.md' "$PS" || err "$PS does not link recommendations.md"
 
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
-    # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
+    # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS. The codes are
+    # compared on their own too, so a code that requires no metric still needs its line: without it,
+    # R13 fails every page that carries the code.
     rows=$(python3 -I -c '
 import re, sys
 skill, script = (open(p, encoding="utf-8").read() for p in sys.argv[1:3])
@@ -238,7 +240,9 @@ table = [] if not block else [(re.findall(r"\b[A-Z][0-9]+\b", cells[2]), re.find
 rows = re.search(r"^REQUIRED_ROWS = \"\"\"(.*?)^\"\"\"", script, re.S | re.M)
 code = [] if not rows else [(l.split(":")[0].split(), l.split(":")[1].split()) for l in rows.group(1).strip().splitlines()]
 a, b = pairs(table), pairs(code)
-print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b)), sorted(set(b) - set(a))))
+ca, cb = ({c for codes, _ in lines for c in codes} for lines in (table, code))
+print("ok" if a and a == b and ca == cb else "table %s; script %s" % (
+    sorted(set(a) - set(b)) + sorted(ca - cb), sorted(set(b) - set(a)) + sorted(cb - ca)))
 ' "$PS" "$PC" 2>&1 || true)
     [ "$rows" = ok ] || err "$PC's REQUIRED_ROWS differ from the required-metrics table in $PS (section 8): $rows"
 

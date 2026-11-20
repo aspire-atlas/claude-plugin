@@ -177,7 +177,7 @@ test('every question\'s reader has a row in the result table the judge is handed
 test('the question set, the checks, and the Atlas tool lists hold together', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const eChecks = JSON.parse(readFileSync(join(import.meta.dir, 'e-checks.json'), 'utf8')).checks
-  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  expect(config.questions.map((q: any) => q.code)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1', 'CAS1', 'CAS2', 'CAS3', 'CAS4', 'P7', 'P8', 'I13'])
   expect(eChecks.map((c: any) => c.id)).toEqual(['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'])
   for (const question of config.questions) {
     expect(question.ask).toContain('{brand}')
@@ -249,13 +249,14 @@ test('a pull request reruns the questions its changed agents and flow files answ
   expect(pick(['plugins/aspire/skills/aspire/references/ad-reuse.md'])).toEqual(['P1'])
   expect(pick(['plugins/aspire/skills/aspire/references/affiliate.md'])).toEqual(['AR1'])
   expect(pick(['plugins/aspire/agents/atlas-affiliate-manager.md'])).toEqual(['AR1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/cas-paid.md'])).toEqual(['CAS1', 'CAS2', 'CAS3', 'CAS4'])
   expect(pick(['plugins/aspire/skills/aspire/references/creator-vetting.md', 'plugins/aspire/agents/atlas-creator-brief.md'])).toEqual(['I4', 'I1'])
   // A watched file no question answers reruns nothing; a file every flow reads reruns every question.
   expect(pick(['plugins/aspire/agents/atlas-shops.md'])).toEqual([])
-  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  expect(pick(['plugins/aspire/skills/aspire/references/reader-standard.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1', 'CAS1', 'CAS2', 'CAS3', 'CAS4', 'P7', 'P8', 'I13'])
   // The page standard and the router shape every page, so a change to either reruns every question.
-  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
-  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1'])
+  expect(pick(['plugins/aspire/skills/page-standard/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1', 'CAS1', 'CAS2', 'CAS3', 'CAS4', 'P7', 'P8', 'I13'])
+  expect(pick(['plugins/aspire/skills/aspire/SKILL.md'])).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'CR1', 'AR1', 'CAS1', 'CAS2', 'CAS3', 'CAS4', 'P7', 'P8', 'I13'])
   expect(pick(['plugins/aspire/skills/org-admin/SKILL.md'])).toEqual([])
   // Every path a question names exists, so a renamed agent cannot silently stop rerunning its question.
   for (const path of [...config.questions.flatMap((q: any) => q.paths), ...config.sharedPaths]) {
@@ -631,7 +632,7 @@ function caseRun(assertions: AssertionRef[] = [SHOP, MENTIONS], asserted: Record
 test('every client case names a ticket per assertion and has both fixture pages, with placeholder handles and links', () => {
   const config = JSON.parse(readFileSync(join(import.meta.dir, 'questions.json'), 'utf8'))
   const cases = config.questions.filter((q: any) => q.assertions)
-  expect(cases.map((q: any) => q.code)).toEqual(['CR1', 'AR1'])
+  expect(cases.map((q: any) => q.code)).toEqual(['CR1', 'AR1', 'P7', 'P8', 'I13'])
   for (const question of cases) {
     const ids = question.assertions.map((a: Assertion) => a.id)
     expect(new Set(ids).size).toBe(ids.length)
@@ -652,10 +653,11 @@ test('every client case names a ticket per assertion and has both fixture pages,
     // A figure a case expects on the fixture pages names only what the pages invent.
     for (const a of question.assertions as Assertion[]) if (a.whenNamed) expect(passesWhen(a, question.fixtures.values ?? {})).toContain(' at least ')
   }
-  // The competitive read is the plugin's own question; the affiliate report has no question code.
+  // The competitive read is the plugin's own question; the affiliate report and the CAS paid
+  // questions have no question code; the pitch deck, creative packet and camera screen are their own.
   const resolved = config.questions.map(resolveQuestion)
-  expect(resolved.map((q: any) => q.question)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'O3', null])
-  expect(resolved.map((q: any) => q.assertions.length)).toEqual([0, 0, 0, 0, 0, 0, 0, 3, 5])
+  expect(resolved.map((q: any) => q.question)).toEqual(['I4', 'I11', 'O1', 'O2', 'O3', 'I1', 'P1', 'O3', null, null, null, null, null, 'P7', 'P8', 'I13'])
+  expect(resolved.map((q: any) => q.assertions.length)).toEqual([0, 0, 0, 0, 0, 0, 0, 3, 5, 0, 0, 0, 0, 11, 12, 4])
 })
 
 test('an expected figure joins an assertion only when local.json names everything it asks about', () => {

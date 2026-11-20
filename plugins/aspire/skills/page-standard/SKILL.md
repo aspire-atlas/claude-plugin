@@ -62,8 +62,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 **Every page reports its open items, and a repeat run leads with what changed.** On every run, first runs included, the result's `openItems` (`orchestration.md`, **6**) lists every decision in part 5 and every next step in part 4 as the page words them, each with `kind`, `owner`, `due`, `cost` (`recommendations.md`), `status` `open`, and `opened` (today's date for a new item); the main thread keeps them so the next run can follow up. When the launch block's `since` is not `null`, the page repeats a question asked before: part 2 leads with what changed since that run, and the items carried over sit first in parts 5 and 4. Follow `follow-up.md` in this folder.
 
 A part that applies but has nothing to show says so in one line ("Nothing needs approval", "No
-insights this run: 3 posts is too few to compare"). A part does not apply, and is reported `n/a`
-with its reason, when:
+insights this run: 3 posts is too few to compare"). A part does not apply, and is reported `n/a` with its reason, when:
 
 - **The reader standard or the quality review marks its check N/A for this kind of page**
   (`reader-standard.md`; `quality-review.md`, section 3). For example: R2 on a page about one
@@ -72,8 +71,7 @@ with its reason, when:
 - **The page is shared outside the team.** A page that carries the shared audience line
   (`artifact-standard.md`, section 2: a client, a creator, or the public) says nothing about what
   Atlas could not read. Leave part 8 out, list only the platforms the page has data for, and name
-  no platform as not covered. Put those gaps in the page check's `gaps` for the main thread to
-  tell the requester.
+  no platform as not covered. Put those gaps in the page check's `gaps` for the main thread to tell the requester.
 - **The flow's reference fixes the layout or leaves the section out.** The PPA deck's slide order,
   the org dashboard's header, the order form, and the creator profile's rule against empty
   sections all stand. Place a part where the reference allows; where it has no place, the part is
@@ -86,8 +84,7 @@ state the point without the figure, or point to the team view.
 Two checks cover the whole page:
 
 - **Plain language (R11).** No tool, agent, or system names, and none of the words
-  `reader-standard.md` lists for R11. Say what was done ("Atlas compared 412 Instagram posts"),
-  never who or what did it.
+  `reader-standard.md` lists for R11. Say what was done ("Atlas compared 412 Instagram posts"), never who or what did it.
 - **Built for this question (R12).** The sections and visuals come from what this question and
   this reader need. A launch timeline on a one-creator profile fails.
 
@@ -359,6 +356,10 @@ for a lens**); a page that cannot rank by it says in one line which metric it us
 | Ads and cut-downs | P1, P2, P4, P5, P6 | `views` `likes` `comments` `shares` `saves` `engagement` | Hook and hold where Atlas holds them; paid results only from a connected Meta ad account, by currency and never added to organic | `search_posts` with the first row's post fields plus `instagram.organicIgReelsAvgWatchTime`, `tiktok.twoSecondViewRate`, `tiktok.sixSecondViewRate`, `tiktok.videoCompletionRate`, `tiktok.averageViewTimeSeconds`; `search_creators` with `instagram.reelsHookRate`, `instagram.reelsInteractionRate`; `search_ads` for paid results |
 | Program tracking | I5, I6, I11, P3, A1 | `views` `likes` `comments` | Posts owed against posts made per creator; each creator's program posts against their own usual; amounts only where the flow shows money | `search_posts` on the program's posts, `fields`: `viewCount`, `likeCount`, `commentCount`, `author.username`, `mediaKind`, `postedAt`, `url`, `media`; `search_insights` for the program's saved records |
 | Affiliate sales | I12 | `views` `likes` `comments` `engagement` | Sales, orders, and commission per creator from the store or an export, each labelled with its source and currency and never converted; each timeline post beside the orders in the 4 days after it, shown as a correlation and never as a cause | `search_posts` on the handles of the program's affiliate and hybrid creators, `fields`: `viewCount`, `likeCount`, `commentCount`, `author.username`, `mediaKind`, `postedAt`, `url`, `media`; `search_insights` for the program's saved records |
+| Creator ad pitch | P7 | `views` | Per creator option: followers, talks to camera out of 100 (the camera screen row below), Reels hook rate and paid history, with the date Atlas was read; a missing figure reads "—" and the creator stays in | `search_creators`, `fields`: `username`, `network`, `followersCount`, `instagram.reelsHookRate`, `instagram.pastBrandPartnershipPartners`; the camera screen read below; `search_posts` on the brand's own handles for its top posts, with the first row's post fields |
+| Camera screen | I13 | None | Per creator: the talks to camera score out of 100 beside its speech, to-camera and explainer shares and the number of analysed video posts; under the minimum analysed posts, "not enough analysed posts" and no score | `search_posts` per handle, filtered to `author.username`, `analysis.analyzedAt` present and `mediaKind` video, `limit` 0, with `terms` aggregations on `analysis.productionAnalysis.audioStyle`, `analysis.productionAnalysis.cameraTechniques` and `analysis.emotionalAnalysis.tone`; `totalHits` is the analysed post count |
+| Creative packet | P8 | None | None: a packet is a document for the client and the creators, not a readout | Nothing |
+| Campaign start | P9 | None | Set with the campaign intake and kickoff flow | Set with the campaign intake and kickoff flow |
 <!-- /required-metrics -->
 
 Call `list_post_search_fields` once per run before the first `search_posts`, and
