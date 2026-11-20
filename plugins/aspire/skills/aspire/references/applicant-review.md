@@ -266,10 +266,16 @@ Handles: {i} Instagram, {t} TikTok, {none} with neither (imported; screening mar
 Not imported: {own} of {brand}'s own handles{; rows {n, m} with nothing to tell the applicant by}{;
 row {n} shares an id with row {m}}.
 Already in Atlas for this review: {existing}. New: {new}.{ Not in the review Sheet yet: {missing}.}
+{Not in this file: {questions}, which the review's form rules check; screening asks each new
+applicant.}
 Kept: {n} columns as answers ({the first five headers}, ...); {applied date column} as the applied
 date{; no applied date on {d} rows, using today}.
 Left out: {payment and tax columns, and {c} card- or account-shaped answers, or "nothing"}.
 ```
+
+"Not in this file" names each question a `required:`, `stop:`, or `boost:` rule of the review checks
+(**Applying the form rules**, step 2) that no header of the file normalizes to, so the person knows
+before the import that every new applicant will be asked it (step 2's flag).
 
 Then, when there is anything to write, ask once with `AskUserQuestion`, built from the counts:
 "Add {new} applicants to the {campaign} review in {brand}'s Atlas{ and its review Sheet}{, and
@@ -605,6 +611,15 @@ match equally, or the rest is not a test the type takes: the rule is `not-checke
 applicant, with the reason ("the form has no question '{question}'", "two questions match", "not a
 test"), and the page lists it under what is missing. Once a rule's question matches, an applicant
 without that key left it blank.
+
+That holds when an applicant lacks the key because their export had no column for the question at
+all (an export from another campaign, or one made before the question was added): each answer is
+`missing`, never `not-checked`, so the applicant is asked it. Flag it once, so the team knows
+before it reads the Maybes: when no applicant of a list, an import, or a batch has a key that a
+rule's question matched, say "None of these {n} applicants answered '{question}', so their export
+may not include it; each one is asked it as a Maybe question." An interactive run says it in chat
+with its results and lists it on the page under what is missing; a scheduled run puts it in its
+run summary under "Needs the main thread".
 
 `required: every form question` covers every question except the name and email columns, the
 contact detail columns, and Aspire's own columns, each as **Importing applicants**, step 1, lists
