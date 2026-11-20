@@ -535,6 +535,8 @@ person asks something close, use the nearest code, and its wording (never the co
 Until their own agents are ready, an ask that matches P7, P8 or P9 runs the flow that covers it
 today instead of stopping on "waiting": P7 runs P4 (`atlas-ppa-pitch`), P8 runs the **CAS campaign**
 flow's Master Brief, and P9 runs the **CAS campaign** flow (the `cas campaign` shortcut, **4**).
+The run carries the code of the flow it runs, never the waiting code: a P7 ask launches as P4, so
+its page carries P4's required metrics, and the CAS campaign flow carries the code it carries today.
 I13 has no flow yet, so it says what it waits on and offers I1.
 
 These codes name questions, not flow steps. Flow question ids that share a letter (program
