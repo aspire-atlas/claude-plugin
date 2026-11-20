@@ -218,6 +218,10 @@ fixes it.
 | 3. Look at all the evidence | The full search before an explanation (ASP-5978); engagement on the affiliate timeline (ASP-5979) | AR1 A2, A5 |
 | 4. Priced recommendations | Commission tiers with an invite list and a hold list, and a cost on every recommendation (both ASP-5982) | AR1 A3, A4 |
 
+A case can also be written before its agent exists, from a project plan's reference outputs (P7, P8 and
+I13). Its assertions name the tickets that build the agent and carry no `fix`, since no fix in the doc
+covers them.
+
 To add an example:
 
 1. **Find the fix it falls under.** Read the example against the rules above. Most examples are a new

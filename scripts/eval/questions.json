@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder. CAS1 to CAS4 are the paid side of a creator ad campaign: the creative baseline, the weekly paid review, the wave diagnosis and the wave readout. Their approved pages are reference outputs from a live account with customer names removed, linked from local.json like every other. P7, P8 and I13 are client cases written before their agents exist, from reference outputs of a live creator ad campaign with customer names removed: the pitch deck, the creative packet and the camera screen. Each assertion names the ticket whose agent makes it pass.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -351,6 +351,415 @@
           "failsWhen": "A timeline post shows only its date, link or format.",
           "examples": [
             "A consumer brand's affiliate report: the timeline marked each post by date and format, so nobody could tell whether a post had reached anyone."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "CAS1",
+      "question": null,
+      "example": "CAS creative baseline",
+      "kind": "Plan",
+      "reader": "performance",
+      "readerInWords": "the paid social lead, who hands the notes to creative",
+      "ask": "For {brand}: before we put spend behind the wave 1 cuts, give me a creative baseline for each one, and what to fix first. I run paid social for this creator ad campaign.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS2",
+      "question": null,
+      "example": "CAS weekly paid review",
+      "kind": "Readout",
+      "reader": "performance",
+      "readerInWords": "the paid social lead, who makes the calls",
+      "ask": "For {brand}: weekly review of the creator ad campaign. After 7 and 14 days, which named ads do we scale, fix or pause, and why? I run paid social and will make the calls.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS3",
+      "question": null,
+      "example": "CAS wave diagnosis",
+      "kind": "Readout",
+      "reader": "creative",
+      "readerInWords": "the creative team, who re-cut the ads",
+      "ask": "For {brand}: where does each wave 2 ad lose people, and what should the next cut change? Creative will re-cut from this.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS4",
+      "question": null,
+      "example": "CAS wave review",
+      "kind": "Readout",
+      "reader": "team",
+      "readerInWords": "the campaign team, with a version the client reads",
+      "ask": "For {brand}: the wave 2 readout for our team and the client. What worked, what did not, and what we do in wave 3.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "P7",
+      "example": "Creator ad pitch deck",
+      "kind": "Plan",
+      "reader": "leadership",
+      "readerInWords": "the client's budget owner, who decides whether the campaign goes ahead",
+      "ask": "For {brand}: pitch a creator ad campaign from this one prompt, for the client's budget owner to decide on.",
+      "setsBarFor": [],
+      "paths": [],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/p7-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/p7-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "Two options per concept, each with a weakness",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every concept shows two creator options, and each option has a sentence starting \"Weakness:\". A figure Atlas does not hold shows \"—\" (or \"not enough analysed posts\" for a talks to camera score) and the creator stays on the page.",
+          "failsWhen": "A concept has one creator option, an option has no \"Weakness:\" sentence, or a creator with a missing figure is dropped or given a guessed number.",
+          "examples": [
+            "A study app's creator ad pitch deck: each concept showed one creator, and a creator with no Reels hook rate was shown at a made-up 50%."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "Every number and copy line has its source on the slide",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every statistic, view count and quoted line names where it came from on the same slide: the survey and its date, the brand's own page, the client's email, or Atlas with the date it was read.",
+          "failsWhen": "A statistic, view count or quoted line has no source on its slide.",
+          "examples": [
+            "A study app's creator ad pitch deck: \"80% of buyers are students\" sat on the market slide with no source."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "What the client said, beside what their posts show",
+          "ticket": "ASP-5934",
+          "landed": false,
+          "passesWhen": "One slide quotes the client's own words verbatim, in quotation marks, next to the pattern in the brand's top posts, with each post's views.",
+          "failsWhen": "The client's ask is paraphrased with no quote, or it is not tied to the brand's own posts.",
+          "examples": [
+            "A study app's creator ad pitch deck: the client's brief was paraphrased as \"they want more students\", with no quote and no link to the brand's own posts."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Claims set before filming",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "The deck has a \"will say\" list, each line traced to the brand's own page, and a \"won't say or show\" list.",
+          "failsWhen": "There is no claims slide, or a \"will say\" line has no source.",
+          "examples": [
+            "A study app's creator ad pitch deck: there was no claims slide, so nothing said what creators may claim before filming."
+          ]
+        },
+        {
+          "id": "A5",
+          "name": "Every variant is fully specified",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Each variant states its length, hook, body, b-roll and CTA. A part a variant leaves out on purpose reads \"None\", which counts as stated.",
+          "failsWhen": "A variant has no length, or its hook, body, b-roll or CTA is blank or missing.",
+          "examples": [
+            "A study app's creator ad pitch deck: the variant grid gave hooks and CTAs but no length for any variant."
+          ]
+        },
+        {
+          "id": "A6",
+          "name": "The variant scheme has a reason",
+          "ticket": "ASP-5934",
+          "landed": false,
+          "passesWhen": "The deck says why this variant scheme was picked for this brand.",
+          "failsWhen": "The deck shows a variant scheme with no reason for it.",
+          "examples": [
+            "A study app's creator ad pitch deck: five variants per creator, with nothing saying why that scheme suits the brand."
+          ]
+        },
+        {
+          "id": "A7",
+          "name": "Storyboard frames are labelled illustrations",
+          "ticket": "ASP-5936",
+          "landed": false,
+          "passesWhen": "Every storyboard has four acts (hook, body, b-roll, CTA), each with its spoken line and its shot, and any image says it is an illustration, not the finished look.",
+          "failsWhen": "A storyboard frame is shown as if it were the real creator or the real cut, or a storyboard is missing an act.",
+          "examples": [
+            "A study app's creator ad pitch deck: a storyboard frame was captioned as a still from the creator's real shoot."
+          ]
+        },
+        {
+          "id": "A8",
+          "name": "Every concept has one job",
+          "ticket": "ASP-5934",
+          "landed": false,
+          "passesWhen": "Each concept names exactly one job: stop the scroll, convert, build trust, or explain.",
+          "failsWhen": "A concept names no job, or names two.",
+          "examples": [
+            "A study app's creator ad pitch deck: one concept had no job and another was \"stop the scroll and convert\"."
+          ]
+        },
+        {
+          "id": "A9",
+          "name": "The variant table traces to the shot list",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every hook, CTA and b-roll number the variant table names exists in the one-shoot shot list (3 hooks, 1 body, 2 CTAs, 15 b-roll).",
+          "failsWhen": "The variant table names a hook, CTA or b-roll number the shot list does not have.",
+          "examples": [
+            "A study app's creator ad pitch deck: V3 named \"Hook D\" and \"B-roll 18\" when the shot list had 3 hooks and 15 b-roll clips."
+          ]
+        },
+        {
+          "id": "A10",
+          "name": "Atlas figures are dated and \"—\" is explained",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every Atlas figure carries the date it was read, and the page says \"—\" means Atlas holds no data for it.",
+          "failsWhen": "An Atlas figure has no date, or \"—\" appears with no explanation.",
+          "examples": [
+            "A study app's creator ad pitch deck: hook rates from Atlas carried no date, and a \"—\" in the paid history column was never explained."
+          ]
+        },
+        {
+          "id": "A11",
+          "name": "Questions for the client close the deck",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "The deck ends with the questions the client must answer before filming, with the ones that shape the scripts most marked.",
+          "failsWhen": "The deck has no questions for the client, or none of them is marked as shaping the scripts.",
+          "examples": [
+            "A study app's creator ad pitch deck: the deck ended on the casting slide, with no questions for the client before filming."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "P8",
+      "example": "Creative packet",
+      "kind": "Plan",
+      "reader": "campaign",
+      "readerInWords": "the campaign manager, the client contact and the creators who film from it",
+      "ask": "For {brand}: build the creative packet for the creator ad campaign, with the package doc, the master brief and a concept doc for each creator. I manage the campaign.",
+      "setsBarFor": [],
+      "paths": [],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/p8-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/p8-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "No internal words in a creator doc",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "No concept doc uses \"raw footage\", \"hero cut\", \"shared b-roll\", \"the pool\" or \"any shoe\", or refers to a doc that does not exist.",
+          "failsWhen": "A concept doc uses any of those words, or refers to a doc that does not exist.",
+          "examples": [
+            "A footwear brand's creative packet: a concept doc told the creator to \"film raw footage for the hero cut, plus shared b-roll from the pool\"."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "One product on camera",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "No shot or direction puts a second item from the same category in frame, and every concept doc's MUST NOT says so.",
+          "failsWhen": "A shot or direction puts another item from the category in frame, or a concept doc's MUST NOT does not say only one product is on camera.",
+          "examples": [
+            "A footwear brand's creative packet: a shot read \"reach past the other pairs on the shelf\"."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "The body is one paragraph",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "Each lane's body is one paragraph, followed by numbered script rows.",
+          "failsWhen": "A body is split into named beats, such as \"the admission\" or \"the reveal\".",
+          "examples": [
+            "A footwear brand's creative packet: the body was split into \"the admission\", \"the reveal\" and \"the verdict\"."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Hooks and CTAs in tables, with bridges",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "Hooks and CTAs are table rows; each hook has a bridge into the body and each CTA a bridge out of it.",
+          "failsWhen": "Hooks or CTAs are block quotes, or a hook or CTA has no bridge.",
+          "examples": [
+            "A footwear brand's creative packet: the hooks were block quotes with no bridge into the body."
+          ]
+        },
+        {
+          "id": "A5",
+          "name": "One proof point, dropped mid-action",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "Each lane has exactly one proof point, said while the creator is doing something.",
+          "failsWhen": "A lane reads a list of product specs to camera, or has more than one proof point.",
+          "examples": [
+            "A footwear brand's creative packet: the creator read three proof points to camera, one after another."
+          ]
+        },
+        {
+          "id": "A6",
+          "name": "No framework names in a concept doc",
+          "ticket": "ASP-5940",
+          "landed": false,
+          "passesWhen": "Concept docs script each variant with no framework name (PAS, BAB, HSO, SSS, 4Ps). The master may name them.",
+          "failsWhen": "A framework name appears in a concept doc.",
+          "examples": [
+            "A footwear brand's creative packet: a concept doc's variant row read \"V2 · BAB\"."
+          ]
+        },
+        {
+          "id": "A7",
+          "name": "Master and concept doc use the same wording",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Every hook, CTA, bridge, length and body paragraph is word for word the same in the master and in the concept doc.",
+          "failsWhen": "Any hook, CTA, bridge, length or body paragraph differs between the master and the concept doc, even by one word.",
+          "examples": [
+            "A footwear brand's creative packet: the master's hook 2 differed by one word from the concept doc's hook 2."
+          ]
+        },
+        {
+          "id": "A8",
+          "name": "Names agree across docs",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Persona, product and concept names are the same in every doc.",
+          "failsWhen": "A persona, product or concept name differs between docs.",
+          "examples": [
+            "A footwear brand's creative packet: the persona was \"The Realist\" in the master and \"The Pragmatist\" in the concept doc."
+          ]
+        },
+        {
+          "id": "A9",
+          "name": "No template leakage",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "No client or creator doc holds \"$XXX\", \"[TBD]\", a placeholder or a build note.",
+          "failsWhen": "A client or creator doc holds any of those.",
+          "examples": [
+            "A footwear brand's creative packet: the package doc still read \"Rate: $XXX [TBD]\"."
+          ]
+        },
+        {
+          "id": "A10",
+          "name": "Each script matches its variant row",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Every scripted variant uses the hook, CTA, length and body rows its variant table row names.",
+          "failsWhen": "A script uses a different hook, CTA or length from its variant row.",
+          "examples": [
+            "A footwear brand's creative packet: the V4 script opened on Hook A when its row said Hook C."
+          ]
+        },
+        {
+          "id": "A11",
+          "name": "The structure adds up",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Each lane has 3 hooks, 2 CTAs and 5 variants, and every variant is scripted.",
+          "failsWhen": "A lane is missing a hook, a CTA, a variant or a script.",
+          "examples": [
+            "A footwear brand's creative packet: lane 3 had two hooks, and its V5 was never scripted."
+          ]
+        },
+        {
+          "id": "A12",
+          "name": "Changed concepts are named as decisions",
+          "ticket": "ASP-5940",
+          "landed": false,
+          "passesWhen": "A concept changed after the client approved it is listed as a decision in the package doc, saying what changed.",
+          "failsWhen": "A concept changed after approval is swapped in with no decision listed.",
+          "examples": [
+            "A footwear brand's creative packet: lane 2's concept was rewritten after the client approved it, and the package doc listed no decision."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I13",
+      "example": "Camera screen",
+      "kind": "Shortlist",
+      "reader": "team",
+      "readerInWords": "the agency team casting the creator ad campaign",
+      "ask": "For {brand}: which creators on this slate talk to camera? I am casting the creator ad campaign.",
+      "setsBarFor": [],
+      "paths": [],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/i13-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/i13-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "The score shows what it's made of",
+          "ticket": "ASP-5929",
+          "landed": false,
+          "passesWhen": "Each talks to camera score sits beside its speech, to-camera and explainer shares and the number of analysed video posts.",
+          "failsWhen": "A score is shown on its own, with no shares or no analysed post count.",
+          "examples": [
+            "A study app's creator slate: each creator showed a talks to camera score and nothing else."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "No number under the minimum",
+          "ticket": "ASP-5929",
+          "landed": false,
+          "passesWhen": "A creator with fewer analysed video posts than the minimum (20 unless the campaign sets another) shows \"not enough analysed posts\" and no score, and stays on the slate.",
+          "failsWhen": "A score is shown on fewer analysed posts than the minimum, or that creator is dropped from the slate.",
+          "examples": [
+            "A study app's creator slate: a creator was scored 30 on 15 analysed posts, under the minimum of 20."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "Says which shares are upper bounds",
+          "ticket": "ASP-5929",
+          "landed": false,
+          "passesWhen": "The page says the speech share is exact and the to-camera and explainer shares are upper bounds.",
+          "failsWhen": "The page has no such line.",
+          "examples": [
+            "A study app's creator slate: nothing said that a post can carry two matching labels, so the to-camera and explainer shares read as exact."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Changed weights are named",
+          "ticket": "ASP-5931",
+          "landed": false,
+          "passesWhen": "Where a campaign's weights differ from 45 / 35 / 20, the weights used are named beside the score.",
+          "failsWhen": "A score worked out on changed weights has no mention of them.",
+          "examples": [
+            "A study app's creator slate: one creator was re-scored on 60 / 20 / 20 with nothing saying so."
           ]
         }
       ]

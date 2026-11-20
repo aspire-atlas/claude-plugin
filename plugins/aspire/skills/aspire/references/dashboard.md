@@ -6,7 +6,7 @@ Used on a bare `/aspire:aspire` for a configured organization and on the `dashbo
 
 Trigger on a bare `/aspire:aspire` for a configured organization (the **existing** route of
 Phase 2 + 3, right after the organization pick in its step 3, never in the same reply as the
-selector), on `/aspire:aspire dashboard`, and when the user asks to see the dashboard, where
+selector, and not while **Invited first turn** applies), on `/aspire:aspire dashboard`, and when the user asks to see the dashboard, where
 they stand, or what to do next in Atlas. It runs in the main thread with no agent, shows and
 recommends only, and writes nothing: no spend, no members, nothing moved, drafted, or sent.
 
