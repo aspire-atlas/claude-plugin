@@ -248,8 +248,11 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `{slug}:{aspireApplicantId}:claim-`, one per applicant in the batch, paged to the end. Keep in
    the batch only the applicants for which this run's claim is the earliest of those (by
    `createdAt`; on a tie, the lower run id, the key's part after `claim-`): one an overlapping run
-   claimed first is that run's, and both runs reach the same answer, whichever reads first. A call
-   that fails is resent once as it is; failing again, stop the run here (step 9).
+   claimed first is that run's, and both runs reach the same answer, whichever reads first. Note
+   each one dropped, with the run whose claim was earlier, for step 9's `claimedElsewhere`. When
+   none is left, launch nothing and go back to step 3: this run's own claims keep those applicants
+   from being due again. A call that fails is resent once as it is; failing again, stop the run
+   here (step 9).
 5. **Launch `atlas-creator-vetting`** per **Main thread: the run**, step 4, with `run: unattended`
    and `job: screen`, and:
    - the list: the batch, one entry per network and handle as **Getting the list** normalizes it,
@@ -302,12 +305,17 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `applicantReview`, `run`, the batches and their `runKey`s, the counts per status and
    recommendation (from a last `list_applicants` read of this run's applicants, never from the
    agent's packets: a packet that counts differently is named in the summary), the applicants still due (from the last step 3 read), the claims made that were
-   not screened, the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
+   not screened (claims this run kept but did not finish), `claimedElsewhere` (each applicant step 4
+   dropped because an overlapping run claimed it first, with that run's id), the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
    the rows the Sheet writes updated (or why none were), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
    on {date}; scores before and after are on different maps"). With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
    approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new."
+
+   A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
+   no Sheet call saved, no Sheet row written) adds no summary: like a quiet review, it ends with
+   "{k} {campaign} applicants are being screened by run {other run}; nothing left for this run."
 
 **A run that stops** (the session ends, a call fails twice, the task is paused) leaves every
 applicant it finished `screened`, `cant_vet`, or `waiting_on_data`, and every applicant it claimed
