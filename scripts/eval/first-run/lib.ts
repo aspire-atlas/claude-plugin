@@ -67,7 +67,8 @@ const NARROWING = ['q', 'kinds', 'keyPrefix', 'asProfileId', 'includeAspire', 'v
 /**
  * The status reading with what `search_calibrations` returned for the organization added, from every page in order.
  * The pages must be one unbroken read of the whole organization: the first with no cursor, each next one with the
- * cursor the page before returned, all for the organization `get_status` read and with nothing narrowing them, and
+ * cursor the page before returned, all for the organization `get_status` read, with superseded records included as
+ * the first run's own read has them (first-run.md, 3), nothing narrowing them and the same filters throughout, and
  * the last with no cursor left. A page that failed or does not parse, or any break in that chain, leaves the records
  * unknown.
  */
@@ -77,6 +78,8 @@ export function withCalibrations(status: StatusRead, pages: CalibrationPage[] | 
   if (!pages?.length) return status.profiles === 0 ? { ...status, brandRecords: 0, lastRuns: 0 } : status
   const records: any[] = []
   let expected: string | null = null
+  const filters = (input: Record<string, any>) => JSON.stringify([input.includeProposed ?? false, input.includeRetracted ?? false])
+  const sameFilters = filters(pages[0].input)
   for (const page of pages) {
     if (page.error) return status
     let parsed: any
@@ -89,6 +92,7 @@ export function withCalibrations(status: StatusRead, pages: CalibrationPage[] | 
     if ((page.input.cursor ?? null) !== expected) return status
     if (!status.organizationId || page.input.asOrganizationId !== status.organizationId) return status
     if (NARROWING.some(key => page.input[key] !== undefined)) return status
+    if (page.input.includeSuperseded !== true || filters(page.input) !== sameFilters) return status
     records.push(...parsed.records)
     expected = typeof parsed.nextCursor === 'string' && parsed.nextCursor ? parsed.nextCursor : null
   }

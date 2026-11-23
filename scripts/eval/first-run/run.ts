@@ -120,7 +120,8 @@ async function probe(session: Session, atlas: string, organization: string | und
     `Call the ${atlas}get_status tool.`,
     ...(organization ? [`If the organization it selected is not the one named "${organization}", call it again with that organization's id as asOrganizationId.`] : []),
     `Then, if that organization has a brand profile, call ${atlas}search_calibrations with that organization's id as`,
-    'asOrganizationId and limit 100, and again with each nextCursor it returns as cursor until a page has none.',
+    'asOrganizationId, includeSuperseded true and limit 100, and again with the same arguments and each nextCursor it',
+    'returns as cursor until a page has none.',
     'Then reply with only the word DONE. Do not call any other tool.',
   ].join(' ')
   const turn = await runTurn({

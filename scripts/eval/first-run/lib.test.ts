@@ -121,7 +121,7 @@ const NO_RECORDS = JSON.stringify({ records: [] })
 /** A status reading with its calibrations read, as the probe makes it. */
 /** One page of the probe's search_calibrations read, as the call it came from asked for it. */
 const call = (text: string, cursor?: string, input: Record<string, unknown> = {}) =>
-  ({ input: { asOrganizationId: 'org_test', limit: 100, ...(cursor ? { cursor } : {}), ...input }, text, error: false })
+  ({ input: { asOrganizationId: 'org_test', includeSuperseded: true, limit: 100, ...(cursor ? { cursor } : {}), ...input }, text, error: false })
 const read = (text: string, calibrations: string | null = NO_RECORDS) => withCalibrations(readStatus(text)!, calibrations === null ? null : [call(calibrations)])
 
 test('get_status gives the starting state and the credits consumed', () => {
@@ -178,6 +178,12 @@ test('get_status gives the starting state and the credits consumed', () => {
   expect(withCalibrations(base, [call(page('post:1'), undefined, { kinds: ['insight'] })]).brandRecords).toBeNull()
   expect(withCalibrations(base, [call(page('post:1'), undefined, { asOrganizationId: 'org_other' })]).brandRecords).toBeNull()
   expect(withCalibrations(base, [{ ...call(page('post:1')), error: true }]).brandRecords).toBeNull()
+  // The read takes superseded records, as the first run's own read does, and keeps its filters on every page.
+  expect(withCalibrations(base, [call(page('post:1'), undefined, { includeSuperseded: false })]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1'), undefined, { includeSuperseded: undefined })]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1', 'c1')), call(page('post:2'), 'c1', { includeProposed: true })]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1', 'c1'), undefined, { includeRetracted: true }), call(page('post:2'), 'c1')]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1', 'c1'), undefined, { includeProposed: true }), call(page('post:2'), 'c1', { includeProposed: true })]).brandRecords).toBe(0)
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 13.456)))).toBe(3.46)
   // A new billing period between the readings: the run's credits are unknown, never negative.
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 2)))).toBeNull()
