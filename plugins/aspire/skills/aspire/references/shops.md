@@ -241,8 +241,8 @@ the source of a platform rule.
 Read only what Atlas holds, plus a connected store's products and stock. Never call
 `lookup_posts`, `lookup_creators`, `search_creator_marketplace`, `start_business_discovery`,
 `append_calibration`, `set_brand_instruction`, or any tool in the Destructive tools table.
-Call `list_post_search_fields` and `list_creator_search_fields` once each and use only the paths
-they return.
+Take field paths from **Atlas search**; call a `list_*_search_fields` census only for a path it does not
+list.
 
 | What | How |
 | ---- | --- |

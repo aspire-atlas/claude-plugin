@@ -325,8 +325,8 @@ Once a profile is chosen or created, keep its `id` as `profile_id` and its `slug
 for naming only: record keys, file names, and the profile slug handed to agents. Take both ids
 only from this session's `get_status`, `list_my_*` or `create_profile` results, never from memory or
 an earlier session. When `profile_id` is missing (a resumed session, or a scheduled run
-whose prompt names only the brand), or a call refuses it as `forbidden` or `not-found`, re-read it with `list_my_profiles` and match the brand by
-profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
+whose prompt names only the brand), or a call refuses it as `forbidden` or `not-found`, re-read
+it with `list_my_profiles` and match the brand by profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
 more than one publishes the "setup needed" card and stops; it never asks and never falls back to unattributed calls.
 
 Speak in handles and brand names. Never surface slugs, ids, or tool names.

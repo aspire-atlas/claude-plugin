@@ -124,7 +124,7 @@ person.
   reference lists) or from the uploaded file with the proposed mapping; compute the figures
   per creator and for the program; read each creator's posts in Atlas for the timeline, with the
   required metrics the reference's **Sales and posts timeline** points to
-  (`list_post_search_fields` once; only paths it returns); build the recommendations and the
+  (field paths from `atlas-search.md`; the census only for a path it does not list); build the recommendations and the
   commission lines (closed months only); add retire rows to the sheet when the store cannot turn
   codes off.
 - Build the page per the reference's **The page**, every code and figure marked proposed. When

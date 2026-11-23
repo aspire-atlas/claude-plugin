@@ -143,7 +143,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `review:` key (content review only; see **Atlas tools**), every `applicantreview:` key (one
    campaign's applicant screening only), and every `lastrun:` key (a flow's
    saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
-2. `list_post_search_fields` once. Use only paths it returns.
+2. Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no
    wildcard `exclude`, for each channel's `freshness`, and the freshness read (section 9.1) per
    handle. An unattended run refreshes nothing: it gives each handle the freshness line and any
@@ -161,8 +161,9 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `text`, `instagram.hashtags`, `instagram.account` (container, for the profile picture and
    follower count), and `tiktok.account` where present.
 4. Baseline: the same query for the 28 days before the window (daily) or the prior week and
-   the prior 8 weeks (weekly). One `aggs` call per window: `date_histogram` on `postedAt`
-   (day) with sum of likes, comments, saves, shares, views; `terms` on `mediaKind`.
+   the prior 8 weeks (weekly). Per window, the paged hits give the
+   daily or weekly sums of likes, comments, saves, shares and views, and one `limit: 0` call with
+   `aggs` `terms` on `mediaKind` gives the format mix (`aggs` has no sums or date buckets).
 5. `search_creators` filtered on the username for the current follower count. Compare with the
    follower count stored in the last readout's insights, if any.
 6. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =

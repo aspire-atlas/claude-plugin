@@ -122,8 +122,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
    Drop every `review:`, `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` key: an applicant review run uses the review resolved in the launch, never a prefix read of its keys. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
-4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`
-   once each; use only paths they return.
+4. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list.
 5. **Resolve the list.** `search_creators` with a `terms` filter on the username field, one
    call per network, for every handle. For the approved missing handles, `lookup_creators` in
    one batch per network, then re-read `fetching` items per the reference's quirks and re-run

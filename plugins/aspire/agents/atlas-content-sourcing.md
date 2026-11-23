@@ -112,16 +112,16 @@ step needs one of those, skip that step and name it in your output as needing a 
      `asset` findings per `content-library.md`, **Worth requesting**.
    - `renewal`: every grant and deal usage ending within the horizon, per the reference,
      **Renewal**.
-   - `ugc`: the gaps and the creators per the reference, **UGC** (`list_post_search_fields`
-     once; `search_posts` per candidate creator with the gap as `queryText`).
+   - `ugc`: the gaps and the creators per the reference, **UGC** (field paths from
+     `atlas-search.md`; `search_posts` per candidate creator with the gap as `queryText`).
    - `replies`: each reply matched to the creator and their open `rights` findings. A triage
      hand-off with no reply text reads that creator's thread only as the reference allows,
      else goes under "Needs the main thread". Replies already recorded as `rights` outcomes are
      skipped.
 2. **Skip** per **Who gets a request**, with the reason.
 3. **Propose terms** per **Proposing rights terms** and **Fees**, or the outcome per
-   **Recording replies**. `search_creators` once per creator (`list_creator_search_fields`
-   once). Price from the terms' `rights` block or the user's number only.
+   **Recording replies**. `search_creators` once per creator (field paths from
+   `atlas-search.md`). Price from the terms' `rights` block or the user's number only.
 4. **Raise your-call items** per **Your call**.
 5. **Draft** per **Drafts**: one draft per creator, template, and channel; several posts in one
    draft. For `replies`, the `rights-counter` (on the recommended S2 answer), `rights-in-writing`

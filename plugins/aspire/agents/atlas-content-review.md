@@ -74,7 +74,7 @@ check.
    through every result and keep the `edit` and `close` findings: an edit stays open until a
    `close` names it, however old it is.
 5. **Get the post.**
-   - `published`: `list_post_search_fields` once, then `search_posts` filtered on the URL or
+   - `published`: field paths from `atlas-search.md`, then `search_posts` filtered on the URL or
      permalink field the census exposes, projecting `postedAt`, `text`, `url`, `mediaKind`,
      `media` (container), `instagram` or `tiktok` containers, the metrics, and any
      transcript or analysis fields the census lists. Nothing found: `lookup_posts` with one

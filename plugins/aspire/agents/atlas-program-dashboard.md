@@ -73,8 +73,8 @@ come from `content-library.md` (**Rights**, **Expiring rights**) and the statuse
 2. `search_calibrations` per the reference's **Setup records**. Parse every `program:` body with
    a JSON parser. Resolve today as the shell date in the cadence timezone (`TZ=<tz> date +%F`),
    or the user's when there is no cadence, then the term's elapsed share.
-3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`
-   once each; use only paths they return.
+3. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list.
 4. **Read the program state** per **Working state**: `search_insights` on the prefix
    `program-{profile}-{slug}`, newest first, paged to the end. Keep the newest finding per
    identity per record type, every `roster` finding per creator for the funnel history, every

@@ -169,8 +169,8 @@ instructions.
 
 ### Atlas performance
 
-`list_post_search_fields` and `list_creator_search_fields` once each; use only paths they
-return. Filter path, so `aggs` work.
+Field paths from **Atlas search**; a `list_*_search_fields` census only for a path it does not list.
+Filter path, so `aggs` work.
 
 **Program posts** are the posts that count toward the program, deduped by post id:
 
@@ -322,7 +322,7 @@ Over the program posts:
 - **Against their own baseline**: per creator, the median engagement of their program posts ÷
   the median of their own posts in the 90 days before. Judged with 2 or more program posts and
   5 or more own posts. The program figure is the median of the creators judged, with the count.
-- **By week**: program posts and engagement per week across the term, from the `aggs`.
+- **By week**: program posts and engagement per week across the term, from the paged hits.
 - **Top posts**: up to six by engagement, as post cards: media, the creator, format, date,
   views, engagement, the creator's own lift, and whether it was a matched deliverable or
   brand-tagged.

@@ -443,10 +443,11 @@ Both writes are refused whole when one part breaks its shape, so build every cal
 
 - `detail` is the shape of its `kind` in **Calibration kinds** below. `provenance` is `interview`,
   `index`, `web`, `inferred` or `known-absent`.
-- Build the key from the rules below the table, then check it: lowercase letters and digits, one
-  colon, then lowercase letters, digits and hyphens. Turn every capital into lowercase and every
-  other character (space, dot, underscore, `@`) into a hyphen, then drop doubled, leading and
-  trailing hyphens in the slug. Never send a key that has not passed that check.
+- Build the key from the key rules after the **Calibration kinds** table (the pattern, the
+  `{slug}` cap and the key namespaces), then check it: a namespace from that list, one colon, then
+  1 to 48 lowercase letters, digits and hyphens. Turn every capital into lowercase and every other
+  character (space, dot, underscore, `@`) into a hyphen, then drop doubled, leading and trailing
+  hyphens in the slug. Never send a key that has not passed that check.
 
 **`append_insights`**, up to 100 findings, in one `runKey` per run:
 

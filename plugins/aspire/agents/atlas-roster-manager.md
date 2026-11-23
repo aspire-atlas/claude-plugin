@@ -96,8 +96,8 @@ step needs one of those, skip that step and name it in your output as needing a 
 
 1. **Pick the creators** per **Who is reviewed**, limited by `creators` and `types`. Resolve
    the window.
-2. **Read each creator** per **Reads, per creator** (`list_creator_search_fields` and
-   `list_post_search_fields` once each; use only paths they return): the account, the posts in
+2. **Read each creator** per **Reads, per creator** (field paths from
+   `atlas-search.md`; the census only for a path it does not list): the account, the posts in
    the window and the 90 days before it, and one red-line search per brand red line. Work in batches
    of ten.
 3. **Compute the signals** per **The signals** and **Cost**, then the roster medians per tier.

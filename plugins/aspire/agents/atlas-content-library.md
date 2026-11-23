@@ -77,7 +77,7 @@ lens. Follow them exactly.
    for rights. Without a program, also read the saved `asset` findings on
    `content-library-{profile}`.
 6. **By mode:**
-   - `build`: `list_post_search_fields` once, then collect per **Collecting
+   - `build`: field paths from `atlas-search.md`, then collect per **Collecting
      assets**, tag per **Tagging each asset**, score per **Scoring at library scale** (frames
      for the top 12 new or changed videos only), join rights, and compute the expiring and
      worth requesting lists.

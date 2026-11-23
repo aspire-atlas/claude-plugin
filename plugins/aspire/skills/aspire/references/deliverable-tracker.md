@@ -203,7 +203,7 @@ Rules:
 
 ## Matching posts
 
-Read only what Atlas holds. `list_post_search_fields` once; use only the paths it returns.
+Read only what Atlas holds. Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 
 **Find the candidates.** For each creator with rows due or past due, one `search_posts` filtered
 on the creator's author username on their roster network, from the window start to today,

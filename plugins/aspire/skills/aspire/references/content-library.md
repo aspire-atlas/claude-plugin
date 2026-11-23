@@ -183,7 +183,7 @@ the alert. Prompt:
 
 Read only what Atlas holds. Never call `lookup_posts`, `lookup_creators`,
 `search_creator_marketplace`, `start_business_discovery`, or `add_hashtags`. Call
-`list_post_search_fields` once and use only the paths it returns.
+Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 
 **Window.** Default the last 180 days, from the shell clock. On the first build for a scope (no
 `asset` finding saved for it), read everything Atlas holds. A window the user typed wins. Cap a

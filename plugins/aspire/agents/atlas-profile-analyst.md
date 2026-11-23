@@ -38,8 +38,8 @@ findings and pushes only, saying in the summary that nothing was saved.
 1. Load tools: `ToolSearch` with `select:` for `list_post_search_fields`, `search_posts`,
    `search_creators`, `list_creator_search_fields`, `append_insights`, `report_checkpoint` under the given prefix. In mode
    `handle`, also load `lookup_creators`.
-2. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path. In mode
-   `handle`, call `list_creator_search_fields` too.
+2. Take field paths from `atlas-search.md`; call `list_post_search_fields` or `list_creator_search_fields`
+   only for a path it does not list. Never guess a path.
 3. **Resolve the target and verify it is current (mode `handle` only).** Follow **Resolve** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`. Never run a lookup in
    mode `own`: connected channels are indexed by Atlas directly. A handle that cannot be resolved

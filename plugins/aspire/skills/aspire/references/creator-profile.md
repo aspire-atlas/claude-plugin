@@ -101,8 +101,8 @@ profile needs these as well:
   `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any paid-partnership or
   brand-tag field the post field census lists.
 
-Use only field paths the live census returns (`list_creator_search_fields`,
-`list_post_search_fields`). A field the census does not list leaves its part out.
+Take field paths from **Atlas search**, or the live census for a path it does not list. A field neither
+lists leaves its part out.
 
 **Usable post**: a post with a non-null `likeCount`. **Engagement rate** for a post: (likes +
 comments) / followers. **View rate**: views / followers, on posts with a `viewCount`. Medians,

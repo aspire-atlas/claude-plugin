@@ -43,8 +43,8 @@ against competitors goes to **Market signal**.
    It is compared against its **own** peers — accounts the user named, or "like" accounts in the
    same category and follower band, on rates rather than raw counts. Pass any comparison
    accounts the user named.
-5. The subagent reads with `search_posts` / `search_creators` (calling
-   `list_post_search_fields` first for the live field census), resolves and refreshes a named
+5. The subagent reads with `search_posts` / `search_creators` (field paths from
+   **Atlas search**), resolves and refreshes a named
    handle with `lookup_creators` when it is not current (**Page standard**, section 9.5),
    then writes findings back with `append_insights` under one `runKey` per run (`own`:
    `onboarding-{profile}-{date}` for the onboarding run, else `account-review-{profile}-own-{date}`; `handle`: `account-review-{profile}-{handle}-{date}`).

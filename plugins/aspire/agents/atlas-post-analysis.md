@@ -55,7 +55,7 @@ and the cut list (**Ad reuse check (content review)**).
 2. Read the shell clock for `started`. When the launch carries no calibration digest, read
    `search_calibrations` (limit 100 per page, paged to the end) and keep the records listed in
    the reference's **Inputs**.
-3. Call `list_post_search_fields` once and use only paths it returns.
+3. Take field paths from `atlas-search.md` and the reference; call `list_post_search_fields` only for a path neither lists.
 4. Fetch the post per **Fetching the post**, then the author, and the baseline per `baseline`.
    `search_insights` for earlier findings on this post, with a `prefix` filter on
    `detail.account_review.runKey` = `post-analysis-{profile}-{shortcode or video id}`, newest

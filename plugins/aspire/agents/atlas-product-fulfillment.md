@@ -115,8 +115,8 @@ addresses) and never write its `page` finding; name "Publish the order form" as 
 2. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
    `list_creator_search_fields`, `search_posts`, `search_creators`, `report_checkpoint`, and
-   `append_insights` (with F2 `save`, or for a status run's `page` finding). Call the three `list_*_search_fields` tools
-   once each before the first search and use only paths they return. Load `ArtifactData` for the
+   `append_insights` (with F2 `save`, or for a status run's `page` finding). Take field paths from
+   `atlas-search.md`; call a `list_*_search_fields` census only for a path it does not list. Load `ArtifactData` for the
    order form's page data. Load the mail and store tools only for what `connections` lists and
    this run uses.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,

@@ -114,8 +114,8 @@ newest first, paged to the end), the newest finding per identity:
 - `draft` and `reply`: `sentAt`, `receivedAt`, `channel`, `class`.
 - The newest `roster-health` (the last review, for "changed since").
 
-From Atlas (`list_post_search_fields` and `list_creator_search_fields` once each; use only
-paths they return):
+From Atlas (field paths from **Atlas search**; a `list_*_search_fields` census only for a path it does
+not list):
 
 - `search_creators` for the account: followers (for the tier and the band), bio.
 - `search_posts` on the creator's author username, the review window plus the 90 days before

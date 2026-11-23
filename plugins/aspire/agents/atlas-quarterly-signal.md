@@ -50,8 +50,8 @@ exactly.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): `brand:summary`, the 90-day goal, `guideline:readout-focus`
    (the lead metric), `target:weekly-health`, `competitor`, and `theme:brand`. Drop every
    `review:` key.
-4. `list_post_search_fields` and `list_insight_search_fields` once each; use only paths they
-   return.
+4. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list.
 5. Read every source in **What it reads**, both quarters, paged on each prefix, including the
    program dashboards' `snapshot` findings grouped by program.
 6. Pull the fresh aggregates in the reference.

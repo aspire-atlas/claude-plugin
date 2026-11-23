@@ -58,8 +58,9 @@ findings, delivery, and the unattended rules. Follow them exactly.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the market signal records, `brand:summary`, every `competitor`
    (with `spellingVariants`), brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), and `theme:brand`. Drop every `review:`, `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` key.
 4. **Duplicate-window guard** per the reference, before pulling data.
-5. `list_post_search_fields` once; use only paths it returns. Find the partnership marker, the
-   transcript, overlay text, tone, and featured-brand fields; name any missing under gaps.
+5. Take field paths from `atlas-search.md`, with tone at `analysis.emotionalAnalysis.tone`; call
+   `list_post_search_fields` only for a path it does not list. No post field marks a paid
+   partnership: name that, and any other field missing, under gaps.
 6. Build the mention sets, the split by paid label, and the comparison set per **Data
    method**. Read the tracked hashtags with `list_hashtag_posts` for the window. For a team page
    with a `pmm`, `team`, or `growth` reader or lens, count reach by topic per **Data method**,

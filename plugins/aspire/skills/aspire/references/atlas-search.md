@@ -1,8 +1,8 @@
 # Atlas search: ids, fields and paging
 
-Read this before the first `search_creators`, `search_posts` or `search_insights` call. Every field
-below was accepted by the live server. For a field not listed, read the census
-(`list_creator_search_fields`, `list_post_search_fields`, `list_insight_search_fields`); never guess.
+Read this before the first `search_creators`, `search_posts` or `search_insights` call. The live
+server accepted every field below. Read a `list_*_search_fields` census only for a path not listed
+here; never guess one.
 
 ## Ids
 
@@ -10,20 +10,21 @@ below was accepted by the live server. For a field not listed, read the census
   `list_my_organizations`, `list_my_profiles` or `create_profile` result, or the launch message.
   Never from memory, an earlier session or a summary.
 - `forbidden` or `not-found` on an id: call `list_my_profiles` once, match the brand by name, and
-  retry with the id it lists. Never resend the refused id.
+  retry with the id it lists. No match, several, or the same id again: stop and say so (an
+  unattended run publishes the "setup needed" card). Never resend a refused id.
 
-## Fields
+## Fields to ask for
 
-Ask only for the fields the answer or page shows.
+Ask only for what the answer or page shows.
 
 **Creators.** Every hit carries the card fields (handle, name, verified, followers, country,
-typical views, rate, badges, past partners, category, picture) and `freshness`, whatever
-`fields` says, under `document.channels[]`.
+median views, interaction or engagement rate, badges, past partners, category, picture) and
+`freshness`, whatever `fields` says, under `document.channels[]`.
 
 - Card or list: `fields: ["username"]`.
-- More: `instagram.biography`, `instagram.email`, `instagram.reelsHookRate`,
-  `instagram.creatorMarketplaceReach`, `tiktok.bioDescription`, `tiktok.medianViews`,
-  `tiktok.engagementRate`, `youtube.displayName`, `youtube.viewCount`, `snapshotAt`.
+- More: `externalId`, `instagram.biography`, `instagram.email`, `instagram.reelsHookRate`,
+  `instagram.creatorMarketplaceReach`, `tiktok.bioDescription`, `youtube.bioDescription`,
+  `youtube.youtubeTopicCategories`, `snapshotAt`.
 - Audience (project only, never filter): `instagram.creatorEngagedAccountsBreakdowns`,
   `instagram.audienceDemographics`, `instagram.followerDemographics`, `tiktok.audienceGenders`,
   `tiktok.audienceAges`.
@@ -32,18 +33,31 @@ typical views, rate, badges, past partners, category, picture) and `freshness`, 
 
 - List: `["externalId", "url", "postedAt", "mediaKind", "text", "likeCount", "commentCount",
   "viewCount", "author.username"]`.
-- Page cards add `media.mediaUrl`, `media.thumbnailUrl`, `instagram.mediaProductType`,
-  `instagram.account.profilePictureUrl`, `tiktok.account.profileImage`. `media` comes back as an
-  array.
+- Page cards add `media` (the container), `instagram.mediaProductType`,
+  `instagram.account.profilePictureUrl`, `tiktok.account.profileImage`.
 - Analysis: `analysis.brandSafety`, `analysis.commentSentimentBreakdown`,
-  `analysis.aestheticTags`, `analysis.commercialAnalysis.featuredBrands`. `analysis.transcript`
-  only to quote it.
+  `analysis.aestheticTags`, `analysis.subjectAnalysis`, `analysis.commercialAnalysis.featuredBrands`.
+  `analysis.transcript` and `analysis.overlayText` only to quote them.
 - Also: `saveCount`, `shareCount`, `author.followersCount`, `instagram.permalink`.
 
 **Insights.** `role`, `summary`, `entityKind`, `entityId`, `schema`, `createdAt`,
-`detail.account_review`. A run's findings: `prefix` on `detail.account_review.runKey`.
+`detail` (or one role's part, such as `detail.account_review`).
 
-Names that do not exist:
+## Fields to filter on
+
+- Creators: `username`, `network`, `followersCount`, `country`, `verified`, `instagram.category`;
+  bio words with `match_phrase` on `instagram.biography` or `tiktok.bioDescription`.
+- Posts: `author.username`, `network`, `postedAt`, `mediaKind`, `externalId`, `url`,
+  `instagram.hashtags`, `tiktok.hashtags`, `analysis.analyzedAt`; caption words with
+  `match_phrase` on `text`. Tags and mentions only inside `nested`: `{"nested": {"path":
+  "instagram.mentions", "query": {"terms": {"instagram.mentions.username": ["handle"]}}}}`
+  (`tiktok.mentions` the same way).
+- Insights: `role`, `entityKind`, `entityId`, `createdAt`; a run's findings with `prefix` on
+  `detail.account_review.runKey`.
+- No post field marks a paid partnership. With an explicit `asProfileId`, the `partnership` filter
+  (**Partnership content**) finds the brand's own; otherwise the flow names it a gap.
+
+## Names that do not exist
 
 | Not a field | Use |
 | ----------- | --- |
@@ -57,11 +71,15 @@ Names that do not exist:
 
 ## limit, aggs and cursor
 
-- `limit` is 1 to 100. `limit: 0` only together with `aggs`, which needs no `queryText`.
-- A count needs no hits: every filter-only response carries `totalHits`, so send `limit: 1`. Distinct
-  creators: `aggs: {"creators": {"cardinality": {"field": "author.username"}}}` with `limit: 0`.
-- `aggs` never goes with `cursor` or `queryText`.
+- `limit` is 1 to 100. `limit: 0` only together with `aggs`, and never with `queryText`.
+- `aggs` takes only `terms` and `cardinality` (approximate); no sums, averages or date
+  histograms, so add those up from the paged hits. `aggs` never goes with `cursor` or `queryText`.
+- A count needs no hits: every filter-only response carries `totalHits`, so send `limit: 1`. On
+  `search_creators` it counts channels, not creators. Distinct creators on posts:
+  `aggs: {"creators": {"cardinality": {"field": "author.username"}}}` with `limit: 0`.
 - `cursor` is only the `nextCursor` of the previous page of the same call, unchanged. Re-send the
-  same `esFilter`, `queryText`, `sort`, `asProfileId` and `partnership`, and `fields` again. Any
-  change starts over without a cursor. Never pass a link, page text, an id or another call's cursor.
-- No `nextCursor` means the last page. `invalid-input` about the cursor: start again from page one.
+  same `esFilter`, `queryText`, `sort`, `includeDeleted`, `asProfileId` and `partnership`, and
+  `fields` or `exclude` again. Any change starts over without a cursor. Never pass a link, page
+  text, an id or another call's cursor.
+- No `nextCursor` means the last page (with `queryText`, the top 1,000 or so). `invalid-input`
+  about the cursor: start again from page one.

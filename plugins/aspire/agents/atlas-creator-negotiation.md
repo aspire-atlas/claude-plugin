@@ -103,8 +103,8 @@ step needs one of those, skip that step and name it in your output as needing a 
    block's recommendation when passed, else the newest `roster-health`. For `change`, the
    creator needs an agreed `terms`; one without it is listed and skipped. In `counter`, a yes to our offer
    is a reply classed `accepted`; never infer one from `interested`. A pasted reply is summarized in one line and classed per `program.md`.
-2. **Read each creator** (`list_creator_search_fields` and `list_post_search_fields` once each;
-   use only paths they return). `search_creators` for the account, `search_posts` for the last
+2. **Read each creator** (field paths from `atlas-search.md`; the census only
+   for a path it does not list). `search_creators` for the account, `search_posts` for the last
    10 posts per format priced and the last 180 days for the paid track record, and the newest
    vetting or discovery finding for the fit score (`search_insights` on the
    `creator-vetting-{profile}` and `creator-discovery-{profile}` prefixes). Work in batches of

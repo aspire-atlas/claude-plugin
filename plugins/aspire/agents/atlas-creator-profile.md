@@ -49,8 +49,8 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
    `competitor` and `partner` records only to say whether the handle matches one (a classification,
    not a benchmark), and the brand summary and goal only to frame relevance. Ignore every key starting
    `review:`.
-3. **Census.** Call `list_post_search_fields` and `list_creator_search_fields` once each and use only
-   field paths they return. Never guess a path.
+3. **Fields.** Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a
+   path it does not list. Never guess a path.
 4. **Resolve** the handle per `account-resolution.md`. A handle that cannot be resolved stops the run:
    report what was tried and publish nothing. Keep the freshness it reports.
 5. **Confirm it is a creator.** A brand, shop, or publisher account gets no profile: say so, suggest an
