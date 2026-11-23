@@ -1,8 +1,8 @@
 # Atlas search: ids, fields and paging
 
-Read this before the first `search_creators`, `search_posts` or `search_insights` call. The live
-server accepted every field below. Read a `list_*_search_fields` census only for a path not listed
-here; never guess one.
+Read this before the first search. The live server accepted every field below. Read a
+`list_*_search_fields` census only for a path neither this file nor the flow's reference names;
+never guess one.
 
 ## Ids
 

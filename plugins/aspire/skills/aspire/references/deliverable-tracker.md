@@ -289,8 +289,10 @@ type). It names one or more parts:
 
 Check each part:
 
-- **Label.** Atlas holds no paid-partnership field, so the label is "not held in Atlas":
-  unclear, never missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
+- **Label.** On Instagram, with the explicit `asProfileId` and the Profile's Meta Business and
+  Instagram links, the post's `partnershipAds` overlay (**Partnership content**) shows it: an
+  entry whose `contentTypes` holds `BRANDED_CONTENT` is found. Otherwise the label is "not held in
+  Atlas": unclear, never missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
   post `missing` or `needs fix`.
 - **Words.** Look in the caption and `instagram.hashtags`. Found when they sit before the
   "more" cut (about the first 125 characters, or the first line); words only in a hashtag block
@@ -330,7 +332,7 @@ item on the page, as in content review.
 | `late` | Past due, no match yet, and inside the grace days; or past grace with an open match, a "confirm by hand" Story, or no posts from the creator in Atlas since the due date | `needs_improvement` |
 | `missing` | Past due plus grace days, no match, no open match, not a "confirm by hand" Story, and Atlas holds posts from the creator dated after the due date | `needs_improvement` |
 | `needs fix` | Matched, and disclosure is missing or a required item is missing | `needs_improvement` |
-| `waived` | The user waived it (**Waived**) | `went_well` `low` |
+| `waived` | The user waived it (**Waived**) | `went_well` |
 
 Expected posts (`owed` false) use only `due`, `posted`, `needs fix`, and `missing`, never
 `late`: an expected post stays `due` until its window plus the grace days has passed, then is
@@ -459,7 +461,7 @@ since the newest finding.
 | `deliverable` | Per **Status** | `trk-del-{slug}-{entityId}-{deliverableKey}-{status}-{YYYY-MM-DD}` |
 | `draft` | `action_item` `low` | `trk-draft-{slug}-{entityId}-{template}-{channel}-{recordedAt}` |
 | `roster` | `action_item` `medium`; `went_well` at Complete | `trk-roster-{slug}-{entityId}-{stage}-{YYYY-MM-DD}` |
-| `page` | `went_well` `low` | `trk-page-{slug}-tracker` |
+| `page` | `went_well` | `trk-page-{slug}-tracker` |
 
 **Fields this reference adds to `deliverable`** (beyond **Influencer program**'s list): `deliverableKey`,
 `type`, `format`, `network`, `month` (`YYYY-MM`, ambassadors), `count` (this row's number in the

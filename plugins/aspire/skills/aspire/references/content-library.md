@@ -392,7 +392,7 @@ Written only in `build` with L2 "Save", or in an unattended run when the cadence
 `query`, `expiring`, or `sample`.
 
 `append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
-`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the creator's
+`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well`, anchored to the creator's
 account (`entityKind` `account`, `entityId` the network's own account id, `schema` the network),
 in batches of 50. Without a program the runKey is `content-library-{profile}-{YYYY-MM-DD}`
 (**Influencer program**, **Brand-wide library**) and `detail.program` is left out. The Program manager's

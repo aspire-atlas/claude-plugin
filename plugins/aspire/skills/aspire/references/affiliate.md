@@ -623,7 +623,7 @@ invited to or held under, and for a hold what would move them up; the list they 
 
 **The `page` finding.** When no `page` finding with key `affiliate` exists, the first `record`
 write (A1, A4, or A8) adds one: `key` `affiliate`, `url`, `title`, anchored to the brand's own
-account on its first linked network, `went_well` `low`, idempotencyKey `aff-{slug}-page`.
+account on its first linked network, `went_well`, idempotencyKey `aff-{slug}-page`.
 
 **Freshness in `record`.** Before writing, read the newest `roster`, `terms`, and `affiliate`
 for each creator. When one is newer than the packet's `basedOn`, write nothing for that creator

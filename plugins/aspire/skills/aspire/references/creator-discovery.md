@@ -677,8 +677,8 @@ returned nothing is named under Gaps as a gap line, never as an error.
 
 ## Atlas quirks that apply here
 
-Inherited from **Creator brief** and **Readouts**: project the `media` and
-`instagram.account` containers, not leaf URLs; exclude stories with `exists mediaKind`; some
+Inherited from **Creator brief** and **Readouts**: `media` and the author's picture come back on
+every hit, so project only the leaf paths a card shows; exclude stories with `exists mediaKind`; some
 `/thumbnail` routes 404 on image posts; published pages cannot load `cdn.aspire.io` images, so embed them.
 New for creator discovery: `search_creators` carries no post-level fields, so topic evidence always
 needs a second `search_posts` call per candidate; `lookup_creators` has no status-check tool

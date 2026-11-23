@@ -518,7 +518,7 @@ to 25 findings per call.
 | `roster-health`, slipping, dormant, retire | `needs_improvement` | same |
 | `roster-health`, insufficient | `action_item` `low` | same |
 | `draft`, unsent | `action_item` `low` | `rm-draft-{slug}-{net}-{handle}-{template}-{channel}-{recordedAt}` |
-| `page` | `went_well` `low` | `rm-page-{slug}-roster` |
+| `page` | `went_well` | `rm-page-{slug}-roster` |
 
 `{net}` is `ig` or `tt`.
 

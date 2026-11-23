@@ -438,7 +438,7 @@ on every finding, an `idempotencyKey` each, `detail.recipient` on each, and `det
 | `plan` | one per run | The brand's own account on its first linked network | `action_item` `low` | `platforms`, `stage`, `headline`, checklist counts per status, the W3 answers, `pageUrl` |
 | `step` | the platform + the step key | The brand's account on that platform's network when linked, else on its first linked network | `action_item` `high` for a readiness fix, `medium` for a setup step, `low` for a running step; `went_well` when done | `platform`, `key`, `phase` (readiness, setup, catalog, content, creators, running), `step`, `where`, `owner`, `order`, `dependsOn`, `due`, `status` (open, done), `notes` |
 | `shop-creator` | the creator + the platform | The creator's account, `entityId` the network's own account id | `action_item` `medium` | `handle`, `network`, `platform`, `role`, `source`, `why`, `evidence`, `rights` |
-| `page` | key `shops` | The brand's own account on its first linked network | `went_well` `low` | `key`, `url`, `title` |
+| `page` | key `shops` | The brand's own account on its first linked network | `went_well` | `key`, `url`, `title` |
 
 | Record | idempotencyKey |
 | ------ | -------------- |

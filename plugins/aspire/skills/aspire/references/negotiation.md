@@ -533,7 +533,7 @@ creator.
 
 **The `page` finding.** When no `page` finding with key `negotiation` exists, the first `record`
 write (N1 or N3) adds one: `recordType` `page`, `key` `negotiation`, `url`, `title`, anchored to
-the brand's own account on its first linked network, `went_well` `low`, idempotencyKey
+the brand's own account on its first linked network, `went_well`, idempotencyKey
 `neg-{slug}-page`. "Page only" writes nothing, so the link is saved on the next approved write.
 
 `terms` kinds follow **Influencer program**: `action_item` `medium` while offered or countered, `went_well`

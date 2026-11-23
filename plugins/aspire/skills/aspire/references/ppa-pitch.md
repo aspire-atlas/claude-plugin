@@ -439,7 +439,8 @@ is retyped.
 **Pulls.**
 
 - Accounts: `search_creators`, `terms` on `username`, `fields: ["username","instagram.email",
-  "instagram.reelsHookRate","instagram.creatorEngagedAccounts","instagram.creatorMarketplaceReach"]`;
+  "instagram.reelsHookRate","instagram.creatorEngagedAccounts","instagram.creatorMarketplaceReach",
+  "instagram.creatorEngagedAccountsBreakdowns","tiktok.audienceAges"]`;
   the card fields come back without being listed.
 - Posts for metrics: `search_posts`, `terms` on `author.username` for up to four creators, `exists
   mediaKind`, sort `postedAt` desc, limit 100 (no paging); a creator with fewer than 25 posts in

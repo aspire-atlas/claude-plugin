@@ -513,11 +513,11 @@ Sending mail stays on Needs approval: the reply check sends nothing.
 | ------ | ---- | -------------- |
 | `draft`, unsent | `action_item` `low` | `out-draft-{slug}-{entityId}-{template}-{channel}-{recordedAt}` |
 | `draft`, sent (O3) | `went_well` | `out-sent-{slug}-{entityId}-{template}-{channel}-{sentAt}` |
-| `reply` | `went_well` `low` | `out-reply-{slug}-{entityId}-{channel}-{receivedAt}` |
+| `reply` | `went_well` | `out-reply-{slug}-{entityId}-{channel}-{receivedAt}` |
 | `roster`, active | `action_item` `medium` | `out-roster-{slug}-{entityId}-{recordedAt}` |
 | `roster`, Declined | `needs_improvement` | same |
 | `roster`, No reply | `action_item` `low` | same |
-| `page` | `went_well` `low` | `out-page-{slug}-outreach` |
+| `page` | `went_well` | `out-page-{slug}-outreach` |
 
 **Fields this reference adds.** On `draft`: `to` (`creator` or `manager`), `postUrl` (the post
 the draft cites), `blanks` (the bracketed blanks left), `offerShown` (`invite`, `open-fee`,
@@ -526,7 +526,7 @@ the draft cites), `blanks` (the bracketed blanks left), `offerShown` (`invite`, 
 finding.
 
 **The page link.** On the outreach page's first publish, write one `page` finding: anchored to
-the brand's own account on its first linked network, `kind` `went_well` `low`, `detail.key`
+the brand's own account on its first linked network, `kind` `went_well`, `detail.key`
 `outreach`, `url`, `title`, idempotencyKey `out-page-{slug}-outreach`. It goes in the same
 `append_insights` call as the run's other approved writes (O1 or O4); an unattended run may
 write it on its own. Read the link back from the newest `page` finding with key `outreach`.

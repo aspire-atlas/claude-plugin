@@ -398,8 +398,9 @@ fetched during the run.
 
 - `search_creators` returns the card fields (picture, badges, past partners, rate, median views)
   on every hit, and `search_posts` returns `media` and the author's picture on every hit. Project
-  only the other fields a section shows, by the leaf paths in **Atlas search**; never a whole
-  network container.
+  only the other fields a section shows, by the leaf paths in **Atlas search**. A search over many
+  creators or posts never projects a whole network container; a one-creator profile or a one-post
+  analysis may.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
   full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in **Creator card**.

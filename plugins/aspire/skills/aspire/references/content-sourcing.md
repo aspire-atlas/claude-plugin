@@ -647,7 +647,7 @@ finding's `mailDraftId`. A failed draft stays copy-ready and is reported. Never 
 
 **The `page` finding.** When none with key `sourcing` exists, the first approved write (S1 or
 S3) adds one: `recordType` `page`, `key` `sourcing`, `url`, `title`, anchored to the brand's
-own account on its first linked network, `went_well` `low`.
+own account on its first linked network, `went_well`.
 
 ## The sourcing page
 

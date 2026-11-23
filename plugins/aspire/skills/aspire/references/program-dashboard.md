@@ -192,8 +192,10 @@ Stories count only when Atlas holds them. Say when the set is capped.
 
 The same filter once more with `limit: 0` and `aggs` `cardinality` on `author.username`, no
 cursor: `totalHits` is the post count and the `aggs` the distinct creators. `aggs` takes only
-`terms` and `cardinality`, so the sums of `likeCount`, `commentCount` and `viewCount`, the weekly
-counts, the cards and the baselines all come from the paged hits.
+`terms` and `cardinality`, so the sums of `likeCount`, `commentCount` and `viewCount` and the
+weekly counts come from every post in the set: when it holds more than 500, page the same filter
+to the end with only those three fields, `postedAt`, and `exclude: ["media", "instagram.account",
+"tiktok.account", "youtube.account"]`. The cards and the baselines come from the first 500.
 
 **Each creator's own baseline.** For each creator with program posts, `search_posts` on their
 username for the 90 days before their first program post, program posts left out, limit 50.
@@ -411,7 +413,7 @@ One finding per run that saves, so the Program manager's status screen, later da
 the quarterly signal read the headline numbers without re-running the dashboard.
 
 `append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
-`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the brand's own
+`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well`, anchored to the brand's own
 account on its first linked network (`schema` the network, `entityKind` `account`, `entityId`
 the network's own account id, from `search_creators` on the brand's handle). `idempotencyKey`
 `dash-snap-{slug}-{recordedAt}`. Identity is the program and the date; on a second save the same
@@ -461,7 +463,7 @@ shows as "not compared".
 
 **The `page` finding.** On a first publish (no `page` finding with key `dashboard`), write one in
 the same `append_insights` call: `recordType` `page`, `key` `dashboard`, `url`, `title`, anchored
-like the snapshot, `went_well` `low`, `idempotencyKey` `dash-page-{slug}`.
+like the snapshot, `went_well`, `idempotencyKey` `dash-page-{slug}`.
 
 The dashboard writes no other record type and no calibration.
 

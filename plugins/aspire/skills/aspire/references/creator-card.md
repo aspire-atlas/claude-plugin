@@ -488,7 +488,8 @@ for key, urls in items:
 Pull the account with `search_creators` (`terms` on `username`, `fields: ["username",
 "instagram.biography","instagram.creatorEngagedAccountsBreakdowns","tiktok.bioDescription",
 "tiktok.audienceGenders","tiktok.audienceAges","youtube.bioDescription",
-"youtube.youtubeTopicCategories"]`); the card's header, stats and picture fields come back on
+"youtube.youtubeTopicCategories","instagram.email","instagram.isPaidPartnershipMessagesEnabled",
+"youtube.youtubeBusinessEmail"]`); the card's header, stats and picture fields come back on
 every hit without being listed. A hit is one person;
 `channels` holds one entry per network Atlas has linked for them. Pull the last 12 posts per
 channel with `search_posts` (`terms` on `author.username`, `exists mediaKind` to drop stories,
