@@ -34,7 +34,7 @@ d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && 
 
 <!-- page-fill -->
 ```python
-import html, json, re, sys
+import html, json, math, re, sys
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -68,7 +68,8 @@ def is_type(value, name):
     if name == "integer":
         return isinstance(value, int) and not isinstance(value, bool)
     if name == "number":
-        return isinstance(value, (int, float)) and not isinstance(value, bool)
+        # JSON from Python can carry Infinity and NaN, which no figure means.
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
     return isinstance(value, {"string": str, "boolean": bool, "object": dict, "array": list}[name])
 
 def shape(value, schema, path, root, errs):
@@ -233,11 +234,37 @@ def names_tool(word, tools):
     low = word.lower()
     return low in tools or any(part in tools for part in low.split("__"))
 
+def css_plain(css):
+    """The CSS with comments dropped and every quoted string emptied, read in one pass as a browser
+    tokenizes it, so a brace, quote or comment marker inside a string or a comment moves nothing.
+    None when a string or a comment is left open."""
+    out, i, n = [], 0, len(css)
+    while i < n:
+        if css.startswith("/*", i):
+            end = css.find("*/", i + 2)
+            if end < 0:
+                return None
+            i = end + 2
+        elif css[i] in "\"'":
+            end = i + 1
+            while end < n and css[end] not in (css[i], "\n"):
+                end += 1
+            if end >= n or css[end] == "\n":
+                return None
+            out.append('""')
+            i = end + 1
+        else:
+            out.append(css[i])
+            i += 1
+    return "".join(out)
+
 def theme_ok(css):
     """Token rules only: plain rules that set custom properties, optionally inside @media, nothing nested, nothing loaded."""
     if re.search(r"[<\\]|@import|url\s*\(|image-set\s*\(", css, re.I):
         return False
-    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    css = css_plain(css)
+    if css is None:
+        return False
     stack, start = [], 0
     for i, ch in enumerate(css):
         if ch == "{":
@@ -289,9 +316,11 @@ def num(value):
         return value
     if float(value).is_integer():
         return "{:,}".format(int(value))
-    # Fifteen significant digits, a double's exact range, drop float noise (0.1 + 0.2, 1234567.89).
+    # Twelve significant digits drop float noise from sums and differences (0.1 + 0.2, 2.3 - 2.2); a
+    # figure with a longer whole part keeps every whole digit and one decimal, up to a double's fifteen.
     # Formatting the rounded digits as a Decimal keeps fixed point: 0.00004, never 4e-05.
-    rounded = Decimal("%.15g" % value)
+    whole = len(str(int(abs(value))))
+    rounded = Decimal("%.*g" % (min(15, max(12, whole + 1)), value))
     if rounded == rounded.to_integral_value():
         return "{:,}".format(int(rounded))
     return format(rounded, ",f")
