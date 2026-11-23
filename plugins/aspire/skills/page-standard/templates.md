@@ -49,7 +49,7 @@ brand snapshot report where the two overlap: `title`, `answer`, `figures` with a
 | `takeaway` | Optional. The one number or reason behind the answer, against a comparison |
 | `scope` | The reader, the brand, the date range, the question code, every subject account, each platform with its post count, `preparedBy` for a VP or budget owner, the checks that are N/A (`na`), and the connected `tools` the figures came from |
 | `figures` | Up to three headline figures, each a `label`, a `value`, a `comparison`, and optionally a `status` and a `source`. They show as KPI tiles under the answer |
-| `insights` | Up to three, each a claim (`text`), its `evidence`, its `comparison`, the `so` line, and its `source`. Only the first may carry a `chart`, which is a stacked bar |
+| `insights` | Up to three, each a claim (`text`), its `evidence`, its `comparison`, the `so` line, and its `source`. Only the first may carry a `chart`, which is a stacked bar with bar labels of up to 16 characters and up to six segment labels |
 | `actions` | The ranked next steps. Each has a `rank`, a `verb` and an `object` ("Send" "first messages to the 3"), an `owner`, a `due` date, the `effect` it should have, the `job` that does it, its `cost`, and its `source` |
 | `decisions` | What the reader must approve, kept apart from the actions. Each has its `text`, the `approver`, a `by` date when there is a deadline, what happens `then`, and its `cost`. Empty when nothing needs approval |
 | `evidence` | Other evidence lines, each with its `source` and a link when there is one. Posts and creators go in `sections` |
@@ -81,7 +81,7 @@ by its name without the `atlas-` prefix. The page shows it in plain words.
 | Section | What it holds | Block |
 | ------- | ------------- | ----- |
 | `kpis` | Up to twelve more KPI tiles, shape as `figures` | 3.24 |
-| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to three stats, an optional `group`, and for a Maybe the question that would `settle` it | 3.7 |
+| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to three stats, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it | 3.7 |
 | `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, and an optional quote | 3.8 |
 | `verdict` | The `call`, its `status`, the `reason`, and the `checks` behind it | 3.25 |
 | `steps` | Dated plan steps: `when`, `what`, and `who` | 3.17 |
@@ -97,18 +97,19 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `length`: a Readout sets `length`; no other template does.
 - `action-ranks`: ranks are unique and ascending.
 - `source-label`: every source is one of the labels above.
-- `dates`: every date is a real date.
+- `dates`: every date is a real date, `footer.updated` a real date and time.
 - `maybe-settle`: every Maybe carries its settle question.
 - `post-metrics`: a metric is shown or missing, never both.
 - `one-chart`: only the first insight carries a chart.
+- `chart-series`: a chart has at most six segment labels, so each keeps its own color.
 - `method-weights`: the weights add up to 100.
 - `scope-accounts`: every creator and post account is in `scope.accounts`.
 - `question`: a page that cites posts gives its question code, which sets the metrics each post needs (`SKILL.md`, section 8).
 - `cost`: a cost that cannot be priced names the missing figure and who has it, both in its line.
 - `freshness`: one entry for every cited account and none for any other, each with a fetch or a change date.
-- `shared-page`: a page whose source line says "Shared with" lists no gaps and no freshness notes.
-- `no-internal-names`: no tool name or record id in the words the reader sees.
-- `theme`: the theme holds token rules only.
+- `shared-page`: a page whose source line says "Shared with" lists no gaps and no freshness notes. It still shows its confidence.
+- `no-internal-names`: no Atlas tool name (the page check's list) or record id in any field the reader sees.
+- `theme`: the theme holds token rules only: no `<`, backslash, `@import` or `url(`.
 
 ## 4. The six templates
 

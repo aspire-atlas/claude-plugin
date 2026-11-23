@@ -96,7 +96,7 @@ trap 'rm -rf "$tmp"' EXIT
 awk '/^<!-- page-fill -->$/{f=1;next} /^<!-- \/page-fill -->$/{f=0} f' "$PS/page-fill.md" | sed '1d;$d' > "$tmp/page_fill.py"
 awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PS/page-check.md" | sed '1d;$d' > "$tmp/page_check.py"
 [ -s "$tmp/page_fill.py" ] || err "$PS/page-fill.md has no <!-- page-fill --> script"
-cp "$PS/page-data.schema.json" "$PS/page-templates.json" "$PS/blocks.md" \
+cp "$PS/page-data.schema.json" "$PS/page-templates.json" "$PS/blocks.md" "$PS/page-check.md" \
   plugins/aspire/skills/aspire/references/artifact-standard.md plugins/aspire/assets/aspire-animated.svg.md "$tmp/"
 rendered=0
 for t in $(python3 -I -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["templates"]))' "$PS/page-templates.json"); do

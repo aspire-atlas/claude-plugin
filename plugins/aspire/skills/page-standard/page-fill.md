@@ -5,11 +5,11 @@ data against `page-data.schema.json` and the rules in `templates.md`, section 3,
 whole page as one HTML document. It reads only the files beside the data file, writes nothing, and
 starts no other program. Extract it with the command below; never retype it.
 
-Copy the data file and the five files the script reads into a new temporary folder, extract the
+Copy the data file and the six files the script reads into a new temporary folder, extract the
 script there, and run it. The shell saves what it prints as the page:
 
 ```bash
-d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && cp "$P/skills/page-standard/page-data.schema.json" "$P/skills/page-standard/page-templates.json" "$P/skills/page-standard/blocks.md" "$P/skills/aspire/references/artifact-standard.md" "$P/assets/aspire-animated.svg.md" "$d/" && awk '/^<!-- page-fill -->$/{f=1;next} /^<!-- \/page-fill -->$/{f=0} f' "$P/skills/page-standard/page-fill.md" | sed '1d;$d' > "$d/page_fill.py" && python3 -I "$d/page_fill.py" "$d/page.json" > "$d/{page name}.html"
+d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && cp "$P/skills/page-standard/page-data.schema.json" "$P/skills/page-standard/page-templates.json" "$P/skills/page-standard/blocks.md" "$P/skills/page-standard/page-check.md" "$P/skills/aspire/references/artifact-standard.md" "$P/assets/aspire-animated.svg.md" "$d/" && awk '/^<!-- page-fill -->$/{f=1;next} /^<!-- \/page-fill -->$/{f=0} f' "$P/skills/page-standard/page-fill.md" | sed '1d;$d' > "$d/page_fill.py" && python3 -I "$d/page_fill.py" "$d/page.json" > "$d/{page name}.html"
 ```
 
 - It exits 0 and prints the page when the data passes. Add `--check` to check the data and print
@@ -17,6 +17,8 @@ d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && 
 - It exits 1 when the data breaks a rule, and prints one JSON line per problem, with its `rule`,
   the field's `path`, and a `message`. Fix the data and run it again.
 - It exits 2 when it could not read the data file or a file beside it.
+- It takes the Atlas tool names it refuses in reader text from `page-check.md`, so the fill and the
+  page check refuse the same names.
 - The page takes its style from `blocks.md` (the block style), its print rules from
   `artifact-standard.md` (section 6), and the mark from `aspire-animated.svg.md`, so a change to
   any of them reaches every page with no change here.
@@ -33,7 +35,7 @@ d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && 
 <!-- page-fill -->
 ```python
 import html, json, re, sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 FIXED_SOURCES = ("Atlas", "Brand memory", "Web", "You", "Our read")
@@ -45,11 +47,17 @@ VERDICTS = {"yes": ("pb-ok", "Yes", "To contact"), "maybe": ("pb-warn", "Maybe",
 CONFIDENCE = {"high": "pb-ok", "medium": "pb-warn", "low": "pb-bad"}
 CHECK_WORDS = {"ok": "Pass", "warn": "Fix", "bad": "Fail", "flat": "Not checked"}
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-# The same internal names the brand snapshot report refuses: tool names, uuids, and record ids.
-INTERNAL = (re.compile(r"\b(get|search|list|lookup|append|fetch|report|mint)_[a-z_]+\b"),
-            re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.I),
+# Record ids the reader never sees: uuids and prefixed ids. Tool names come from page-check.md's TOOLS.
+INTERNAL = (re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.I),
             re.compile(r"\b(org|usr|prof|run)_[a-z0-9]{8,}\b"))
-FILES = ("page-data.schema.json", "page-templates.json", "blocks.md", "artifact-standard.md", "aspire-animated.svg.md")
+WORD = re.compile(r"[A-Za-z0-9_]+")
+# Fields that hold no words for the reader: keys, links, dates, enums, labels checked elsewhere, and style.
+NOT_READER = frozenset(("version", "template", "length", "account", "accounts", "href", "image", "source", "job",
+                        "due", "by", "newest", "fetched", "changed", "updated", "status", "verdict", "level",
+                        "kind", "period", "network", "question", "tools", "theme"))
+CHART_SERIES = 6
+FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "blocks.md", "artifact-standard.md",
+         "aspire-animated.svg.md")
 
 def e(value):
     return html.escape(str(value), quote=True)
@@ -112,7 +120,10 @@ def shape(value, schema, path, root, errs):
 # ---- The rules the shape cannot state (templates.md, section 3).
 def real_date(value):
     try:
-        date.fromisoformat(value)
+        if "T" in value:
+            datetime.fromisoformat(value.replace("Z", "+00:00"))
+        else:
+            date.fromisoformat(value)
         return True
     except ValueError:
         return False
@@ -120,7 +131,7 @@ def real_date(value):
 def shared(data):
     return "Shared with" in data["footer"]["source"]
 
-def rules(data, templates):
+def rules(data, templates, tools):
     errs, sec = [], data.get("sections", {})
     tpl = templates["templates"][data["template"]]
     for need in tpl.get("needs", []):
@@ -153,7 +164,8 @@ def rules(data, templates):
     for path, item in cited:
         if "source" in item and item["source"] not in labels:
             errs.append(("source-label", path + ".source", "is not Atlas, Brand memory, Web, You, Our read, or a tool in scope.tools"))
-    dated = [("actions[%d].due" % i, a["due"]) for i, a in enumerate(data["actions"])]
+    dated = [("footer.updated", data["footer"]["updated"])]
+    dated += [("actions[%d].due" % i, a["due"]) for i, a in enumerate(data["actions"])]
     dated += [("decisions[%d].by" % i, d["by"]) for i, d in enumerate(data["decisions"]) if "by" in d]
     for i, f in enumerate(data["footer"]["freshness"]):
         dated += [("footer.freshness[%d].%s" % (i, k), f[k]) for k in ("newest", "fetched", "changed")
@@ -170,6 +182,12 @@ def rules(data, templates):
     for i, it in enumerate(data["insights"][1:], 1):
         if "chart" in it:
             errs.append(("one-chart", "insights[%d].chart" % i, "only the headline insight, the first, carries a chart"))
+    for i, it in enumerate(data["insights"]):
+        if "chart" in it:
+            series = {s["label"] for b in it["chart"]["bars"] for s in b["segments"]}
+            if len(series) > CHART_SERIES:
+                errs.append(("chart-series", "insights[%d].chart" % i,
+                             "a chart has at most %d segment labels, one color each" % CHART_SERIES))
     weights = data.get("method", {}).get("weights")
     if weights and sum(w["percent"] for w in weights) != 100:
         errs.append(("method-weights", "method.weights", "the weights add up to 100"))
@@ -200,23 +218,30 @@ def rules(data, templates):
             errs.append(("shared-page", "footer.freshness[%d].note" % i, "a page shared outside the team carries no freshness notes"))
     if shared(data) and data["gaps"]:
         errs.append(("shared-page", "gaps", "a page shared outside the team lists no gaps; return them to the main thread"))
-    if "<" in data.get("theme", {}).get("css", ""):
-        errs.append(("theme", "theme.css", "holds token rules only"))
+    css = data.get("theme", {}).get("css", "")
+    if re.search(r"[<\\]|@import|url\s*\(", css, re.I):
+        errs.append(("theme", "theme.css", "holds token rules only: no <, backslash, @import or url("))
     for path, value in reader_text(data):
-        for pattern in INTERNAL:
-            if pattern.search(value):
-                errs.append(("no-internal-names", path, "names a tool or an id"))
+        if any(pattern.search(value) for pattern in INTERNAL) or any(w.lower() in tools for w in WORD.findall(value)):
+            errs.append(("no-internal-names", path, "names a tool or an id"))
     return errs
 
-def reader_text(data):
-    out = [("title", data["title"]), ("answer", data["answer"]), ("takeaway", data.get("takeaway", ""))]
-    for i, item in enumerate(data["insights"]):
-        out += [("insights[%d].%s" % (i, k), item[k]) for k in ("text", "evidence", "comparison", "so")]
-    for i, item in enumerate(data["actions"]):
-        out += [("actions[%d].%s" % (i, k), item[k]) for k in ("object", "effect")]
-    out += [("decisions[%d].text" % i, d["text"]) for i, d in enumerate(data["decisions"])]
-    out += [("gaps[%d]" % i, g) for i, g in enumerate(data["gaps"])]
-    return out
+def reader_text(data, path=""):
+    """Every string the reader sees, with its path: all of the data but the NOT_READER fields, keeping the source line."""
+    if isinstance(data, str):
+        return [(path, data)]
+    if isinstance(data, list):
+        return [t for i, v in enumerate(data) for t in reader_text(v, "%s[%d]" % (path, i))]
+    if isinstance(data, dict):
+        return [t for k, v in data.items() if k not in NOT_READER or (path, k) == ("footer", "source")
+                for t in reader_text(v, "%s.%s" % (path, k) if path else k)]
+    return []
+
+def tool_names(page_check):
+    m = re.search(r'^TOOLS = frozenset\("""\n(.*?)\n"""\.split\(\)\)', page_check, re.S | re.M)
+    if not m:
+        raise ValueError("page-check.md has no TOOLS list")
+    return frozenset(m.group(1).split())
 
 # ---- Words and numbers as the page shows them.
 def num(value):
@@ -224,7 +249,8 @@ def num(value):
         return value
     if float(value).is_integer():
         return "{:,}".format(int(value))
-    return "{:,.2f}".format(value).rstrip("0").rstrip(".")
+    # Ten places then trailing zeros dropped: 0.004 stays 0.004 and 0.125 stays 0.125.
+    return "{:,.10f}".format(value).rstrip("0").rstrip(".")
 
 def day(value, year):
     d = date.fromisoformat(value)
@@ -390,8 +416,9 @@ def creator(c):
     cls, word, _ = VERDICTS[c["verdict"]]
     stats = "".join('<span>%s <b>%s</b>%s</span>' % (e(s["label"]), e(s["value"]), (" (%s)" % e(s["source"])) if "source" in s else "")
                     for s in c.get("stats", []))
-    parts = ['<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span></p>'
-             % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "")]
+    parts = ['<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span>%s</p>'
+             % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "",
+                (" " + chip(c["group"])) if "group" in c else "")]
     parts.append('<div class="pb-verdict" data-block="creator" data-verdict="%s" data-account="%s"><p>%s %s</p>'
                  % (c["verdict"], e(c["account"]), chip(word, cls), e(c["reason"])))
     if "checks" in c:
@@ -459,17 +486,19 @@ def method(data):
     return '<section class="pb-card pb-method" data-page="method" data-block="method">%s</section>' % "".join(parts)
 
 def gaps(data):
-    if shared(data):
-        return ""
     c = data["confidence"]
     items = []
     for g in data["gaps"]:
         head, _, rest = g.partition(": ")
         items.append("<li><b>%s</b>%s</li>" % (e(head), ('<span class="pb-muted">%s</span>' % e(rest[:1].upper() + rest[1:])) if rest else ""))
-    listed = "<ul>%s</ul>" % "".join(items) if items else "<p>Nothing is missing that would change this page.</p>"
-    return ('<section class="pb-card pb-missing" data-block="missing"><h2 class="pb-h">What\'s missing, and how sure we are</h2>%s'
+    if shared(data):
+        listed, heading = "", "How sure we are"
+    else:
+        listed = "<ul>%s</ul>" % "".join(items) if items else "<p>Nothing is missing that would change this page.</p>"
+        heading = "What\'s missing, and how sure we are"
+    return ('<section class="pb-card pb-missing" data-block="missing"><h2 class="pb-h">%s</h2>%s'
             '<p class="pb-confidence" data-confidence="%s">%s %s</p></section>'
-            % (listed, c["level"], chip("Confidence: " + c["level"], CONFIDENCE[c["level"]]), e(c["why"])))
+            % (heading, listed, c["level"], chip("Confidence: " + c["level"], CONFIDENCE[c["level"]]), e(c["why"])))
 
 def drafts(data):
     if not data.get("drafts"):
@@ -525,7 +554,7 @@ def page(data, d):
     standard = (d / "artifact-standard.md").read_text(encoding="utf-8")
     mark = re.search(r"```svg\n(.*?)\n```", (d / "aspire-animated.svg.md").read_text(encoding="utf-8"), re.S).group(1)
     year = int(data["footer"]["updated"][:4])
-    short = re.sub(r'["\\]', "", data["title"]).encode("ascii", "ignore").decode()
+    short = re.sub(r'["\\<>\x00-\x1f\x7f]', "", data["title"]).encode("ascii", "ignore").decode()
     short = short if len(short) <= 40 else short[:40].rsplit(" ", 1)[0]
     head = ['<!doctype html><html lang="en"><head><meta charset="utf-8">',
             '<meta name="viewport" content="width=device-width,initial-scale=1">', "<title>%s</title>" % e(data["title"]),
@@ -555,7 +584,8 @@ def main(argv):
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         schema, templates = (json.loads((path.parent / n).read_text(encoding="utf-8")) for n in FILES[:2])
-        for n in FILES[2:]:
+        tools = tool_names((path.parent / FILES[2]).read_text(encoding="utf-8"))
+        for n in FILES[3:]:
             (path.parent / n).stat()
     except (OSError, ValueError) as err:
         print(json.dumps({"rule": "read", "path": str(err), "message": "could not read the page data or a file beside it"}))
@@ -563,7 +593,7 @@ def main(argv):
     errs = []
     shape(data, schema, "$", schema, errs)
     if not errs:
-        errs = rules(data, templates)
+        errs = rules(data, templates, tools)
     for rule, where, message in errs:
         print(json.dumps({"rule": rule, "path": where.lstrip("$."), "message": message}))
     if errs:
