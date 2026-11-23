@@ -108,8 +108,8 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `cost`: a cost that cannot be priced names the missing figure and who has it, both in its line.
 - `freshness`: one entry for every cited account and none for any other, each with a fetch or a change date.
 - `shared-page`: a page whose source line says "Shared with" lists no gaps and no freshness notes. It still shows its confidence.
-- `no-internal-names`: no Atlas tool name (the page check's list) or record id in any field the reader sees.
-- `theme`: the theme holds token rules only: no `<`, backslash, `@import` or `url(`.
+- `no-internal-names`: no Atlas tool name (the page check's list, alone or inside a prefixed name) or record id in any field the reader sees, `scope.tools` included.
+- `theme`: the theme holds token rules only: custom-property declarations in plain or `@media` rules, with no `<`, backslash, `url(` or `image-set(`.
 
 ## 4. The six templates
 

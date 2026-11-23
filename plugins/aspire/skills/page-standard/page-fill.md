@@ -218,13 +218,29 @@ def rules(data, templates, tools):
             errs.append(("shared-page", "footer.freshness[%d].note" % i, "a page shared outside the team carries no freshness notes"))
     if shared(data) and data["gaps"]:
         errs.append(("shared-page", "gaps", "a page shared outside the team lists no gaps; return them to the main thread"))
-    css = data.get("theme", {}).get("css", "")
-    if re.search(r"[<\\]|@import|url\s*\(", css, re.I):
-        errs.append(("theme", "theme.css", "holds token rules only: no <, backslash, @import or url("))
-    for path, value in reader_text(data):
-        if any(pattern.search(value) for pattern in INTERNAL) or any(w.lower() in tools for w in WORD.findall(value)):
+    if not theme_ok(data.get("theme", {}).get("css", "")):
+        errs.append(("theme", "theme.css", "holds custom-property declarations only, in plain or @media rules, loading nothing"))
+    # scope.tools entries are the labels the reader sees on source chips, so they are read too.
+    named = reader_text(data) + [("scope.tools[%d]" % i, t) for i, t in enumerate(data["scope"].get("tools", []))]
+    for path, value in named:
+        if any(pattern.search(value) for pattern in INTERNAL) or any(names_tool(w, tools) for w in WORD.findall(value)):
             errs.append(("no-internal-names", path, "names a tool or an id"))
     return errs
+
+def names_tool(word, tools):
+    """A tool name alone or inside a prefixed name such as mcp__atlas__search_posts."""
+    low = word.lower()
+    return low in tools or any(part in tools for part in low.split("__"))
+
+def theme_ok(css):
+    """Token rules only: every declaration sets a custom property, the only at-rule is @media, and nothing loads."""
+    if re.search(r"[<\\]|url\s*\(|image-set\s*\(", css, re.I):
+        return False
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    if any(at.lower() != "media" for at in re.findall(r"@([a-z-]+)", css, re.I)):
+        return False
+    return all(re.match(r"\s*--[\w-]+\s*:", decl) for body in re.findall(r"\{([^{}]*)\}", css)
+               for decl in body.split(";") if decl.strip())
 
 def reader_text(data, path=""):
     """Every string the reader sees, with its path: all of the data but the NOT_READER fields, keeping the source line."""
@@ -233,7 +249,9 @@ def reader_text(data, path=""):
     if isinstance(data, list):
         return [t for i, v in enumerate(data) for t in reader_text(v, "%s[%d]" % (path, i))]
     if isinstance(data, dict):
-        return [t for k, v in data.items() if k not in NOT_READER or (path, k) == ("footer", "source")
+        # A creator's verdict is an enum string; sections.verdict is an object of reader words.
+        return [t for k, v in data.items()
+                if k not in NOT_READER or (path, k) == ("footer", "source") or (k == "verdict" and not isinstance(v, str))
                 for t in reader_text(v, "%s.%s" % (path, k) if path else k)]
     return []
 
@@ -249,8 +267,9 @@ def num(value):
         return value
     if float(value).is_integer():
         return "{:,}".format(int(value))
-    # Ten places then trailing zeros dropped: 0.004 stays 0.004 and 0.125 stays 0.125.
-    return "{:,.10f}".format(value).rstrip("0").rstrip(".")
+    # Twelve significant digits keep a small rate (0.004) and drop float noise (1234567.89, 0.1 + 0.2).
+    rounded = float("%.12g" % value)
+    return "{:,}".format(int(rounded)) if rounded.is_integer() else format(rounded, ",")
 
 def day(value, year):
     d = date.fromisoformat(value)
