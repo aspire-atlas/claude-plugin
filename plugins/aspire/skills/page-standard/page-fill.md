@@ -36,6 +36,7 @@ d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && 
 ```python
 import html, json, re, sys
 from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 FIXED_SOURCES = ("Atlas", "Brand memory", "Web", "You", "Our read")
@@ -233,14 +234,35 @@ def names_tool(word, tools):
     return low in tools or any(part in tools for part in low.split("__"))
 
 def theme_ok(css):
-    """Token rules only: every declaration sets a custom property, the only at-rule is @media, and nothing loads."""
-    if re.search(r"[<\\]|url\s*\(|image-set\s*\(", css, re.I):
+    """Token rules only: plain rules that set custom properties, optionally inside @media, nothing nested, nothing loaded."""
+    if re.search(r"[<\\]|@import|url\s*\(|image-set\s*\(", css, re.I):
         return False
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-    if any(at.lower() != "media" for at in re.findall(r"@([a-z-]+)", css, re.I)):
-        return False
-    return all(re.match(r"\s*--[\w-]+\s*:", decl) for body in re.findall(r"\{([^{}]*)\}", css)
-               for decl in body.split(";") if decl.strip())
+    stack, start = [], 0
+    for i, ch in enumerate(css):
+        if ch == "{":
+            header = css[start:i].strip()
+            # A rule opened inside a rule is CSS nesting, which would carry ordinary declarations.
+            if not header or (stack and stack[-1] == "rule"):
+                return False
+            if header.startswith("@"):
+                if stack or not re.match(r"@media\b", header, re.I):
+                    return False
+                stack.append("media")
+            else:
+                stack.append("rule")
+            start = i + 1
+        elif ch == "}":
+            if not stack:
+                return False
+            body = css[start:i]
+            if stack.pop() == "rule":
+                if not all(re.match(r"\s*--[\w-]+\s*:", decl) for decl in body.split(";") if decl.strip()):
+                    return False
+            elif body.strip():
+                return False
+            start = i + 1
+    return not stack and not css[start:].strip()
 
 def reader_text(data, path=""):
     """Every string the reader sees, with its path: all of the data but the NOT_READER fields, keeping the source line."""
@@ -267,9 +289,12 @@ def num(value):
         return value
     if float(value).is_integer():
         return "{:,}".format(int(value))
-    # Twelve significant digits keep a small rate (0.004) and drop float noise (1234567.89, 0.1 + 0.2).
-    rounded = float("%.12g" % value)
-    return "{:,}".format(int(rounded)) if rounded.is_integer() else format(rounded, ",")
+    # Fifteen significant digits, a double's exact range, drop float noise (0.1 + 0.2, 1234567.89).
+    # Formatting the rounded digits as a Decimal keeps fixed point: 0.00004, never 4e-05.
+    rounded = Decimal("%.15g" % value)
+    if rounded == rounded.to_integral_value():
+        return "{:,}".format(int(rounded))
+    return format(rounded, ",f")
 
 def day(value, year):
     d = date.fromisoformat(value)

@@ -114,6 +114,19 @@ for t in $(python3 -I -c 'import json,sys; print(" ".join(json.load(open(sys.arg
   [ "$code" -eq 0 ] && [ -z "$failed" ] || err "the page rendered from $f fails the page check (${failed:-exit $code}): $out"
   rendered=$((rendered + 1))
 done
+# Figures print in fixed point with no float noise: the fill script's num() on known values.
+nums=$(python3 -I - "$tmp/page_fill.py" <<'PY' 2>&1
+import sys
+src = open(sys.argv[1], encoding="utf-8").read().replace("sys.exit(main(sys.argv[1:]))", "")
+ns = {}
+exec(src, ns)
+cases = {0.00004: "0.00004", 0.004: "0.004", 0.125: "0.125", 0.1 + 0.2: "0.3", 1234567.89: "1,234,567.89",
+         12345678901234.5: "12,345,678,901,234.5", 1234.5: "1,234.5", 12: "12", 2.0: "2"}
+bad = ["%r printed %r, not %r" % (v, ns["num"](v), want) for v, want in cases.items() if ns["num"](v) != want]
+print("; ".join(bad))
+PY
+) || nums="num() could not be loaded: $nums"
+[ -z "$nums" ] || err "the fill script prints figures wrong: $nums"
 for f in "$FX"/fail-*.json; do
   [ -f "$f" ] || continue
   want=$(basename "$f" .json | sed -E 's/^fail-//')

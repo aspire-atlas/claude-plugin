@@ -219,6 +219,6 @@
     "source": "Example. Invented brands and numbers, not from Atlas. Not for any decision. Internal use only. Not for public publishing."
   },
   "theme": {
-    "css": ":root{--brand:#123456} body{background:image-set(\"https://example.com/x.png\" 1x)}"
+    "css": ":root{--brand:#123456;--bg:image-set(\"https://example.com/x.png\" 1x)}"
   }
 }
