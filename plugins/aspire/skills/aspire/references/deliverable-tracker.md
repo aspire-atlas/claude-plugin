@@ -133,8 +133,8 @@ decision-audit line.
    unsure); more than four, the first four, then the rest in the next call. T5: one per open
    item, exactly as the agent worded it, the recommended answer first, then the alternatives
    and "Decide later". Posts whose only unclear part is the paid partnership label come as one
-   multiSelect for the run ("Which of these posts carry it?"); only posts with no overlay to read
-   go in it, and an unseen label is never treated as missing. When T2 or T5 answers change a status, relaunch
+   multiSelect for the run ("Which of these posts carry it?"); only posts whose overlay is missing or
+   shows no `BRANDED_CONTENT` go in it, and an unseen label is never treated as missing. When T2 or T5 answers change a status, relaunch
    `pass: propose` with them as `overrides` and relay the new counts.
 5. Then ask T1, T3 (only when there are drafts) and T4, at most four questions per call
    (SKILL.md **Guardrails**, Pickers).
@@ -291,8 +291,9 @@ Check each part:
 
 - **Label.** On Instagram, with the explicit `asProfileId` and the Profile's Meta Business and
   Instagram links, the post's `partnershipAds` overlay (**Partnership content**) shows it: an
-  entry whose `contentTypes` holds `BRANDED_CONTENT` is found. Otherwise the label is "not held in
-  Atlas": unclear, never missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
+  entry whose `contentTypes` holds `BRANDED_CONTENT` is found (`label` `found`). An overlay with no
+  such entry is `not shown`: Meta's data does not show the label. With no overlay to read, it is
+  `not held`. Both are unclear, never missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
   post `missing` or `needs fix`.
 - **Words.** Look in the caption and `instagram.hashtags`. Found when they sit before the
   "more" cut (about the first 125 characters, or the first line); words only in a hashtag block
@@ -466,8 +467,8 @@ since the newest finding.
 **Fields this reference adds to `deliverable`** (beyond **Influencer program**'s list): `deliverableKey`,
 `type`, `format`, `network`, `month` (`YYYY-MM`, ambassadors), `count` (this row's number in the
 deliverable, "2 of 3"), `onTime`, `daysLate`, `graceDays`, `graceEndsAt`, `match` (`strong`,
-`confirmed`, `open`), `signals` (the brand signals found), `label` (`found`, `not held`,
-`none`), `fix` (the exact fix, one line each), `waivedBy`, `reason`, `basedOn` (`terms
+`confirmed`, `open`), `signals` (the brand signals found), `label` (`found`, `not shown`,
+`not held`, `none`), `fix` (the exact fix, one line each), `waivedBy`, `reason`, `basedOn` (`terms
 v{version}`, `program terms`, or `fulfillment {orderKey}`), and `source` (`atlas` or
 `pasted`).
 
@@ -569,8 +570,8 @@ actions); render for the primary `recipient` lens. Sections, in order:
     button, bracketed blanks highlighted, and a chip "In your {mailbox}" when a mailbox draft
     exists. Leave out in an unattended run.
 12. **Footer**: "posts and numbers come from Atlas as of {timestamp}", the grace days used, that
-    a paid partnership label Atlas could not read from the brand's Meta partnership data shows
-    as unclear and is checked on the post itself, that
+    a paid partnership label the brand's Meta partnership data does not show, or that Atlas could
+    not read, shows as unclear and is checked on the post itself, that
     Stories show only when Atlas holds them, and that images are a snapshot. Then the footnote with
     the team audience line (**Artifact standard**).
 
@@ -584,7 +585,8 @@ address, or a street address. More than 12 creators: the headline and section 7 
 - Send a message, or create a mailbox draft without T4. Never a draft in an unattended run.
 - Force a match, count an open match as posted, or mark a row missing inside its grace days,
   while a match is open, or while Atlas holds no posts from the creator since the due date.
-- Call the paid partnership label absent because Atlas could not read it.
+- Call the paid partnership label absent because Atlas could not read it or Meta's data does not
+  show it.
 - Waive a deliverable, or propose a waiver as the default.
 - Fetch a post the user did not paste, fetch anything in an unattended run, or start discovery
   (`lookup_creators`, `search_creator_marketplace`, `start_business_discovery`).

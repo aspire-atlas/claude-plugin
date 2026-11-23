@@ -8,7 +8,7 @@ never guess one.
 
 - `asOrganizationId` and `asProfileId` come only from this run's `get_status`,
   `list_my_organizations`, `list_my_profiles` or `create_profile` result, or the launch message.
-  Never from memory, an earlier session or a summary.
+  Never from memory or an earlier session.
 - `forbidden` or `not-found` on an id: call `list_my_profiles` once, match the brand by name, and
   retry with the id it lists. No match, several, or the same id again: stop and say so (unattended:
   the "setup needed" card). Never resend a refused id.
@@ -42,7 +42,7 @@ median views, interaction or engagement rate, badges, past partners, category, p
 - Also: `saveCount`, `shareCount`, `author.followersCount`, `instagram.permalink`.
 
 **Insights.** `role`, `summary`, `entityKind`, `entityId`, `schema`, `createdAt`,
-`detail` (or `detail.account_review`).
+`detail`.
 
 ## Fields to filter on
 
@@ -57,7 +57,7 @@ median views, interaction or engagement rate, badges, past partners, category, p
   `detail.account_review.runKey`.
 - Atlas holds no paid-partnership field: never project or filter on one. With an explicit
   `asProfileId`, the `partnershipAds` overlay and `partnership` filter (**Partnership content**)
-  show the brand's own; otherwise it is a gap.
+  show the brand's own (`partnershipAds` comes back whatever `fields` says); otherwise a gap.
 
 ## Names that do not exist
 

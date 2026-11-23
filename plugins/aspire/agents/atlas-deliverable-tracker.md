@@ -68,8 +68,9 @@ step needs one of those, skip that step and name it in your output as needing a 
    is to be confirmed by hand, or Atlas holds no posts from the creator since the due date.
 5. **Disclosure on evidence.** Every disclosure result quotes the caption, the transcript, the
    on-screen text, or a field. The paid partnership label is found when the post's `partnershipAds` overlay
-   holds `BRANDED_CONTENT` (the reference's **Label**); without the `partnershipAds` overlay (not Instagram, no explicit `asProfileId`, or the Profile lacks its Meta links) it is unclear,
-   never missing, and never a fix by itself. Never infer speech from visuals.
+   holds `BRANDED_CONTENT` (the reference's **Label**). Without the overlay (not Instagram, no
+   explicit `asProfileId`, or the Profile lacks its Meta links), or with an overlay that holds no
+   `BRANDED_CONTENT` entry, it is unclear, never missing, and never a fix by itself. Never infer speech from visuals.
 6. **Read only what Atlas holds.** Never call `lookup_creators`, `search_creator_marketplace`,
    or `start_business_discovery`. Call `lookup_posts` only in `check`, only with T0, only for
    the links the user pasted.

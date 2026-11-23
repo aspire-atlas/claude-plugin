@@ -188,7 +188,7 @@ up to 500. Project the fields of the "Program tracking" row of the required metr
 (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
 `instagram.permalink`, `text`, `instagram.mediaProductType`, and
 `instagram.account` (container).
-Stories count only when Atlas holds them. Say when the set is capped: the sums past 5,000 posts,
+Stories count only when Atlas holds them. Say when the set is capped: the sums and weekly counts past 5,000 posts,
 and the figures that read only the first 500 past 500 posts.
 
 The same filter once more with `limit: 0` and `aggs` `cardinality` on `author.username`, no
@@ -435,7 +435,7 @@ day, the newer `recordedAt` wins.
 | `offLine` | `{declined, noReply, dropped, paused}` |
 | `deliverables` | `{owed, onTime, postedLate, late, missing, needsFix, dueNext7, waived, expectedPosted, expectedNoPost, onTimeRate, disclosure: {found, missing, unclear, checked}}` |
 | `content` | `{assets, clearedForAds, clearedOrganic, expiring30, requested, wanted}` |
-| `performance` | `{posts, creatorsPosting, views, engagement, likesHidden, engagementRateMedian, liftMedian, liftJudged, capped}`; `capped` is `{sums, perPost}`: `sums` true when views and engagement stop at 5,000 posts, `perPost` true when engagement rate and lift read only the first 500 |
+| `performance` | `{posts, creatorsPosting, views, engagement, likesHidden, engagementRateMedian, liftMedian, liftJudged, capped}`; `capped` is `{sums, perPost}`: `sums` true when views, engagement and the weekly counts stop at 5,000 posts, `perPost` true when engagement rate and lift read only the first 500 |
 | `spend` | One entry per currency: `{currency, paid, owed, committed, productCost, spentAndCommitted, offersOut, overdue, basis, costPerEngagement}`; `committed` is the ledger's figure, `basis` is `ledger` or `deals` |
 | `sales` | One entry per currency: `{currency, revenue, orders, periods, partial, sourceLabel, roas}` |
 | `budget` | `{amount, currency, used}`, or null |

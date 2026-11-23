@@ -291,7 +291,7 @@ message; no other reads.
   positioning line as a whole, take the words creators use for the message (the topic's saved
   words, or the phrases from **Framing**) and read the brand's mention-set posts over step 8's
   period that carry them and those that do not (**Data method**, step 9). Both sides hold posts
-  with no paid label only, so they are one kind. Give each side's median engagement per 1,000 views (likes and
+  with no paid label, yet either may include paid posts; the method says so. Give each side's median engagement per 1,000 views (likes and
   comments, as this page counts it everywhere) and its post count, then one strength word:
 
   | Strength word | When | What the move becomes |
