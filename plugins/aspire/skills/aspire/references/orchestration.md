@@ -468,7 +468,8 @@ The only exceptions: the Orchestrator's hourly run acts on an Editor's Next acti
 its saved limits (**Orchestrator** **4**), `atlas-creator-discovery` may start discovery unattended
 under the campaign's saved cadence, `atlas-creator-vetting` may fetch and screen an applicant
 review's new applicants unattended under its saved screening schedule (**Applicant screening**,
-**Scheduled screening**), and an unattended run acts only on its setup's standing
+**Scheduled screening**), saving a brand-safety reject across the brand only marked unconfirmed and
+never superseding one (**Brand-wide brand-safety rejects**), and an unattended run acts only on its setup's standing
 approvals. Unattended runs confirm nothing; the rest waits for an interactive session.
 
 ## 8. Several questions at once

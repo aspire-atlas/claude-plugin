@@ -88,7 +88,11 @@ the category read of paid partners belongs to vetting.
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that
-   creator's card under "Notes".
+   creator's card under "Notes". A record whose body has a `profile:` line (a brand-safety reject
+   from an applicant review) applies only when it names this brand profile: hide that creator
+   whether or not a person confirmed the reject, and whether or not it is disputed; once lifted
+   (stance `note`), show the lift under "Notes". Another review's calls, and its other rejects,
+   are never read here (`references/creator-vetting.md`, **Creator calibrations**).
 4. Rebuild the pool: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
    wins. Count undecided against the pool target; that gap is this run's fill quota, lowered to
