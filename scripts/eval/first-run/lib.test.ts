@@ -119,7 +119,10 @@ const status = (profiles: unknown[], consumed = 12, extra: Record<string, unknow
 const LINKED = { profile: true, instagram: true, invited: false }
 const NO_RECORDS = JSON.stringify({ records: [] })
 /** A status reading with its calibrations read, as the probe makes it. */
-const read = (text: string, calibrations: string | null = NO_RECORDS) => withCalibrations(readStatus(text)!, calibrations === null ? null : [calibrations])
+/** One page of the probe's search_calibrations read, as the call it came from asked for it. */
+const call = (text: string, cursor?: string, input: Record<string, unknown> = {}) =>
+  ({ input: { asOrganizationId: 'org_test', limit: 100, ...(cursor ? { cursor } : {}), ...input }, text, error: false })
+const read = (text: string, calibrations: string | null = NO_RECORDS) => withCalibrations(readStatus(text)!, calibrations === null ? null : [call(calibrations)])
 
 test('get_status gives the starting state and the credits consumed', () => {
   const linked = readStatus(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }]))
@@ -154,8 +157,8 @@ test('get_status gives the starting state and the credits consumed', () => {
   expect(startProblems(LINKED, used)[0]).toContain('fresh organization')
   expect(startProblems(LINKED, read(status(ig), records(['insight', 'post:1'])))).toEqual([])
   // An invited organization holds the site's answers; only a last-run record stops it.
-  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, [records(['brand_fact', 'brand:summary'])]))).toEqual([])
-  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, [records(['insight', 'lastrun:readout'])]))[0]).toContain('repeat run')
+  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, [call(records(['brand_fact', 'brand:summary']))]))).toEqual([])
+  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, [call(records(['insight', 'lastrun:readout']))]))[0]).toContain('repeat run')
   // Calibrations that were not read leave the state unknown. With no Profile they cannot be read at all, so they
   // count as none and that scenario relies on a fresh organization.
   expect(startProblems(LINKED, read(status(ig), null))[0]).toContain('could not be read')
@@ -163,10 +166,18 @@ test('get_status gives the starting state and the credits consumed', () => {
   expect(read(status([]), null).brandRecords).toBe(0)
   // Every page counts, and a last page that says more follow leaves the records unknown.
   const page = (key: string, next?: string) => JSON.stringify({ records: [{ kind: 'insight', key }], ...(next ? { nextCursor: next } : {}) })
-  const paged = withCalibrations(readStatus(status(ig))!, [page('post:1', 'c1'), page('lastrun:readout')])
+  const base = readStatus(status(ig))!
+  const paged = withCalibrations(base, [call(page('post:1', 'c1')), call(page('lastrun:readout'), 'c1')])
   expect(paged.lastRuns).toBe(1)
-  expect(withCalibrations(readStatus(status(ig))!, [page('post:1', 'c1')]).brandRecords).toBeNull()
-  expect(withCalibrations(readStatus(status(ig))!, [page('post:1', 'c1'), 'not json']).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1', 'c1'))]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1', 'c1')), call('not json', 'c1')]).brandRecords).toBeNull()
+  // The pages must be one unbroken read: a skipped or repeated cursor, a narrowed search, another organization or a
+  // failed call leaves the records unknown, even when the last page says nothing follows.
+  expect(withCalibrations(base, [call(page('post:1', 'c1')), call(page('post:3'), 'c2')]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1'), 'c1')]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1'), undefined, { kinds: ['insight'] })]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [call(page('post:1'), undefined, { asOrganizationId: 'org_other' })]).brandRecords).toBeNull()
+  expect(withCalibrations(base, [{ ...call(page('post:1')), error: true }]).brandRecords).toBeNull()
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 13.456)))).toBe(3.46)
   // A new billing period between the readings: the run's credits are unknown, never negative.
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 2)))).toBeNull()

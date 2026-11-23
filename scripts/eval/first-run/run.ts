@@ -128,7 +128,10 @@ async function probe(session: Session, atlas: string, organization: string | und
   })
   const results = (tool: string) => turn.toolUses.filter(use => use.name === atlas + tool).map(use => turn.toolResults[use.id]?.text ?? '')
   const status = results('get_status').map(readStatus).filter((read): read is StatusRead => read !== null).at(-1) ?? null
-  return status ? withCalibrations(status, results('search_calibrations')) : null
+  const pages = turn.toolUses.filter(use => use.name === atlas + 'search_calibrations').map(use => ({
+    input: use.input, text: turn.toolResults[use.id]?.text ?? '', error: turn.toolResults[use.id]?.error ?? true,
+  }))
+  return status ? withCalibrations(status, pages) : null
 }
 
 async function runScenario(scenario: Scenario, config: Config, local: Local, session: Session, atlas: string, dir: string, options: Options): Promise<{ result: ScenarioResult; model: string | null }> {

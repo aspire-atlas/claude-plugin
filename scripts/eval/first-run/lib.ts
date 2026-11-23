@@ -58,26 +58,41 @@ export type StatusRead = {
 export const BRAND_CONTEXT_KINDS = ['brand_fact', 'user_fact', 'competitor', 'red_line', 'partner', 'decline']
 const STATE_KEYS = /^(lastrun:|theme:|fees:)/
 
+/** One `search_calibrations` call of the probe: what it was asked, and what came back. */
+export type CalibrationPage = { input: Record<string, any>; text: string; error: boolean }
+
+// Arguments that narrow the search: a page read with any of them is not the organization's whole record set.
+const NARROWING = ['q', 'kinds', 'keyPrefix', 'asProfileId', 'includeAspire', 'visibility']
+
 /**
  * The status reading with what `search_calibrations` returned for the organization added, from every page in order.
- * A page that cannot be read, or a last page that says more records follow, leaves the records unknown.
+ * The pages must be one unbroken read of the whole organization: the first with no cursor, each next one with the
+ * cursor the page before returned, all for the organization `get_status` read and with nothing narrowing them, and
+ * the last with no cursor left. A page that failed or does not parse, or any break in that chain, leaves the records
+ * unknown.
  */
-export function withCalibrations(status: StatusRead, pages: string[] | null): StatusRead {
+export function withCalibrations(status: StatusRead, pages: CalibrationPage[] | null): StatusRead {
   // Calibrations belong to the organization, but they are read through a brand Profile: with none, an earlier
   // run's records cannot be seen, and a scenario that starts with no Profile relies on a fresh organization.
   if (!pages?.length) return status.profiles === 0 ? { ...status, brandRecords: 0, lastRuns: 0 } : status
   const records: any[] = []
-  for (const [i, text] of pages.entries()) {
+  let expected: string | null = null
+  for (const page of pages) {
+    if (page.error) return status
     let parsed: any
     try {
-      parsed = JSON.parse(text)
+      parsed = JSON.parse(page.text)
     } catch {
       return status
     }
     if (!Array.isArray(parsed?.records)) return status
-    if (i === pages.length - 1 && typeof parsed.nextCursor === 'string' && parsed.nextCursor) return status
+    if ((page.input.cursor ?? null) !== expected) return status
+    if (!status.organizationId || page.input.asOrganizationId !== status.organizationId) return status
+    if (NARROWING.some(key => page.input[key] !== undefined)) return status
     records.push(...parsed.records)
+    expected = typeof parsed.nextCursor === 'string' && parsed.nextCursor ? parsed.nextCursor : null
   }
+  if (expected !== null) return status
   const key = (record: any) => String(record?.key ?? '')
   return {
     ...status,
