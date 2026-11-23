@@ -63,7 +63,7 @@ It reuses the checks of other flows rather than defining its own:
 | What | Defined in |
 | ---- | ---------- |
 | Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | **Content review**, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
-| The paid partnership label: found from the `partnershipAds` overlay where it is available; without the `partnershipAds` overlay (not Instagram, no explicit `asProfileId`, or the Profile lacks its Meta links) a gap, never "absent", which trackers treat as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
+| The paid partnership label: found from the `partnershipAds` overlay where it is available; without the `partnershipAds` overlay (not Instagram, no explicit `asProfileId`, or the Profile lacks its Meta links), or with an overlay that holds no `BRANDED_CONTENT` entry, a gap, never "absent", which trackers treat as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
 | Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | **Content review**, **Media**, Atlas analysis fields |
 | Templates, channels, voice, and what never goes in a draft | **Creator outreach**, **Channels** and **Templates**; **Influencer program** **5** |
 | The deal for each creator | **Influencer program**, **Who owns a deal**; **Creator negotiation**, **Records written** |
@@ -132,9 +132,11 @@ decision-audit line.
    one option per match, with the agent's description (the caption's first words and why it is
    unsure); more than four, the first four, then the rest in the next call. T5: one per open
    item, exactly as the agent worded it, the recommended answer first, then the alternatives
-   and "Decide later". Posts whose only unclear part is the paid partnership label come as one
-   multiSelect for the run ("Which of these posts carry it?"); only posts whose overlay is missing or
-   shows no `BRANDED_CONTENT` go in it, and an unseen label is never treated as missing. When T2 or T5 answers change a status, relaunch
+   and "Decide later". Posts whose only unclear part is the paid partnership label come as
+   multiSelect questions ("Which of these posts carry it?"), two to four posts per question, split
+   so none is left alone (five posts: three, then two); a single such post in the run is asked as a yes/no question instead ("Does @a's {format}
+   {date} carry it?"). Only posts whose overlay is missing or shows no `BRANDED_CONTENT` go in it,
+   and an unseen label is never treated as missing. When T2 or T5 answers change a status, relaunch
    `pass: propose` with them as `overrides` and relay the new counts.
 5. Then ask T1, T3 (only when there are drafts) and T4, at most four questions per call
    (SKILL.md **Guardrails**, Pickers).
@@ -313,8 +315,8 @@ Then the post's `disclosure`:
 | `unclear` | Anything else: words found only buried, only vague words, the label not seen (whether or not the words are found), or spoken or on-screen is required and there is no transcript |
 
 When the only unclear part is the label and the deal's words are found, the check line says
-"label: check on the post", and these posts go to the user as one T5 question for the run
-(**Your call**, Label not seen), not one per post.
+"label: check on the post", and these posts go to the user together as T5's label question
+(**Your call**, Label not seen), not one question per post.
 
 With no `disclosure` in the deal: paid and ambassador posts need a clear disclosure word or a
 label found by the marker; gifting needs `#gifted`, "gifted by", or a clear equivalent. Say on
@@ -359,7 +361,7 @@ Each is returned as a T5 question, recommended answer first:
 | ---- | -------- | ------- |
 | Format differs | "@a posted a {format} where the deal says {format}. Count it?" | Ask for the agreed format (Recommended); Count it as delivered; Decide later |
 | Disclosure unclear | "@a's post {why unclear}. Is the disclosure fine?" | Ask for a clear disclosure (Recommended); It's fine (I checked the post); Decide later |
-| Label not seen (multiSelect, one per run) | "Atlas can't see the paid partnership label on these posts. Which of them carry it? Pick the ones you checked." One option per post, "@a: {format} {date}" | Picked: label found, the post can be `posted`. Not picked: stays unclear, shown on the page as "label: check on the post"; never a fix request unless the user asks for one |
+| Label not seen (multiSelect, four posts per question; one post: a yes/no question) | "Atlas can't confirm the paid partnership label on these posts from the brand's Meta data. Which of them carry it? Pick the ones you checked." One option per post, "@a: {format} {date}" | Picked: label found, the post can be `posted`. Not picked: stays unclear, shown on the page as "label: check on the post"; never a fix request unless the user asks for one |
 | Confirm by hand | "Did @a post {deliverable}? Atlas doesn't hold Stories." | Not yet (Recommended); Yes, it went up; Waive it |
 
 "It's fine" and "Count it" set the row `posted` with `checks` noting the user's call.
