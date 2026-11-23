@@ -182,7 +182,7 @@ the alert. Prompt:
 ## Collecting assets
 
 Read only what Atlas holds. Never call `lookup_posts`, `lookup_creators`,
-`search_creator_marketplace`, `start_business_discovery`, or `add_hashtags`. Call
+`search_creator_marketplace`, `start_business_discovery`, or `add_hashtags`.
 Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 
 **Window.** Default the last 180 days, from the shell clock. On the first build for a scope (no

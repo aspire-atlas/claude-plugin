@@ -74,10 +74,9 @@ check.
    through every result and keep the `edit` and `close` findings: an edit stays open until a
    `close` names it, however old it is.
 5. **Get the post.**
-   - `published`: field paths from `atlas-search.md`, then `search_posts` filtered on the URL or
-     permalink field the census exposes, projecting `postedAt`, `text`, `url`, `mediaKind`,
-     `media` (container), `instagram` or `tiktok` containers, the metrics, and any
-     transcript or analysis fields the census lists. Nothing found: `lookup_posts` with one
+   - `published`: field paths from `atlas-search.md`, then `search_posts` filtered on `url`, projecting
+     `postedAt`, `text`, `url`, `mediaKind`, `media` (container), the metrics, and the analysis
+     fields `atlas-search.md` lists, with `analysis.transcript` and `analysis.overlayText`. Nothing found: `lookup_posts` with one
      item (`schema` = network, `entityKind` = `post`, `identifier` = the URL). On `fetching`,
      wait 30 seconds and re-call with the same item, up to 4 times; still fetching, return
      one line saying Atlas is still fetching the post, and stop. `unresolvable` on a TikTok

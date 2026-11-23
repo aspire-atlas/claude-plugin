@@ -193,7 +193,7 @@ line**. Both come from Atlas. Never invent a post, a quote, a number, or a claim
 network, the last 60 days (widen to 90 once when empty), newest first, limit 30, projecting
 `postedAt`, `url`, `instagram.permalink`, `text`, `mediaKind`, `instagram.mediaProductType`,
 the metrics, the partnership marker, `analysis.transcript`, `analysis.overlayText`, and
-`analysis.brandSafety` when the field census lists them. In this order, take the first that
+`analysis.brandSafety`. In this order, take the first that
 exists:
 
 1. A post that mentions or tags the brand ("you posted about us": a warm lead).

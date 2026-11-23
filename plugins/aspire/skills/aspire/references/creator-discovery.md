@@ -154,7 +154,7 @@ brand's own history is the stronger signal.
 
 | Tier | Who | How to find them |
 | ---- | --- | ---------------- |
-| 1 | Creators the brand has worked with | `search_posts` for posts whose text or `instagram.hashtags` mention the brand's handles, plus the brand's own posts that tag another account, keeping only those carrying a partnership marker the field census exposes (branded-content / paid-partnership). Union with every `partner` calibration. |
+| 1 | Creators the brand has worked with | `search_posts` for posts whose text or `instagram.hashtags` mention the brand's handles, plus the brand's own posts that tag another account, keeping only those carrying the partnership marker, when **Atlas search** lists one (today none: a gap). Union with every `partner` calibration. |
 | 2 | Creators who have posted about the brand | The same mention query, minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
 | 3 | Lookalikes of what's working | Creators who resemble the brand's best-performing creators, per **Lookalike seeds** below. |
 | 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
@@ -616,7 +616,7 @@ Everything above applies, with these changes:
   - Meta recommends: `detail.recommendationTypes` as chips in plain words ("High ad
     performance", "Most ads experience", "Similar brands"); left out when empty
 
-  Project the `instagram` container to read them, per **Creator brief**, **Atlas quirks**. A
+  Project the leaf paths above that are not card fields, per **Creator brief**, **Atlas quirks**. A
   figure Atlas does not hold shows "Not in Atlas", never a guess. Atlas gives no period for
   views or interactions, so never call them "30-day" or "lifetime". TikTok cards carry one
   plain line: "Hook rate is not available on TikTok."

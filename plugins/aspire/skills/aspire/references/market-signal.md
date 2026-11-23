@@ -125,7 +125,7 @@ setup is incomplete (**Scheduled (unattended) runs**).
 
 ## Data method
 
-Filter path unless noted, `context` on every call, only field paths from the census.
+Filter path unless noted, `context` on every call, field paths from **Atlas search**.
 
 1. **Window.** Default the most recent completed Monday to Sunday in the M5 timezone, from
    the shell clock (**Readouts**, **Resolving "today"**), whatever day the run starts on. That
@@ -148,13 +148,14 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    A block that gives the brand's own organic results from a connected account carries `data-own`
    (**Page standard**, section 8, **Paid label or none**).
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
-   variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
+   variant (`match_phrase`), or a handle is tagged or mentioned (the `nested` clause on `instagram.mentions` or
+   `tiktok.mentions` in **Atlas search**), or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
    window on `postedAt`. Page with the cursor, up to 500 hits per entity; say when a set is
    capped. `totalHits` gives the post count; `aggs` `cardinality` on `author.username` gives
    distinct creators. Engagement sums come from the paged hits (the `aggs` allowlist has no
    sums).
-4. **Paid label or none.** Split each set on the partnership marker the census exposes. A post
+4. **Paid label or none.** Split each set on the partnership marker, when **Atlas search** lists one (today none: a gap). A post
    without the marker has no paid label: it may still be paid, so never call it organic or
    unpaid. Share of voice is reported for posts with no paid label first, the paid-labelled posts
    beside it, never blended without saying so.

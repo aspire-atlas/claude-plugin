@@ -396,11 +396,10 @@ fetched during the run.
 
 ## Atlas quirks
 
-- `search_posts` returns `media.mediaUrl` and `media.thumbnailUrl` as null when projected as
-  leaf paths. Project the `media` container instead; the URLs are present.
-- Same for `instagram.account.profilePictureUrl` on posts: project `instagram.account`.
-- `search_creators` returns `instagram.profilePictureUrl` null as a leaf; project the
-  `instagram` container and exclude the three demographics blobs to keep the payload small.
+- `search_creators` returns the card fields (picture, badges, past partners, rate, median views)
+  on every hit, and `search_posts` returns `media` and the author's picture on every hit. Project
+  only the other fields a section shows, by the leaf paths in **Atlas search**; never a whole
+  network container.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
   full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in **Creator card**.
