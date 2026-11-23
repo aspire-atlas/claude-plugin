@@ -58,7 +58,7 @@ first. Work in that turn after value, such as an agent finishing its page, count
 | Column | What it holds |
 | ------ | ------------- |
 | Value | The value tool that answered first, or `no` |
-| Time to value | Minutes from the first message to that result. The harness answers pickers and types replies at once, so this is the flow's own time, not the person's |
+| Time to value | Minutes from the first message to that result, each turn timed from when its session is up. The harness answers pickers and types replies at once, so this is the flow's own time, not the person's |
 | Questions | Picker questions the harness answered before value, plus each turn that ended on a question asked in text. The organization picker is left out: a person in one organization never sees it |
 | Nudges | Replies the harness typed before value to a turn that ended without asking anything. A person might not have sent them |
 | Atlas calls | Atlas tool calls before value, the value call included |
@@ -81,10 +81,14 @@ Under the table: how many scenarios reached value, and the medians of those that
   the person's own facts and a last-run record, and calibrations belong to the organization, so deleting its Profile
   leaves them behind. With no Profile they cannot be read, so FR5's check cannot see them: give FR5 a fresh
   organization every time. The harness reads `get_status` and the organization's calibrations before each scenario and does
-  not run one whose organization is not the named one or is in the wrong state (a Profile or Instagram link missing
+  not run one whose organization is not the named one or is in the wrong state (not exactly one Profile where it needs one, a Profile or Instagram link missing
   or extra, invited or not, brand questions answered, programs or campaigns saved, or any brand context, own-fact,
   decline, theme, rate-card or last-run record; for FR6 and FR7, which are set up on the site, only a last-run
   record), saying why.
+- One Instagram account per linked scenario (FR1 to FR4 and FR6). Atlas links an account to one brand Profile across
+  every organization, so the scenarios cannot share one, and each fresh set of organizations needs the accounts
+  moved: unlink them from the used organizations by hand (the harness refuses `unlink_channel`) and link them again
+  through the browser sign-in, or the link comes back as already linked elsewhere.
 - A sign-in to the dev Atlas connector held by Claude Code, added with `--scope user`, or a token, exactly as the page
   eval needs it (`../README.md`, **What it needs**). The signed-in person must belong to every test organization.
 - `scripts/eval/first-run/local.json`, copied from `local.example.json`: the connector, and for each scenario its test
@@ -146,6 +150,11 @@ before and after, scenario by scenario, ready for the ticket. Other options: `--
 - Time to value is the flow's time with instant answers. A person reads and types, so their time is longer; compare
   runs with each other, not with real people's minutes.
 - One run per scenario and model is one sample. Run a scenario more than once before reading much into a small change.
+- The signed-in person belongs to every test organization, so each scenario goes through the organization picker
+  and the `get_status` call after it, which a person in one organization never sees. Questions leaves the picker out;
+  Atlas calls, Tool calls and Time to value include both.
+- A run without `--model` records the model the session reported. Pass `--model` anyway, so a change of the CLI's
+  default does not split a comparison.
 - Credits come from the organization's period total, so other work on the same organization during a run counts too,
   and discovery still running after `--settle-sec` is missed.
 - Value is defined by tool name only: a value tool that returned nothing useful still counts. Read the transcript when

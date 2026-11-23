@@ -43,7 +43,9 @@ const turns = () => [
 
 test('a first run writes what onboarding writes and refuses the rest of the Atlas writes', () => {
   expect(FIRST_RUN_REFUSED.every(tool => ATLAS_WRITES.includes(tool))).toBe(true)
+  // Two explicit lists: a write the contract adds is in neither, and this fails until it is placed.
   expect([...FIRST_RUN_WRITES, ...FIRST_RUN_REFUSED].sort()).toEqual([...ATLAS_WRITES].sort())
+  expect(FIRST_RUN_WRITES.filter(tool => FIRST_RUN_REFUSED.includes(tool))).toEqual([])
   expect(FIRST_RUN_WRITES).toContain('create_profile')
   expect(FIRST_RUN_REFUSED).toContain('delete_profile')
   // Linking needs a browser sign-in, so a scenario that needs a link starts with one.
@@ -89,6 +91,16 @@ test('a scenario that never reached value has no time or tokens to value and cou
   expect(m.nudgesToValue).toBe(1)
 })
 
+test("a turn's clock starts when its session is up, not when Claude Code was spawned", () => {
+  const turn = [
+    { type: TURN_START_EVENT, _t: 0 }, { type: 'system', subtype: 'init', _t: 5000 },
+    { ...use('v', PREFIX + 'search_creators'), _t: 6000 }, result('v', 8000), end(9000, 10),
+  ]
+  const m = measure([turn], VALUE, PREFIX)
+  expect(m.secondsToValue).toBe(3)
+  expect(m.seconds).toBe(4)
+})
+
 test('a turn that ends on a question in text counts it as a question, not a nudge', () => {
   const asking = [{ type: TURN_START_EVENT, _t: 0 }, end(1000, 10, 'Which brand should I set up?')]
   const m = measure([asking, turns()[1]], VALUE, PREFIX)
@@ -120,6 +132,7 @@ test('get_status gives the starting state and the credits consumed', () => {
   expect(startProblems(LINKED, read(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }])), 'Eval One')).toEqual([])
   expect(startProblems({ profile: false, instagram: false, invited: false }, read(status([{ channels: [{ network: 'instagram' }] }])))).toHaveLength(2)
   expect(startProblems(LINKED, read(status([])))).toHaveLength(2)
+  expect(startProblems(LINKED, read(status([{ channels: [{ network: 'instagram' }] }, { channels: [] }])))[0]).toContain('exactly one')
   expect(startProblems(LINKED, null)[0]).toContain('unknown')
   // The reading must be of the scenario's own organization.
   expect(startProblems(LINKED, read(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }])), 'Eval Two')[0]).toContain('another organization')

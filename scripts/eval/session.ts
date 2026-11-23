@@ -39,8 +39,9 @@ export type TurnOptions = {
 
 /**
  * Runs one turn and returns it as the transcript reader sees it. The handler answers a picker while the run
- * is still working toward its page. Once a page is published, or an agent has returned its result with a page
- * file, the next picker is the flow's offer of more work: the handler leaves it unanswered and ends the turn there.
+ * is still working toward what it came for: `isDone` when given, else its page. Once it has that (for a page, a
+ * published one, or an agent's result with a page file), the next picker is the flow's offer of more work: the
+ * handler leaves it unanswered and ends the turn there.
  */
 export async function runTurn(options: TurnOptions): Promise<Turn> {
   const events: Event[] = []
@@ -53,7 +54,8 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
   writeFileSync(`${options.out}.err`, '')
   if (options.stamp) record({ type: TURN_START_EVENT })
   let asks = 0
-  // Whether the run has its page. It is worked out from the transcript at a picker, and it stays true once it is.
+  // Whether the run has what it came for (its page, or `isDone` when given). It is worked out from the transcript at
+  // a picker, and it stays true once it is.
   let done = false
 
   const canUseTool = async (name: string, input: Record<string, unknown>, context: { toolUseID: string }): Promise<PermissionResult> => {

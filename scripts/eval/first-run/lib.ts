@@ -3,7 +3,7 @@
 // covers them without running Claude.
 
 import type { AnswerRule } from '../answers'
-import { ASK_TOOL, ATLAS_WRITES, TURN_START_EVENT, fill, summarizeTurn, type Event } from '../lib'
+import { ASK_TOOL, TURN_START_EVENT, fill, summarizeTurn, type Event } from '../lib'
 
 export const FIRST_RUN_HARNESS_VERSION = 1
 
@@ -15,7 +15,11 @@ export const FIRST_RUN_REFUSED = [
   'connect_channel', 'delete_profile', 'remove_hashtags', 'retract_calibration', 'send_feedback',
   'supersede_calibration', 'switch_billing_account', 'unlink_channel', 'update_profile',
 ]
-export const FIRST_RUN_WRITES = ATLAS_WRITES.filter(tool => !FIRST_RUN_REFUSED.includes(tool))
+// An explicit list, so a write the contract adds later is in neither list and lib.test.ts fails until someone
+// decides which one it belongs in.
+export const FIRST_RUN_WRITES = [
+  'add_hashtags', 'append_calibration', 'append_insights', 'create_profile', 'set_brand_instruction', 'start_business_discovery',
+]
 
 /**
  * What a scenario needs the test organization to hold before it starts. `invited` is the organization a person was
@@ -137,7 +141,11 @@ export function firstValue(turns: Event[][], valueTools: string[], prefix: strin
   return null
 }
 
-const startOf = (events: Event[]) => events.find(event => event.type === TURN_START_EVENT)?._t ?? events[0]?._t ?? null
+// A turn's clock starts when its session is up (the init line), not when the harness spawned Claude Code: each turn
+// is a new process, and a person's session does not restart between replies.
+const startOf = (events: Event[]) =>
+  events.find(event => event.type === 'system' && event.subtype === 'init' && typeof event._t === 'number')?._t ??
+  events.find(event => event.type === TURN_START_EVENT)?._t ?? events[0]?._t ?? null
 const endOf = (events: Event[]) => [...events].reverse().find(event => typeof event._t === 'number')?._t ?? null
 
 /**
@@ -297,6 +305,8 @@ export function startProblems(start: Start, status: StatusRead | null, organizat
     problems.push('an earlier run on this organization left a last-run record, so the flow would start a repeat run: use a fresh organization')
   }
   if (start.profile && status.profiles === 0) problems.push('it needs a brand Profile and the organization has none')
+  // With several Profiles the flow asks which one first, and the invited first turn does not apply.
+  if (start.profile && status.profiles > 1) problems.push(`it needs exactly one brand Profile and the organization has ${status.profiles}: use a fresh organization`)
   if (!start.profile && status.profiles > 0) problems.push(`it starts with no brand Profile and the organization has ${status.profiles}: use a fresh organization`)
   if (start.instagram && !status.instagram) problems.push('it needs a live Instagram link and the organization has none')
   if (!start.instagram && status.instagram) problems.push('it starts with no Instagram link and the organization has one: use another test organization')

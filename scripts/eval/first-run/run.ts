@@ -131,7 +131,7 @@ async function probe(session: Session, atlas: string, organization: string | und
   return status ? withCalibrations(status, results('search_calibrations').at(-1) ?? null) : null
 }
 
-async function runScenario(scenario: Scenario, config: Config, local: Local, session: Session, atlas: string, dir: string, options: Options): Promise<ScenarioResult> {
+async function runScenario(scenario: Scenario, config: Config, local: Local, session: Session, atlas: string, dir: string, options: Options): Promise<{ result: ScenarioResult; model: string | null }> {
   mkdirSync(dir, { recursive: true })
   const values = local.scenarios?.[scenario.code] ?? {}
   const base: ScenarioResult = { code: scenario.code, persona: scenario.persona, flow: scenario.flow, metrics: null, credits: null, problems: [] }
@@ -139,7 +139,7 @@ async function runScenario(scenario: Scenario, config: Config, local: Local, ses
   console.error(`  ${scenario.code}: reading the starting state`)
   const before = await probe(session, atlas, values.organization, join(dir, 'probe-before.jsonl'), options.probeModel)
   const problems = startProblems(scenario.start, before, values.organization)
-  if (problems.length) return { ...base, problems: problems.map(problem => `not run: ${problem}`) }
+  if (problems.length) return { result: { ...base, problems: problems.map(problem => `not run: ${problem}`) }, model: null }
 
   // The first message is the bare command a person sends, so the flow routes as it would for them. A person in more
   // than one organization picks theirs from the organization picker, which the first answer rule does.
@@ -148,6 +148,7 @@ async function runScenario(scenario: Scenario, config: Config, local: Local, ses
   let prompt = scenario.firstMessage
   let resume: string | null = null
   let asked = 0
+  let model: string | null = null
   const files: string[] = []
   for (let replies = 0; ; replies++) {
     console.error(`  ${scenario.code}: turn ${replies + 1}`)
@@ -158,6 +159,7 @@ async function runScenario(scenario: Scenario, config: Config, local: Local, ses
     })
     asked += turn.asks.filter(ask => ask.questions.some(question => question.answer !== null)).length
     resume = turn.sessionId ?? resume
+    model = turn.model ?? model
     if (isDone(parseStream(readFileSync(out, 'utf8')))) break
     const declined = turn.asks.find(ask => ask.declined)?.declined
     if (declined === 'limit') {
@@ -183,7 +185,7 @@ async function runScenario(scenario: Scenario, config: Config, local: Local, ses
   const credits = creditsUsed(before, after)
   if (before?.coveredByAspire || after?.coveredByAspire) base.problems.push('Credits not measured: the organization\'s usage is covered by Aspire, so its credit count leaves this work out')
   else if (credits === null) base.problems.push('Credits not measured: get_status gave no reading before and after, or a billing period started between them')
-  return { ...base, metrics, credits }
+  return { result: { ...base, metrics, credits }, model }
 }
 
 async function main() {
@@ -256,7 +258,11 @@ async function main() {
   try {
     for (const scenario of chosen) {
       console.error(`${scenario.code} · ${scenario.persona}`)
-      results.scenarios.push(await runScenario(scenario, config, local, session, atlas, join(runDir, scenario.code), options))
+      const { result, model } = await runScenario(scenario, config, local, session, atlas, join(runDir, scenario.code), options)
+      results.scenarios.push(result)
+      // The model the session reported, so a run without --model still records which one ran.
+      if (model && results.model === 'default') results.model = model
+      else if (model && !options.model && results.model !== model) result.problems.push(`Ran on ${model}, not ${results.model} like the scenarios before it`)
       writeFileSync(join(runDir, 'results.json'), JSON.stringify(results, null, 2) + '\n')
     }
   } finally {
