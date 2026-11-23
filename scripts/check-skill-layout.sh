@@ -51,7 +51,7 @@ aspire/references/cas-campaign-page.md|21724
 aspire/references/cas-campaign-page-brief.md|25587
 aspire/references/cas-campaign-page-creators.md|24061
 aspire/references/cas-campaign-page-results.md|27358
-aspire/references/creator-vetting.md|16197'
+aspire/references/creator-vetting.md|14707'
 FX=scripts/fixtures/skill-layout
 
 # Reference citations allowed besides SKILL.md and page-standard. Shrink-only: never add a line to

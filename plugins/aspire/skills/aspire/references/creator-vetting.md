@@ -7,6 +7,8 @@ state written to Atlas, and the page.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+**Reading the review Sheet**, **Applicant reviews**, and **Scheduled screening** are in **Applicant
+screening**.
 
 ## Contents
 
@@ -14,7 +16,6 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [Why the vetting agent exists](#why-the-vetting-agent-exists)
 - [Setup: define what fit means, once, for everyone](#setup-define-what-fit-means-once-for-everyone)
 - [Getting the list](#getting-the-list)
-- [Reading the review Sheet](#reading-the-review-sheet)
 - [Per-run questions](#per-run-questions)
 - [Main thread: the run](#main-thread-the-run)
 - [The checks](#the-checks)
@@ -23,7 +24,6 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [The feedback loop](#the-feedback-loop)
 - [State written to Atlas](#state-written-to-atlas)
 - [The page](#the-page)
-- [Applicant reviews](#applicant-reviews)
 - [Creator-ads lanes (CAS campaigns)](#creator-ads-lanes-cas-campaigns)
 - [Atlas quirks that apply here](#atlas-quirks-that-apply-here)
 
@@ -31,9 +31,10 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 
 Trigger when the user has a list of creators to decide on: a CSV export from Aspire, pasted
 handles, or "the creators in our Aspire program" ("vet these creators", "which of these should we
-approve", "screen these applicants"). Requires a brand profile. Interactive only: never schedule
-it; without `AskUserQuestion`, say vetting needs a person to supply the list and make the call,
-and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
+approve", "screen these applicants"). Requires a brand profile. Interactive only, except the
+**Scheduled screening** of an applicant review's new applicants: never schedule anything else, and
+without `AskUserQuestion` outside that, say vetting needs a person to supply the list and make the
+call, and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
 Before anything, read this file (**Setup**, **Getting the list**,
 **Per-run questions**, **Main thread: the run**, **The feedback loop**) and follow it.
 
@@ -62,6 +63,14 @@ visual check's last batch. F1 confirms its own write; notes are shown worded bef
 Supersedes and retractions are the main thread's, one Destructive tools confirmation each. Feedback
 outside a run: "Save this about @handle for future vetting and discovery?"
 
+### Scheduled screening of applicants
+
+A scheduled task screens an applicant review's new applicants, 100 at a time, with nobody present,
+under the standing approval **Applicant review**, **Scheduled screening setup** saves. An
+unattended run whose prompt names an applicant review goes straight to **Scheduled screening**; any
+other unattended vetting stops. It never asks: anything that needs a decision becomes a Maybe with
+its question.
+
 ## Why the vetting agent exists
 
 Creator discovery finds creators. Vetting starts from a list the team already has: applicants
@@ -73,9 +82,12 @@ own call. What the team says about a creator is saved as a calibration, so the n
 run, creator discovery, and every teammate start from it. The recommendations are saved as
 insights, so a creator vetted once is never vetted blind again.
 
-Vetting is interactive only. A person supplies the list and a person makes the final call.
-Never schedule it; if `AskUserQuestion` is unavailable, say in one line that vetting needs a
-person to supply the list and make the call, and stop. For one creator in depth, use
+Vetting is interactive. A person supplies the list and a person makes the final call. The one
+scheduled run is **Scheduled screening**, where the list is an applicant review's new applicants and
+the schedule a person saved approves the run; it recommends and records statuses, and the call
+still belongs to people. Never schedule any other vetting; outside it, if `AskUserQuestion` is
+unavailable, say in one line that vetting needs a person to supply the list and make the call, and
+stop. For one creator in depth, use
 **Creator profile** in SKILL.md; to find new creators, **Creator discovery**.
 
 ## Setup: define what fit means, once, for everyone
@@ -166,125 +178,6 @@ Normalizing, for every source:
   title, and `listName`.
 - Give the list a short name for the run and the page (the file name, the Aspire list name,
   the review Sheet's title, or "pasted list"), and a slug from it, lowercase and hyphenated.
-
-## Reading the review Sheet
-
-How vetting reads an applicant review's Sheet (**Applicant review**, The review Sheet) as source 4
-of **Getting the list**, and how the team's calls in it reach Atlas.
-
-**When it is offered.** Only when the profile has an applicant review whose
-`applicantreview:{slug}-sheet` record holds a link (`sheet: <link>`) and the Sheet has applicant
-rows. Before asking R1, the main thread reads the profile's active `applicantreview:*-sheet`
-records and opens each linked Sheet to check it has rows. With more than one such review, picking source 4 asks which, as **Applicant review** lists
-them. The review picked answers R2 with its applicant review option (criteria source
-`applicantreview:{slug}`), so R2 is not asked.
-
-**Reading it.** Through the Claude Docs connector, loading the connector's guide first. Use the
-columns **The review Sheet** writes, found by header, case-insensitive, and a Note column when the
-team added one. When the connector is not in the session or can't open the Sheet, say so in one
-line and offer sources 1 and 2; never ask the user to add a connector. Match rows on the Aspire
-applicant id, never on position, because people sort and filter the Sheet. Read each handle like a
-CSV's handle column and normalize it per **Getting the list**, so a row with both handles is
-vetted on each. A row's **account id** is fixed in step 2 of **Main thread: the run**, before any
-R3 fetch: the `entityId` of the newest `feedback` finding carrying the row's applicant id, when
-there is one, else its Instagram account's when Atlas holds it, else its TikTok account's; when
-Atlas holds neither, it is set after R3's fetch, Instagram first. Every list entry from the Sheet
-carries it. Every
-`feedback` finding for the row is written under it and every lookup below matches on it, so a call
-stays on one id even after Atlas starts holding the row's other account.
-
-**What each row becomes**, by its Team call, trimmed and with case ignored:
-
-- **Starts with Approve, Maybe, or Reject** ("Approved", "reject"): **decided**. The matched word,
-  lowercased (`approve`, `maybe`, or `reject`), is the row's **Sheet call**, and the row is not
-  vetted again.
-- **Blank**: undecided, so it goes on the list, unless Atlas holds a `feedback` finding carrying
-  the row's applicant id and the row is not reopened (below): the team decided this application
-  in F1, so it is not vetted again and its call stands. A call on the creator from another list
-  or campaign does not keep the row off the list.
-- **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
-  **Rows to fix**.
-- **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
-
-**Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
-calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet,
-Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that
-conflict with Atlas (below).
-
-**Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
-with the same Team call (as read under **What each row becomes**) count as one row; with different
-Team calls, they are duplicates. A creator (network and handle) with two or more rows is settled
-this way:
-
-- Its decided rows all hold the same Sheet call (one row or several): the creator is one decided
-  row with that call. Its applicant id is the one carried by the newest `feedback` finding that
-  carries any of these rows' ids, else the first of their ids in sort order, so a row added
-  later does not change the id a saved call is matched on. Its undecided rows are listed as duplicates and add nothing.
-- Its decided rows hold different calls, or it has no decided row: the creator is left for the
-  team to settle in the Sheet. It is not vetted, no call is offered or saved, and its rows go in
-  **Rows to fix** as "duplicate rows: decide in the Sheet". Each run reads the rows again, so once
-  the team fixes them, the rules above apply.
-
-Every list entry from the Sheet carries its row's applicant id, so an F1 answer on it records it. Decided
-rows go through **Check what Atlas holds** with the list, so each Sheet call has its account id.
-A decided row never goes on the list: it is not fetched, vetted, or counted in R3. When Atlas
-doesn't hold its creator, its call is not offered, and it is listed in **Rows to fix** as "not in
-Atlas yet: vet this creator from a CSV or pasted list (sources 1 or 2) to add them; the next Sheet
-run offers the call". A creator is either a list entry or a Sheet call in a run, never both, so it
-gets at most one `feedback` finding per run.
-
-**Which Sheet calls are new.** Take the newest `feedback` finding for the same creator (`entityId`)
-that carries the row's `applicantId`, from the Sheet or from F1 (**State written to Atlas**). A
-decided row's Sheet call is **new** only when it differs from both of that finding's values:
-
-- the current call: its `userVerdict`
-- the last Sheet value seen: its `sheetValue`, or none when it has no `sheetValue` (an F1 answer on
-  an undecided row)
-
-A call that matches either is not offered, so a call the team made since in F1 stands, and a call
-typed into the Sheet to match it is not asked again. With no such finding, the call is new.
-
-**A Sheet call that conflicts with Atlas.** A new Sheet call conflicts when that same finding's
-`userVerdict` was set outside the Sheet (it has no `sheetValue`, or its `userVerdict` differs from
-its `sheetValue`: an F1 answer) and the Sheet now holds a different call. An interactive run offers
-it in F1, naming the call Atlas holds, and the person decides. A run with nobody present never
-saves it: it is listed in **Rows to fix** as "conflicts with Atlas: {call} saved {date}; settle it
-in an interactive run", and the run reports it.
-
-**Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
-`feedback` finding for the creator, of any kind and from any list or run, is one that carries the
-row's `applicantId` and a `sheetValue`: the team took back in the Sheet a call saved from there
-(as it stood or changed in F1), and no newer call on the creator was saved since, in F1 or
-otherwise. It is vetted like any
-undecided row, and the team's F1 answer on it replaces the old call.
-
-**Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
-wait for the next run, and the next run offers them, since nothing was saved for them.
-
-**`sheet_calls`** go to the agent: for each new call offered this run, the handle, network,
-account id, applicant id, Sheet call, Note, and `agentVerdict` (**State written to Atlas**); for
-each reopened row, the handle, network, account id, and applicant id, marked reopened; and
-**Rows to fix**, for the page's What's missing. A decided row whose call is not new needs no
-entry: Atlas already holds a call for it. Only the first batch of a split list gets the new calls
-and Rows to fix, and offers the calls in F1; later batches get only the reopened rows.
-
-**F1 with Sheet calls.** F1's question adds "and save the {k} new calls from the review Sheet" and
-lists them numbered `s1`, `s2`, …, each as a call line with its note, naming any whose team's call
-(**Reading it back**) differs ("Atlas has Approve from {date}"). Options 1 and 2 save them too;
-option 3 saves none. In option 2 the user changes or drops one by its number ("reject s2, drop
-s3"); a dropped call is asked again on the next run. Each Note is the user's reason for its call,
-for F2 and F3.
-
-**When the list is empty** (every row decided in the Sheet or in Atlas, a duplicate, or skipped), after **Check what Atlas
-holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
-Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
-new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
-some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
-`vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
-`reviewPage` and no run summary, then give **Copy decisions**.
-
-**A call line** is `@handle (network): {call}`, with ` | {note}` after it in F1 and the feedback
-packet when the row has a Note.
 
 ## Per-run questions
 
@@ -379,7 +272,12 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    the list is a launch lineup). Skip R3 when Atlas holds every creator.
 3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
    back (screening)**, before the launch: any missing setup question asked first, and its pointers
-   resolved.
+   resolved. Then find the review's saved criteria map as **Scheduled screening**, step 1, does,
+   and leave out of the list every applicant whose newest `applicant_screening` record is a
+   scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
+   line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
+   This run writes no claims, so a scheduled run that starts while it is open can screen an
+   applicant it is screening too; the newer result then decides the applicant's status.
 3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
    for a review), still before the storyline draft, so its options come from the source the run
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
@@ -404,7 +302,8 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    100, and a run with a visual check in batches of 25, since each creator's frames take room in the
    agent's context; say how many and launch them one at a time, every batch with the same
    `visual_check`, and every batch after the first with the `fit_map` the first one returned
-   (**How criteria become points**).
+   (**How criteria become points**). A run on an applicant review passes the review's saved map,
+   when step 3b finds one, to every batch, the first included.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -505,7 +404,10 @@ review run's form answers speak to it. Neither changes a score.
 
 The map is the same for every creator in the run. A run in several batches builds it in the first
 batch and returns it in the `fit-map` output line; the main thread passes it unchanged to every
-later batch as `fit_map`, which the agent uses as given.
+later batch as `fit_map`, which the agent uses as given. A run on an applicant review, interactive
+or scheduled, reuses the map of the review's last run for every batch, the first included, until
+the criteria change, so applicants screened in different runs are scored alike: the main thread
+finds it as **Scheduled screening**, step 1, says, before the launch.
 
 **2. Each component's weight splits evenly across its criteria.** A component with n scored
 criteria gives each one its weight ÷ n. A criterion earns that share times its credit: **Met** 1,
@@ -960,7 +862,9 @@ F1 feedback findings, which F1 confirms. Instagram and TikTok only.
 | The team's call (F1) | `went_well` for approve, `needs_improvement` for reject, `action_item` `medium` for maybe | as the kind needs | `feedback` |
 | Run summary | `action_item` | `low` | `summary` |
 
-The run summary is anchored to the brand's own account on the first linked network and
+The run summary is anchored to the brand's own account on the first linked network, or, when the
+profile has no linked channel, to the account of the first creator on the list Atlas holds, so it
+is saved either way (with neither, the applicant statuses and the page are the record). It
 carries the list name and source, the counts per recommendation, the handles that could not
 be resolved or were not vetted, the visual check run (name, kind, and the count per result and
 confidence, with no counts for a check on a person's appearance, **What a visual check may look
@@ -994,7 +898,7 @@ gives one, `visualCheck` when the run had a visual check and it ran on the creat
 `confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
 (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
 comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
-`aspire-app`, `review-sheet`, or `cas-lane`), `campaign` when R2 named one, `applicantReview`
+`aspire-app`, `review-sheet`, `cas-lane`, or `schedule`), `campaign` when R2 named one, `applicantReview`
 when the criteria source is an applicant review (**Applicant reviews**), and with it
 `aspireApplicantId`, `formRules[]`, `responsesUsed[]`, and `priorityKeys` (**Applicant review**,
 **Applying the form rules**), `reviewPage`, and `recipient` (**Recipient lens**). A
@@ -1150,32 +1054,6 @@ thumbnails as that section says; a Seen still is never dropped. A card or table 
 still points to its post permalink, with the timestamp, instead. Load `artifact-design`, and
 `dataviz` for any chart, and apply `theme:brand` per **Theme**, **Applying the theme**. Approve,
 Maybe, and Reject keep their status colors under any theme.
-
-## Applicant reviews
-
-A campaign's applicants are screened against its applicant review: the setup saved once under
-`applicantreview:{slug}-*` (**Applicant review**, **The records**). The criteria source is
-`applicantreview:{slug}`. The main thread reads the review back per **Applicant review**,
-**Reading the setup back (screening)**, and passes it resolved in the launch. Neither asks V1 to
-V4, and the main thread asks no setup question of a complete review: a gap or a missing pointer is
-asked there, before the launch, and the agent asks none.
-
-**A campaign's applicants.** A list counts as a campaign's applicants when the user's ask says so
-(applicants, applications, or screening for a named campaign), or when the export carries an Aspire
-campaign id or applicant columns (form answers, an applied date). Nothing else does: without one of
-these, R2 keeps {brand}'s vetting criteria as option 1. The campaign is the one the ask names, or the
-one whose `-campaign` record carries the export's Aspire campaign id. When neither names one (an
-export with applicant columns and no campaign id), ask which campaign with **Applicant review**'s
-AR1 before R2. In this use its options are the profile's active reviews by campaign name (up to
-three, newest first; with none saved, AR1's own campaign options, up to three), then "Not for a
-campaign: use {brand}'s vetting criteria". The answer writes nothing: it only picks the campaign.
-Picking a review's campaign makes that review R2's first option; picking "Not for a campaign"
-means the list is not counted as a campaign's applicants.
-
-How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
-form rules, visual checks, the page, and what each finding records) is set out once, in
-**Applicant review**, **How screening applies a review**. Read it for every run whose criteria
-source is `applicantreview:{slug}`.
 
 ## Creator-ads lanes (CAS campaigns)
 

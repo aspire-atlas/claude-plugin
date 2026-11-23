@@ -159,7 +159,7 @@ where it matters, never as a standing reminder:
   not a question and never blocks a phase.
 - **Before a scheduled task is created.** With the question that approves it: a flow's own
   schedule confirmation (readouts, market signal, creator discovery, the orchestrator's hourly
-  task), or the setup answer that is the standing approval for the tasks a flow creates later
+  task, an applicant review's screening schedule), or the setup answer that is the standing approval for the tasks a flow creates later
   (the program's P9, the content library's P9, a CAS campaign's C6, the orchestrator's X6). The
   approving option names the setting, for example "Create it (Atlas tools are set to Always
   allow)", or "Create them (…)" for more than one task. Keep the flow's own decline option

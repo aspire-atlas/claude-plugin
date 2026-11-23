@@ -333,7 +333,8 @@ from a message that carries it (**11**).
   (`false` on a `draft` pass), or the flow's standing approval in an unattended run; `send` names
   each recipient, order, or payment approved one by one; `spend.cap` is the Credits answer (**2**):
   `null` only for "No cap", a CAS campaign's discovery, and an unattended discovery run under its
-  cadence, 0 for the none option and every launch that will not spend; `spend.unit`, `fetches` or
+  cadence, the list's handle count for a scheduled screening batch (its schedule stands in for
+  the Credits answer), 0 for the none option and every launch that will not spend; `spend.unit`, `fetches` or
   `candidates` from the Credits table, is set on every launch; `refresh` is `null` until a
   freshness refresh offer is answered, then the approved handles as `{network}:{handle}` (`[]` for
   "Use what Atlas holds"; **Page standard**, section 9.5). The flow's own inputs still name each
@@ -465,7 +466,9 @@ discovery and is not charged; only the new posts it collects use credits, as its
 
 The only exceptions: the Orchestrator's hourly run acts on an Editor's Next actions approval within
 its saved limits (**Orchestrator** **4**), `atlas-creator-discovery` may start discovery unattended
-under the campaign's saved cadence, and an unattended run acts only on its setup's standing
+under the campaign's saved cadence, `atlas-creator-vetting` may fetch and screen an applicant
+review's new applicants unattended under its saved screening schedule (**Applicant screening**,
+**Scheduled screening**), and an unattended run acts only on its setup's standing
 approvals. Unattended runs confirm nothing; the rest waits for an interactive session.
 
 ## 8. Several questions at once
