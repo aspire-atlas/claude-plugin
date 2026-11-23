@@ -152,7 +152,12 @@ across the brand profile.
 - **Reading them.** `search_insights` with a `term` filter on `detail.account_review.runKey` =
   `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
   first, paged to the end. Per applicant id (`aspireApplicantId`, or `applicantId` on a row saved
-  before the rename), the newest row is that applicant's **Team call**. A call saved in another
+  before the rename), the newest row is that applicant's **Team call**. Calls saved before Team
+  calls had their own `runKey` count too: also read `feedback` findings under the
+  `creator-vetting-{profile}` prefix whose `detailBody` has `applicantReview` the review's slug and
+  an applicant id, and take the newest row per applicant id across both reads. Rows are never
+  copied over: the next call saved for that applicant goes under `applicant-calls-{slug}` and wins
+  by being newer. A call saved in another
   review, list, or campaign is never this review's call: it does not keep an applicant off the list,
   show as its call, or count in **Copy decisions**.
 - **What it decides.** The Team call is the applicant's call in this review, whatever the
