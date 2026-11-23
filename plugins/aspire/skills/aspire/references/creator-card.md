@@ -486,8 +486,10 @@ for key, urls in items:
 ## Data: what fills each section
 
 Pull the account with `search_creators` (`terms` on `username`, `fields: ["username",
-"followersCount","verified","country","instagram","tiktok","youtube"]`, `exclude:
-["instagram.audienceDemographics","instagram.followerDemographics"]`). A hit is one person;
+"instagram.biography","instagram.creatorEngagedAccountsBreakdowns","tiktok.bioDescription",
+"tiktok.audienceGenders","tiktok.audienceAges","youtube.bioDescription",
+"youtube.youtubeTopicCategories"]`); the card's header, stats and picture fields come back on
+every hit without being listed. A hit is one person;
 `channels` holds one entry per network Atlas has linked for them. Pull the last 12 posts per
 channel with `search_posts` (`terms` on `author.username`, `exists mediaKind` to drop stories,
 sort `postedAt` desc) projecting the post fields of the "Creator picks or vetting" row of the

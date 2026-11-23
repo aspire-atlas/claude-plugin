@@ -190,9 +190,10 @@ up to 500. Project the fields of the "Program tracking" row of the required metr
 `instagram.account` (container).
 Stories count only when Atlas holds them. Say when the set is capped.
 
-The same filter with `aggs`: sums of `likeCount`, `commentCount`, `viewCount`; `cardinality` on
-`author.username`; `date_histogram` on `postedAt` by week. The totals come from the `aggs`, the
-cards and the baselines from the hits.
+The same filter once more with `limit: 0` and `aggs` `cardinality` on `author.username`, no
+cursor: `totalHits` is the post count and the `aggs` the distinct creators. `aggs` takes only
+`terms` and `cardinality`, so the sums of `likeCount`, `commentCount` and `viewCount`, the weekly
+counts, the cards and the baselines all come from the paged hits.
 
 **Each creator's own baseline.** For each creator with program posts, `search_posts` on their
 username for the 90 days before their first program post, program posts left out, limit 50.

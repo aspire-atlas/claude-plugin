@@ -17,7 +17,7 @@ linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and 
 (`interactive`, the default, or `unattended`), `onboarding: true` when the launch is the first
 insights at the end of onboarding, and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
-`context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `recipient-lens.md` before starting, and render for the primary lens per **Rendering for a
 lens**. A launch with `target_mode` `reuse`, or a `performance` or `creative` lens asking for hooks,
@@ -48,8 +48,8 @@ findings and pushes only, saying in the summary that nothing was saved.
    - `search_creators` filtered on the username field for follower count, verification, bio.
    - `search_posts` filtered on the author username field, sorted by posted date desc, limit 100,
      projecting text, like/comment counts, media type, posted date, and the network's product type field.
-   - One `aggs` call on the same filter: terms on media type or product type, and cardinality on distinct
-     posts, to size the sample.
+   - One `aggs` call on the same filter with `limit: 0` and no cursor: terms on media type or product
+     type. Its `totalHits` sizes the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
    line (never a `review:` or `applicantreview:` key; those are content review and one campaign's
