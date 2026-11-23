@@ -11,7 +11,7 @@ import { runTurn, startingSession, type TurnOptions } from '../session'
 import type { AnswerRule } from '../answers'
 import {
   FIRST_RUN_HARNESS_VERSION, FIRST_RUN_REFUSED, FIRST_RUN_WRITES, compareRuns, creditsUsed, forBaseline, measure, reachedValue,
-  readStatus, renderRun, startProblems, type FirstRunResults, type ScenarioResult, type Start, type StatusRead,
+  readStatus, renderRun, scenarioAnswers, startProblems, type FirstRunResults, type ScenarioResult, type Start, type StatusRead,
 } from './lib'
 
 const HERE = import.meta.dir
@@ -29,7 +29,8 @@ const USAGE = `bun run eval:first-run --label <before|after|name> [options]
   --baseline               Store the results under scripts/eval/first-run/baselines/<date>-<label>-<model>/
   --compare <a> <b>        Print before and after for two runs or baselines, and run nothing
   --max-rounds <n>         Replies the harness will type before it gives up on value (default: 6)
-  --max-asks <n>           Pickers the harness will answer in one scenario (default: 20)
+  --max-asks <n>           Pickers the harness will answer in one scenario (default: 30)
+  --settle-sec <n>         Seconds to wait after a scenario before reading the credits it used (default: 120)
   --timeout-min <n>        Minutes one turn may take (default: 30)
   --out <dir>              Keep the run in this folder instead of a new one under scripts/eval/first-run/.runs/
   --dry-run                Print what would run, and run nothing`
@@ -39,10 +40,12 @@ type Scenario = {
 }
 type Config = { version: string; valueTools: string[]; answers: AnswerRule[]; scenarios: Scenario[] }
 type ScenarioLocal = { organization?: string; brand?: string; website?: string; handle?: string; competitor?: string }
+const valuesOf = (local: ScenarioLocal) =>
+  Object.fromEntries(Object.entries(local).filter(([key, value]) => key !== 'organization' && typeof value === 'string')) as Record<string, string>
 type Local = { mcp?: { url: string; name?: string; tokenEnv?: string }; scenarios?: Record<string, ScenarioLocal> }
 type Options = {
   label: string | null; only: string[] | null; model: string | null; probeModel: string; baseline: boolean
-  compare: [string, string] | null; maxRounds: number; maxAsks: number; timeoutMin: number; out: string | null; dryRun: boolean
+  compare: [string, string] | null; maxRounds: number; maxAsks: number; settleSec: number; timeoutMin: number; out: string | null; dryRun: boolean
 }
 
 function fail(message: string): never {
@@ -53,7 +56,7 @@ function fail(message: string): never {
 function parseArgs(argv: string[]): Options {
   const options: Options = {
     label: null, only: null, model: null, probeModel: 'haiku', baseline: false, compare: null,
-    maxRounds: 6, maxAsks: 20, timeoutMin: 30, out: null, dryRun: false,
+    maxRounds: 6, maxAsks: 30, settleSec: 120, timeoutMin: 30, out: null, dryRun: false,
   }
   const value = (i: number, flag: string) => (argv[i] && !argv[i].startsWith('--') ? argv[i] : fail(`${flag} needs a value`))
   for (let i = 0; i < argv.length; i++) {
@@ -69,6 +72,7 @@ function parseArgs(argv: string[]): Options {
     else if (flag === '--compare') options.compare = [value(++i, flag), value(++i, flag)]
     else if (flag === '--max-rounds') options.maxRounds = Number(value(++i, flag))
     else if (flag === '--max-asks') options.maxAsks = Number(value(++i, flag))
+    else if (flag === '--settle-sec') options.settleSec = Number(value(++i, flag))
     else if (flag === '--timeout-min') options.timeoutMin = Number(value(++i, flag))
     else if (flag === '--out') options.out = resolve(value(++i, flag))
     else if (flag === '--dry-run') options.dryRun = true
@@ -76,6 +80,7 @@ function parseArgs(argv: string[]): Options {
   }
   if (!Number.isInteger(options.maxRounds) || options.maxRounds < 0) fail('--max-rounds takes a whole number')
   if (!Number.isInteger(options.maxAsks) || options.maxAsks < 0) fail('--max-asks takes a whole number')
+  if (!(options.settleSec >= 0)) fail('--settle-sec takes a number of seconds')
   if (!(options.timeoutMin > 0)) fail('--timeout-min takes a number of minutes')
   if (!options.compare && !options.dryRun && !options.label) fail('--label is required: say what the run measures, such as before or after')
   if (options.label && !/^[a-z0-9-]+$/i.test(options.label)) fail('--label takes letters, digits and hyphens')
@@ -129,14 +134,14 @@ async function runScenario(scenario: Scenario, config: Config, local: Local, ses
 
   console.error(`  ${scenario.code}: reading the starting state`)
   const before = await probe(session, atlas, values.organization, join(dir, 'probe-before.jsonl'), options.probeModel)
-  const problems = startProblems(scenario.start, before)
+  const problems = startProblems(scenario.start, before, values.organization)
   if (problems.length) return { ...base, problems: problems.map(problem => `not run: ${problem}`) }
 
-  // This scenario's own answers come before the shared list.
-  const answers = [...(scenario.answers ?? []), ...config.answers]
+  // The first message is the bare command a person sends, so the flow routes as it would for them. A person in more
+  // than one organization picks theirs from the organization picker, which the first answer rule does.
+  const answers = scenarioAnswers(scenario.answers ?? [], config.answers, valuesOf(values), values.organization)
   const isDone = (events: Parameters<typeof reachedValue>[0]) => reachedValue(events, config.valueTools, atlas)
-  const organization = values.organization ? ` Use the ${values.organization} organization.` : ''
-  let prompt = scenario.firstMessage + organization
+  let prompt = scenario.firstMessage
   let resume: string | null = null
   let asked = 0
   const files: string[] = []
@@ -163,14 +168,17 @@ async function runScenario(scenario: Scenario, config: Config, local: Local, ses
       base.problems.push(`No value after ${replies} typed replies`)
       break
     }
-    prompt = fill(scenario.reply, values as Record<string, string>)
+    prompt = fill(scenario.reply, valuesOf(values))
   }
   const metrics = measure(files.map(file => parseStream(readFileSync(file, 'utf8'))), config.valueTools, atlas)
 
-  console.error(`  ${scenario.code}: reading the credits used`)
+  // Discovery the run started records its usage when its workflows finish, after the last turn.
+  console.error(`  ${scenario.code}: waiting ${options.settleSec} s, then reading the credits used`)
+  await Bun.sleep(options.settleSec * 1000)
   const after = await probe(session, atlas, values.organization, join(dir, 'probe-after.jsonl'), options.probeModel)
   const credits = creditsUsed(before, after)
-  if (credits === null) base.problems.push('Credits not measured: get_status gave no reading before and after')
+  if (before?.coveredByAspire || after?.coveredByAspire) base.problems.push('Credits not measured: the organization\'s usage is covered by Aspire, so its credit count leaves this work out')
+  else if (credits === null) base.problems.push('Credits not measured: get_status gave no reading before and after, or a billing period started between them')
   return { ...base, metrics, credits }
 }
 
@@ -192,9 +200,10 @@ async function main() {
   if (options.dryRun) {
     for (const scenario of chosen) {
       const values = local.scenarios?.[scenario.code] ?? {}
-      console.log(`${scenario.code} · ${scenario.persona} · starts with ${scenario.start.profile ? 'a brand Profile' : 'no brand Profile'}, ${scenario.start.instagram ? 'Instagram linked' : 'no Instagram link'}`)
-      console.log(`  first message: ${scenario.firstMessage}${values.organization ? ` Use the ${values.organization} organization.` : ''}`)
-      console.log(`  typed reply: ${fill(scenario.reply, values as Record<string, string>)}`)
+      console.log(`${scenario.code} · ${scenario.persona} · starts ${scenario.start.invited ? 'invited, ' : ''}with ${scenario.start.profile ? 'a brand Profile' : 'no brand Profile'}, ${scenario.start.instagram ? 'Instagram linked' : 'no Instagram link'}`)
+      console.log(`  first message: ${scenario.firstMessage}`)
+      console.log(`  answers: ${scenarioAnswers(scenario.answers ?? [], config.answers, valuesOf(values), values.organization).map(rule => JSON.stringify(rule)).join(' ')}`)
+      console.log(`  typed reply: ${fill(scenario.reply, valuesOf(values))}`)
     }
     console.log(`plugin: ${PLUGIN} at ${commit()}`)
     console.log(`Atlas: ${local.mcp?.url ?? 'not set in local.json'} as "${connector}"; value is the first result of ${config.valueTools.join(', ')}`)

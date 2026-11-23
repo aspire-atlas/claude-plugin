@@ -2,25 +2,44 @@
 // the starting state it needs, and the tables. No process, network or file calls here, so `bun test scripts/eval`
 // covers them without running Claude.
 
-import { ASK_TOOL, ATLAS_WRITES, TURN_START_EVENT, summarizeTurn, type Event } from '../lib'
+import type { AnswerRule } from '../answers'
+import { ASK_TOOL, ATLAS_WRITES, TURN_START_EVENT, fill, summarizeTurn, type Event } from '../lib'
 
 export const FIRST_RUN_HARNESS_VERSION = 1
 
 // A first run makes the writes onboarding makes (a brand Profile, its calibrations, hashtags), so they are allowed.
-// What is refused: anything that removes or replaces a record, sends something to Aspire, moves billing, and
-// connect_channel, whose sign-in needs a browser a headless run does not have. A scenario that needs a linked
+// What is refused: anything that removes, renames or replaces a record, sends something to Aspire, moves billing,
+// and connect_channel, whose sign-in needs a browser a headless run does not have. A scenario that needs a linked
 // account starts from a test organization that already has one (`start`).
 export const FIRST_RUN_REFUSED = [
   'connect_channel', 'delete_profile', 'remove_hashtags', 'retract_calibration', 'send_feedback',
-  'supersede_calibration', 'switch_billing_account', 'unlink_channel',
+  'supersede_calibration', 'switch_billing_account', 'unlink_channel', 'update_profile',
 ]
 export const FIRST_RUN_WRITES = ATLAS_WRITES.filter(tool => !FIRST_RUN_REFUSED.includes(tool))
 
-/** What a scenario needs the test organization to hold before it starts. */
-export type Start = { profile: boolean; instagram: boolean }
+/**
+ * What a scenario needs the test organization to hold before it starts. `invited` is the organization a person was
+ * invited to and set up on atlas.aspire.io, which takes the invited first turn; any other organization must have
+ * no brand context yet, or the flow treats it as configured and skips the first run.
+ */
+export type Start = { profile: boolean; instagram: boolean; invited: boolean }
 
 /** What the harness reads from `get_status` before and after a scenario. */
-export type StatusRead = { organizationId: string | null; creditsConsumed: number | null; profiles: number; instagram: boolean }
+export type StatusRead = {
+  organizationId: string | null
+  organizationName: string | null
+  /** Credits counted this period, or null when the reading has none. */
+  creditsConsumed: number | null
+  /** The organization's usage is paid by Aspire, so `creditsConsumed` leaves this work out. */
+  coveredByAspire: boolean
+  profiles: number
+  instagram: boolean
+  invited: boolean
+  /** Core brand questions answered or declined. */
+  setupDone: number
+  /** Saved influencer programs and campaign briefs. */
+  savedWork: number
+}
 
 export type Metrics = {
   reachedValue: boolean
@@ -28,8 +47,14 @@ export type Metrics = {
   valueTool: string | null
   /** Wall-clock seconds from the first message to the first value result. Picker answers take no time here. */
   secondsToValue: number | null
-  /** Picker questions answered before the first value result, plus the replies typed to a turn that asked in text. */
+  /**
+   * Questions the flow asked before the first value result: each picker question the harness answered (the
+   * organization picker left out, since a person in one organization never sees it), plus each turn that ended
+   * on a question asked in text.
+   */
   questionsToValue: number
+  /** Replies the harness typed before value to a turn that ended without one: a nudge, which a person may not send. */
+  nudgesToValue: number
   /** Every tool call before the first value result, subagents' included. */
   toolCallsToValue: number
   /** Atlas tool calls before the first value result: what PostHog counts as calls before value. */
@@ -110,11 +135,16 @@ export function measure(turns: Event[][], valueTools: string[], prefix: string):
         if (block.type !== 'tool_use') continue
         toolCallsToValue += 1
         if (atlasTool(block.name, prefix)) atlasCallsToValue += 1
-        if (block.name === ASK_TOOL) pickerQuestions += Array.isArray(block.input?.questions) ? block.input.questions.length : 0
+        if (block.name !== ASK_TOOL) continue
+        const ask = summaries[turn].asks.find(candidate => candidate.id === block.id)
+        pickerQuestions += (ask?.questions ?? []).filter(question => question.answer !== null && question.header.toLowerCase() !== ORGANIZATION_HEADER).length
       }
     })
   })
-  const typedReplies = value ? value.turn : Math.max(0, turns.length - 1)
+  // Every turn before the value turn was followed by a typed reply. It counts as a question only when the turn
+  // ended on one; otherwise the turn had stopped and the reply was the harness's nudge.
+  const replied = summaries.slice(0, value ? value.turn : Math.max(0, turns.length - 1))
+  const textQuestions = replied.filter(summary => endsOnQuestion(summary.reply)).length
 
   let secondsToValue: number | null = null
   if (value) {
@@ -130,7 +160,8 @@ export function measure(turns: Event[][], valueTools: string[], prefix: string):
     reachedValue: value !== null,
     valueTool: value?.tool ?? null,
     secondsToValue: secondsToValue === null ? null : round(secondsToValue),
-    questionsToValue: pickerQuestions + typedReplies,
+    questionsToValue: pickerQuestions + textQuestions,
+    nudgesToValue: replied.length - textQuestions,
     toolCallsToValue,
     atlasCallsToValue,
     tokensToValue: value ? summaries.slice(0, value.turn + 1).reduce((sum, summary) => sum + summary.billedTokens, 0) : null,
@@ -145,7 +176,36 @@ export function measure(turns: Event[][], valueTools: string[], prefix: string):
   }
 }
 
+/** The header of the organization picker (organization-pick.md). */
+export const ORGANIZATION_HEADER = 'organization'
+
+/** Whether a turn's last reply ends on a question to the person. */
+export const endsOnQuestion = (reply: string) => /\?["'”’)\]]*\s*$/.test(reply.trim())
+
 const round = (value: number, places = 1) => Math.round(value * 10 ** places) / 10 ** places
+
+// ---------------------------------------------------------------- the answers
+
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * The answer list for one scenario: the organization picker first (the scenario's test organization, by name), then
+ * the scenario's own rules, then the shared ones. `{brand}`, `{competitor}` and the rest are filled from local.json:
+ * as typed in `text`, and as literal text in a `pick` pattern. A rule that still names a value local.json does not
+ * give is dropped, so a missing value falls through to the next rule rather than typing a placeholder.
+ */
+export function scenarioAnswers(own: AnswerRule[], shared: AnswerRule[], values: Record<string, string>, organization?: string): AnswerRule[] {
+  const escaped = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, escapeRegex(value)]))
+  const rules = [
+    ...(organization ? [{ header: 'Organization', pick: `^${escapeRegex(organization)}` }] : []),
+    ...[...own, ...shared].map(rule => ({
+      ...rule,
+      ...(rule.text !== undefined ? { text: fill(rule.text, values) } : {}),
+      ...(rule.pick !== undefined ? { pick: fill(rule.pick, escaped) } : {}),
+    })),
+  ]
+  return rules.filter(rule => !/\{[a-z]\w*\}/.test(`${rule.text ?? ''}${rule.pick ?? ''}`))
+}
 
 // ---------------------------------------------------------------- the starting state
 
@@ -159,9 +219,15 @@ export function readStatus(text: string): StatusRead | null {
   }
   if (!status || typeof status !== 'object' || !Array.isArray(status.profiles)) return null
   const consumed = status.credits?.thisPeriod?.consumed
+  const count = (value: unknown) => (Array.isArray(value) ? value.length : 0)
   return {
     organizationId: status.organizations?.selected?.id ?? status.credits?.organizationId ?? null,
+    organizationName: status.organizations?.selected?.name ?? status.firstRun?.organization?.name ?? null,
     creditsConsumed: typeof consumed === 'number' ? consumed : null,
+    coveredByAspire: status.credits?.coveredByAspire === true,
+    invited: status.firstRun?.organization?.invited === true,
+    setupDone: typeof status.setup?.done === 'number' ? status.setup.done : 0,
+    savedWork: count(status.work?.programs) + count(status.work?.campaigns),
     profiles: status.profiles.length,
     instagram: status.profiles.some((profile: any) =>
       (Array.isArray(profile?.channels) ? profile.channels : []).some((channel: any) =>
@@ -170,9 +236,18 @@ export function readStatus(text: string): StatusRead | null {
 }
 
 /** Why the test organization cannot start this scenario, or an empty list when it can. */
-export function startProblems(start: Start, status: StatusRead | null): string[] {
+export function startProblems(start: Start, status: StatusRead | null, organization?: string): string[] {
   if (!status) return ['get_status could not be read, so the starting state is unknown']
   const problems: string[] = []
+  if (organization && status.organizationName !== organization) {
+    return [`get_status read ${status.organizationName ? 'another organization' : 'no organization'}, not the scenario's test organization`]
+  }
+  if (start.invited && !status.invited) problems.push('it needs an organization the person was invited to, and this one is not')
+  if (!start.invited && status.invited) problems.push('it needs an organization the person was not invited to, and this one was: it would take the invited first turn')
+  // A run answers the brand questions and saves calibrations, so the next run on the same organization would see
+  // a configured organization and skip the first run.
+  if (!start.invited && status.setupDone > 0) problems.push(`it needs an organization with no brand questions answered, and this one has ${status.setupDone}: reset it`)
+  if (status.savedWork > 0) problems.push('it needs an organization with no saved programs or campaigns: reset it')
   if (start.profile && status.profiles === 0) problems.push('it needs a brand Profile and the organization has none')
   if (!start.profile && status.profiles > 0) problems.push(`it starts with no brand Profile and the organization has ${status.profiles}: delete them first`)
   if (start.instagram && !status.instagram) problems.push('it needs a live Instagram link and the organization has none')
@@ -180,8 +255,12 @@ export function startProblems(start: Start, status: StatusRead | null): string[]
   return problems
 }
 
-/** Credits the scenario used, from the readings before and after it. Null when either is missing. */
+/**
+ * Credits the scenario used, from the readings before and after it. Null when either is missing, or when the
+ * organization's usage is covered by Aspire, whose period count leaves that work out.
+ */
 export function creditsUsed(before: StatusRead | null, after: StatusRead | null): number | null {
+  if (before?.coveredByAspire || after?.coveredByAspire) return null
   if (before?.creditsConsumed == null || after?.creditsConsumed == null) return null
   // A new billing period between the two readings resets the count; that run's credits are unknown.
   const used = after.creditsConsumed - before.creditsConsumed
@@ -214,14 +293,14 @@ export type FirstRunResults = {
 const num = (value: number | null | undefined, unit = '') => (value === null || value === undefined ? '–' : `${value}${unit}`)
 const minutes = (seconds: number | null | undefined) => (seconds === null || seconds === undefined ? '–' : `${round(seconds / 60)} min`)
 
-const COLUMNS = ['Scenario', 'Value', 'Time to value', 'Questions', 'Atlas calls', 'Tool calls', 'Tokens to value', 'Credits', 'Atlas errors', 'Profile created']
+const COLUMNS = ['Scenario', 'Value', 'Time to value', 'Questions', 'Nudges', 'Atlas calls', 'Tool calls', 'Tokens to value', 'Credits', 'Atlas errors', 'Profile created']
 
 function row(scenario: ScenarioResult): string[] {
   const m = scenario.metrics
-  if (!m) return [`${scenario.code} ${scenario.persona}`, 'not run', '–', '–', '–', '–', '–', '–', '–', '–']
+  if (!m) return [`${scenario.code} ${scenario.persona}`, 'not run', ...COLUMNS.slice(2).map(() => '–')]
   return [
     `${scenario.code} ${scenario.persona}`, m.reachedValue ? (m.valueTool ?? 'yes') : 'no', minutes(m.secondsToValue),
-    String(m.questionsToValue), String(m.atlasCallsToValue), String(m.toolCallsToValue), num(m.tokensToValue), num(scenario.credits),
+    String(m.questionsToValue), String(m.nudgesToValue), String(m.atlasCallsToValue), String(m.toolCallsToValue), num(m.tokensToValue), num(scenario.credits),
     `${m.atlasErrors} of ${m.atlasCalls}`, m.createdProfile ? 'yes' : 'no',
   ]
 }

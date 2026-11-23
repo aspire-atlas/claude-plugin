@@ -20,8 +20,12 @@ organization in the right starting state.
 
 ## The scenarios
 
-`personas.json` holds them. Each names the person, the state the test organization must start in, the first message,
-the reply the person types when the flow asks in text, and how they answer the flow's pickers.
+`personas.json` holds them. Each names the person, the state the test organization must start in, the first message
+(the bare `/aspire:aspire` a person sends), how they answer the flow's pickers, and the reply typed when a turn ends
+without value or a picker. The flow asks almost everything through pickers, so the answers carry each person's role
+and choices: the relationship question gets their own role in words, so the flow routes them to their own reader, and
+the rest take the short road a person who says "go with your recommended options" takes (no optional questions, no
+lists to type, no account to connect).
 
 | Code | Person | Starts with |
 | ---- | ------ | ----------- |
@@ -35,8 +39,10 @@ the reply the person types when the flow asks in text, and how they answer the f
 
 FR6 and FR7 start where Continue in Claude leaves a person: the organization's setup on atlas.aspire.io is done
 (role, organization and brand, social connected or skipped), and the first message is a bare `/aspire`. Their test
-organizations are set up through the site, so they also hold the brand snapshot and the answers given there. FR1 to
-FR4 start from an organization whose Profile and Instagram link were made without the site's onboarding steps.
+organizations are ones the signed-in person was invited to and set up through the site, so they also hold the brand
+snapshot and the answers given there, and the flow takes its invited first turn. FR1 to FR5 need organizations the
+person was not invited to, with no brand questions answered, so the flow takes its first run rather than treating the
+organization as set up.
 
 ## What it measures
 
@@ -49,11 +55,12 @@ once it has value: the next picker is left unanswered and ends the run.
 | ------ | ------------- |
 | Value | The value tool that answered first, or `no` |
 | Time to value | Minutes from the first message to that result. The harness answers pickers and types replies at once, so this is the flow's own time, not the person's |
-| Questions | Picker questions answered before value, plus each reply typed to a turn that asked in text |
+| Questions | Picker questions the harness answered before value, plus each turn that ended on a question asked in text. The organization picker is left out: a person in one organization never sees it |
+| Nudges | Replies the harness typed before value to a turn that ended without asking anything. A person might not have sent them |
 | Atlas calls | Atlas tool calls before value, the value call included |
-| Tool calls | Every tool call before value, agents' included |
+| Tool calls | Every tool call before value, agents' and the value call included |
 | Tokens to value | Billed tokens of every turn up to the one that reached value. A turn is billed whole, so work after value in that turn counts too |
-| Credits | Credits the organization used over the scenario, from `get_status` before and after. Blank when either reading failed or a billing period started between them |
+| Credits | Credits the organization used over the scenario, from `get_status` before and after (after a wait, `--settle-sec`). Blank when either reading failed, a billing period started between them, or the organization's usage is covered by Aspire, whose count leaves the work out |
 | Atlas errors | Atlas results that came back as errors, out of every Atlas call |
 | Profile created | Whether the run created a brand Profile |
 
@@ -63,13 +70,17 @@ Under the table: how many scenarios reached value, and the medians of those that
 
 - `bun`, and the `claude` CLI signed in. The scenarios run through the Agent SDK, as the page eval's do
   (`../session.ts`), so the flow's pickers are there and answered.
-- One test organization per scenario on the dev Atlas server, in the scenario's starting state. Scenarios with the
-  same starting state can share one. The harness reads `get_status` before each scenario and does not run one whose
-  organization is in the wrong state, saying why.
+- One test organization per scenario on the dev Atlas server, in the scenario's starting state, billed to a customer
+  billing account (not covered by Aspire), or the credits column stays blank. Every run answers the brand questions
+  and saves calibrations, so an organization is in its starting state once only: reset it, or use a fresh one,
+  before the next run, whether that is the next model, the "after" run or another scenario. The harness reads
+  `get_status` before each scenario and does not run one whose organization is not the named one or is in the wrong
+  state (a Profile or Instagram link missing or extra, invited or not, brand questions answered, programs or
+  campaigns saved), saying why.
 - A sign-in to the dev Atlas connector held by Claude Code, added with `--scope user`, or a token, exactly as the page
   eval needs it (`../README.md`, **What it needs**). The signed-in person must belong to every test organization.
 - `scripts/eval/first-run/local.json`, copied from `local.example.json`: the connector, and for each scenario its test
-  organization's name and the brand, website, Instagram handle and competitor the typed reply names. It is ignored by
+  organization's name and the brand, website, Instagram handle and competitor its answers and typed reply name. It is ignored by
   git: brand names are customer details and this repository is public.
 
 ## Commands
@@ -85,27 +96,28 @@ bun run eval:first-run --dry-run                         # print what would run
 Run it once per model (Haiku, Sonnet and Opus). `--baseline` stores the results under
 `baselines/<date>-<label>-<model>/`. `--compare` takes two baselines or runs (`latest` for the newest run) and prints
 before and after, scenario by scenario, ready for the ticket. Other options: `--probe-model` (the model for the
-`get_status` readings, default Haiku), `--max-rounds`, `--max-asks`, `--timeout-min`, `--out`.
+`get_status` readings, default Haiku), `--settle-sec`, `--max-rounds`, `--max-asks`, `--timeout-min`, `--out`.
 
 ## What one scenario does
 
 1. **Reads the starting state.** A separate session on the probe model calls `get_status` for the scenario's
    organization and nothing else. Its time and tokens are not counted.
-2. **Sends the first message**, `/aspire:aspire` and the organization's name, as a new session with the plugin from
-   this checkout.
-3. **Answers what the flow asks.** Pickers are answered from the scenario's own `answers`, then the shared list, then
-   the option marked (Recommended), then the first option (`../answers.ts`). A turn that ends with no value and no
-   picker asked in text, and gets the scenario's typed reply. It stops at value, at `--max-rounds` replies, or at
-   `--max-asks` pickers.
-4. **Reads the credits used** with a second `get_status` reading.
+2. **Sends the first message**, a bare `/aspire:aspire`, as a new session with the plugin from this checkout.
+3. **Answers what the flow asks.** Pickers are answered from the answer list: the organization picker with the
+   scenario's organization, then the scenario's own `answers`, then the shared ones, then the option marked
+   (Recommended), then the first option (`../answers.ts`). `{brand}` and the other values in a rule come from
+   `local.json`, and a rule whose value is missing is passed over. When a turn ends with no value and no picker, the
+   harness types the scenario's reply. It stops at value, at `--max-rounds` replies, or at `--max-asks` pickers.
+4. **Reads the credits used** with a second `get_status` reading, `--settle-sec` seconds after the last turn, since
+   discovery the run started records its usage when it finishes.
 
 ## What a run may and may not do
 
 - It makes the writes a first run makes: a brand Profile, calibrations, insights, hashtags, the brand instruction and
-  business discovery. So a scenario that starts with no Profile leaves one behind: delete it before running that
-  scenario again, or the harness will not start it.
-- It refuses every Atlas tool that removes or replaces a record, sends feedback, or moves billing, and
-  `connect_channel`, whose sign-in needs a browser. `lib.test.ts` fails when the two lists stop covering every Atlas
+  business discovery. So every scenario leaves brand context behind, and FR5 a Profile too: reset the organization
+  before running on it again, or the harness will not start it.
+- It refuses every Atlas tool that removes, renames or replaces a record (`update_profile` included), sends feedback,
+  or moves billing, and `connect_channel`, whose sign-in needs a browser. `lib.test.ts` fails when the two lists stop covering every Atlas
   write.
 - It refuses the plugin's bundled connectors and every other connector on the machine, so it reaches the test
   connector only.
@@ -125,6 +137,7 @@ before and after, scenario by scenario, ready for the ticket. Other options: `--
 - Time to value is the flow's time with instant answers. A person reads and types, so their time is longer; compare
   runs with each other, not with real people's minutes.
 - One run per scenario and model is one sample. Run a scenario more than once before reading much into a small change.
-- Credits come from the organization's period total, so other work on the same organization during a run counts too.
+- Credits come from the organization's period total, so other work on the same organization during a run counts too,
+  and discovery still running after `--settle-sec` is missed.
 - Value is defined by tool name only: a value tool that returned nothing useful still counts. Read the transcript when
   a number looks too good.

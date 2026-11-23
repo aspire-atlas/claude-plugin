@@ -1,10 +1,11 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { ATLAS_READS, ATLAS_WRITES, TURN_START_EVENT, toolPrefix } from '../lib'
+import { answersFor } from '../answers'
+import { ANSWER_EVENT, ATLAS_READS, ATLAS_WRITES, TURN_START_EVENT, toolPrefix } from '../lib'
 import {
-  FIRST_RUN_REFUSED, FIRST_RUN_WRITES, compareRuns, creditsUsed, firstValue, forBaseline, measure, median, reachedValue,
-  readStatus, renderRun, startProblems, type FirstRunResults, type ScenarioResult,
+  FIRST_RUN_REFUSED, FIRST_RUN_WRITES, compareRuns, creditsUsed, endsOnQuestion, firstValue, forBaseline, measure, median, reachedValue,
+  readStatus, renderRun, scenarioAnswers, startProblems, type FirstRunResults, type ScenarioResult,
 } from './lib'
 
 const PREFIX = toolPrefix('Aspire_Atlas_Dev')
@@ -14,16 +15,20 @@ const use = (id: string, name: string, input: Record<string, unknown> = {}, pare
   ({ type: 'assistant', ...(parent ? { parent_tool_use_id: parent } : {}), message: { content: [{ type: 'tool_use', id, name, input }] } })
 const result = (id: string, t: number, error = false, text = '{}') =>
   ({ type: 'user', _t: t, message: { content: [{ type: 'tool_result', tool_use_id: id, content: text, is_error: error }] } })
-const end = (t: number, tokens: number) => ({ type: 'result', _t: t, session_id: 's', result: 'ok', is_error: false, total_cost_usd: 0.1, usage: { input_tokens: tokens } })
+const end = (t: number, tokens: number, reply = 'ok') => ({ type: 'result', _t: t, session_id: 's', result: reply, is_error: false, total_cost_usd: 0.1, usage: { input_tokens: tokens } })
+const answered = (id: string, ...questions: string[]) =>
+  ({ type: ANSWER_EVENT, tool_use_id: id, answers: Object.fromEntries(questions.map(question => [question, { answer: 'x', by: 'list' }])) })
 
-// Turn 1: get_status, a two-question picker, then the turn ends asking in text. Turn 2: create_profile, a failed
+// Turn 1: get_status, the organization picker, a picker with two questions of which the harness answered one, then
+// the turn ends without asking anything, so the reply that starts turn 2 is a nudge. Turn 2: create_profile, a failed
 // search, then a successful search from a subagent, then more work.
 const turns = () => [
   [
     { type: TURN_START_EVENT, _t: 0 },
     { ...use('a', PREFIX + 'get_status'), _t: 1000 }, result('a', 2000),
-    { ...use('q', 'AskUserQuestion', { questions: [{ question: 'Role?' }, { question: 'Goal?' }] }), _t: 3000 }, result('q', 4000),
-    end(10_000, 500),
+    { ...use('o', 'AskUserQuestion', { questions: [{ header: 'Organization', question: 'Which organization?' }] }), _t: 2500 }, answered('o', 'Which organization?'), result('o', 2600),
+    { ...use('q', 'AskUserQuestion', { questions: [{ question: 'Role?' }, { question: 'Goal?' }] }), _t: 3000 }, answered('q', 'Role?'), result('q', 4000),
+    end(10_000, 500, 'Setup is done. Say continue when you are ready.'),
   ],
   [
     { type: TURN_START_EVENT, _t: 100_000 },
@@ -60,10 +65,12 @@ test('a scenario measures time, questions, calls, tokens and errors up to value'
   expect(m.valueTool).toBe('search_creators')
   // All of turn 1 (10 s) plus 30 s into turn 2.
   expect(m.secondsToValue).toBe(40)
-  // Two picker questions, and one typed reply that started turn 2.
-  expect(m.questionsToValue).toBe(3)
-  // get_status, the picker, create_profile, the failed search, Task and the value search itself.
-  expect(m.toolCallsToValue).toBe(6)
+  // The one answered question; the organization picker and the unanswered question are left out.
+  expect(m.questionsToValue).toBe(1)
+  // Turn 1 ended on no question, so the reply that started turn 2 was a nudge.
+  expect(m.nudgesToValue).toBe(1)
+  // get_status, both pickers, create_profile, the failed search, Task and the value search itself.
+  expect(m.toolCallsToValue).toBe(7)
   expect(m.atlasCallsToValue).toBe(4)
   expect(m.tokensToValue).toBe(2500)
   expect(m.atlasCalls).toBe(5)
@@ -78,28 +85,58 @@ test('a scenario that never reached value has no time or tokens to value and cou
   expect(m.reachedValue).toBe(false)
   expect(m.secondsToValue).toBeNull()
   expect(m.tokensToValue).toBeNull()
-  expect(m.questionsToValue).toBe(5)
+  expect(m.questionsToValue).toBe(2)
+  expect(m.nudgesToValue).toBe(1)
 })
 
-const status = (profiles: unknown[], consumed = 12) => JSON.stringify({
-  organizations: { selected: { id: 'org_test' } }, profiles, credits: { organizationId: 'org_test', thisPeriod: { consumed } },
+test('a turn that ends on a question in text counts it as a question, not a nudge', () => {
+  const asking = [{ type: TURN_START_EVENT, _t: 0 }, end(1000, 10, 'Which brand should I set up?')]
+  const m = measure([asking, turns()[1]], VALUE, PREFIX)
+  expect(m.questionsToValue).toBe(1)
+  expect(m.nudgesToValue).toBe(0)
+  expect(endsOnQuestion('Want me to go ahead?)')).toBe(true)
+  expect(endsOnQuestion('Run /aspire:aspire when you are ready.')).toBe(false)
 })
+
+const status = (profiles: unknown[], consumed = 12, extra: Record<string, unknown> = {}) => JSON.stringify({
+  organizations: { selected: { id: 'org_test', name: 'Eval One' } }, profiles,
+  credits: { organizationId: 'org_test', coveredByAspire: false, thisPeriod: { consumed } }, setup: { done: 0, total: 7 },
+  work: { programs: [], campaigns: [] }, firstRun: { organization: { invited: false } }, ...extra,
+})
+const LINKED = { profile: true, instagram: true, invited: false }
 
 test('get_status gives the starting state and the credits consumed', () => {
   const linked = readStatus(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }]))
-  expect(linked).toEqual({ organizationId: 'org_test', creditsConsumed: 12, profiles: 1, instagram: true })
+  expect(linked).toEqual({
+    organizationId: 'org_test', organizationName: 'Eval One', creditsConsumed: 12, coveredByAspire: false, profiles: 1, instagram: true,
+    invited: false, setupDone: 0, savedWork: 0,
+  })
   expect(readStatus(status([{ channels: [{ network: 'instagram', authorization: 'expired' }] }]))?.instagram).toBe(false)
   expect(readStatus('Atlas is connected. You have one profile.')).toBeNull()
 
-  expect(startProblems({ profile: true, instagram: true }, linked)).toEqual([])
-  expect(startProblems({ profile: false, instagram: false }, linked)).toHaveLength(2)
-  expect(startProblems({ profile: true, instagram: true }, readStatus(status([])))).toHaveLength(2)
-  expect(startProblems({ profile: true, instagram: false }, null)[0]).toContain('unknown')
+  expect(startProblems(LINKED, linked, 'Eval One')).toEqual([])
+  expect(startProblems({ profile: false, instagram: false, invited: false }, linked)).toHaveLength(2)
+  expect(startProblems(LINKED, readStatus(status([])))).toHaveLength(2)
+  expect(startProblems(LINKED, null)[0]).toContain('unknown')
+  // The reading must be of the scenario's own organization.
+  expect(startProblems(LINKED, linked, 'Eval Two')[0]).toContain('another organization')
+  // A run leaves brand context behind; the next run on that organization would skip the first run.
+  const ig = [{ channels: [{ network: 'instagram' }] }]
+  expect(startProblems(LINKED, readStatus(status(ig, 0, { setup: { done: 3 } })))[0]).toContain('reset it')
+  expect(startProblems(LINKED, readStatus(status(ig, 0, { work: { programs: [{ name: 'p' }], campaigns: [] } })))[0]).toContain('saved programs')
+  // The invited first turn needs an invited organization, and only the invited scenarios may have one.
+  const invited = readStatus(status(ig, 0, { firstRun: { organization: { invited: true } }, setup: { done: 2 } }))
+  expect(startProblems({ ...LINKED, invited: true }, invited)).toEqual([])
+  expect(startProblems(LINKED, invited)[0]).toContain('invited first turn')
+  expect(startProblems({ ...LINKED, invited: true }, linked)[0]).toContain('invited to')
 
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 13.456)))).toBe(3.46)
   // A new billing period between the readings: the run's credits are unknown, never negative.
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 2)))).toBeNull()
   expect(creditsUsed(null, readStatus(status([], 2)))).toBeNull()
+  // Aspire pays for a covered organization, and its count leaves that work out: unknown, not zero.
+  const covered = { credits: { coveredByAspire: true, thisPeriod: { consumed: 5 } } }
+  expect(creditsUsed(readStatus(status([], 5, covered)), readStatus(status([], 5, covered)))).toBeNull()
 })
 
 const scenario = (code: string, minutes: number | null, questions: number): ScenarioResult => ({
@@ -124,6 +161,7 @@ test('the table shows each scenario and the medians of those that reached value'
 
 test('before and after compare scenario by scenario', () => {
   const text = compareRuns(run('before', [scenario('FR1', 9, 6)]), run('after', [scenario('FR1', 2, 2)]))
+  expect(renderRun(run('x', [scenario('FR1', 9, 6)]))).toContain('| 9 min | 6 | 1 |')
   expect(text).toContain('| FR1 | yes → yes | 9 min → 2 min (-7 min) | 6 → 2 (-4) |')
   expect(compareRuns(run('before', []), { ...run('after', []), model: 'opus' })).toContain('different models')
 })
@@ -146,4 +184,55 @@ test('every scenario names a starting state, a first message and a reply, and th
     expect(s.firstMessage.startsWith('/aspire')).toBe(true)
     expect(s.reply.length).toBeGreaterThan(20)
   }
+})
+
+test('answer rules are filled from local.json, and a rule naming a missing value is dropped', () => {
+  const rules = scenarioAnswers(
+    [{ question: 'competitors', text: '{competitor}' }], [{ question: 'competitors', pick: '^Not sure' }, { pick: '^{brand} only' }],
+    { brand: 'A+B (Co)' }, 'Eval One',
+  )
+  expect(rules[0]).toEqual({ header: 'Organization', pick: '^Eval One' })
+  expect(rules).toHaveLength(3)
+  expect(new RegExp(rules[2].pick!).test('A+B (Co) only')).toBe(true)
+  expect(rules.some(rule => rule.text === '{competitor}')).toBe(false)
+})
+
+// The option sets of the pickers a first run meets, as onboarding-questions.md and invited-first-turn.md word them.
+function onboardingPickers(): { question: string; options: string[] }[] {
+  const text = readFileSync(join(import.meta.dir, '../../../plugins/aspire/skills/aspire/references/onboarding-questions.md'), 'utf8')
+  // The extended set is asked only after "Yes, continue", which the answer list never picks.
+  const pickers: { question: string; options: string[] }[] = [
+    { question: 'Continue with 4 optional questions on cadence, voice, KPIs, and team?', options: ['Yes, continue', 'Finish setup now'] },
+  ]
+  for (const line of text.split('## Extended set')[0].split('\n')) {
+    const cells = line.split('|').map(cell => cell.trim())
+    const options = cells.find(cell => /^1\) /.test(cell))
+    const question = cells.find(cell => /\?/.test(cell) && !/^1\) /.test(cell))
+    if (!options || !question) continue
+    pickers.push({ question, options: options.split(/;\s*\d\)\s*/).map(option => option.replace(/^1\)\s*/, '').split(':')[0].trim()) })
+  }
+  return pickers
+}
+
+test('every scenario answers the onboarding pickers without typing nothing, connecting, or taking the long road', () => {
+  const config = JSON.parse(readFileSync(join(import.meta.dir, 'personas.json'), 'utf8'))
+  const pickers = onboardingPickers()
+  expect(pickers.length).toBeGreaterThanOrEqual(9)
+  const values = { brand: 'Brand', website: 'brand.example', handle: 'brand', competitor: 'rival' }
+  for (const scenario of config.scenarios) {
+    const rules = scenarioAnswers(scenario.answers ?? [], config.answers, values, 'Eval One')
+    for (const picker of pickers) {
+      const input = { questions: [{ header: '', question: picker.question, options: picker.options.map((label: string) => ({ label, description: '' })) }] }
+      const answer = answersFor(input, rules)[picker.question]?.answer ?? ''
+      // "I'll list them (type them)" with nothing typed brings a follow-up picker; Connect goes to a refused tool.
+      expect(`${scenario.code}: ${picker.question} -> ${answer}`).not.toMatch(/type them|Connect|Yes, continue|^\S+: .* -> Instagram/)
+    }
+    // The invited next step, without Instagram, leads with Connect Instagram: the invited scenarios pass it by.
+    const next = { questions: [{ header: 'Next step', question: 'What should we do next?', options: [
+      { label: 'Connect Instagram (Recommended)', description: '' }, { label: 'Find creators', description: '' }] }] }
+    if (scenario.flow === 'invited') expect(answersFor(next, rules)['What should we do next?'].answer).toBe('Find creators')
+  }
+  // Each persona names its own role, so the flow routes it to its own reader.
+  const relationship = (code: string) => config.scenarios.find((s: any) => s.code === code).answers.find((r: any) => r.question === 'relationship to')?.text
+  expect(new Set(['FR1', 'FR2', 'FR3', 'FR4'].map(relationship)).size).toBe(4)
 })

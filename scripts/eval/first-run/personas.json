@@ -2,77 +2,214 @@
   "version": "2026-11-23",
   "source": "ASP-4098: measure the first run before and after the quick first run redesign",
   "valueTools": [
-    "search_creators", "search_posts", "lookup_creators", "search_creator_marketplace",
-    "search_insights", "lookup_posts", "search_ads", "search_partnership_content"
+    "search_creators",
+    "search_posts",
+    "lookup_creators",
+    "search_creator_marketplace",
+    "search_insights",
+    "lookup_posts",
+    "search_ads",
+    "search_partnership_content"
   ],
   "answers": [
-    { "question": "relationship to", "pick": "^In-house" },
-    { "question": "\\bconnect", "text": "Not now. I'll connect social accounts later." }
+    {
+      "question": "Create a profile for",
+      "pick": "^Yes"
+    },
+    {
+      "question": "brand name|name of (the|your) brand|which brand",
+      "text": "{brand}"
+    },
+    {
+      "question": "Which social accounts",
+      "text": "None for now. I'll connect social accounts later."
+    },
+    {
+      "question": "optional questions",
+      "pick": "^Finish setup"
+    },
+    {
+      "question": "What best describes",
+      "pick": "^Consumer product"
+    },
+    {
+      "question": "Which competitors",
+      "text": "{competitor}"
+    },
+    {
+      "question": "Which competitors",
+      "pick": "^Not sure yet"
+    },
+    {
+      "question": "hard no",
+      "pick": "^Standard brand safety"
+    },
+    {
+      "question": "Which creators or partners",
+      "pick": "^None yet"
+    },
+    {
+      "question": "hashtags or product lines",
+      "pick": "^Use the brand name"
+    },
+    {
+      "question": "relationship to",
+      "pick": "^In-house"
+    }
   ],
   "scenarios": [
     {
       "code": "FR1",
       "persona": "Influencer manager",
       "flow": "claude",
-      "start": { "profile": true, "instagram": true },
+      "start": {
+        "profile": true,
+        "instagram": true,
+        "invited": false
+      },
       "firstMessage": "/aspire:aspire",
       "reply": "I run the influencer program at {brand} ({website}, Instagram @{handle}). I want creators for our next campaign. Go with your recommended options.",
-      "answers": [{ "question": "goal", "pick": "Creator discovery" }]
+      "answers": [
+        {
+          "question": "relationship to",
+          "text": "In-house. I run the influencer program."
+        },
+        {
+          "question": "goal",
+          "pick": "Creator discovery"
+        }
+      ]
     },
     {
       "code": "FR2",
       "persona": "Paid social manager",
       "flow": "claude",
-      "start": { "profile": true, "instagram": true },
+      "start": {
+        "profile": true,
+        "instagram": true,
+        "invited": false
+      },
       "firstMessage": "/aspire:aspire",
       "reply": "I manage paid social at {brand} ({website}, Instagram @{handle}). I want to know which creator posts we could run as ads. Go with your recommended options.",
-      "answers": [{ "question": "goal", "pick": "Campaign measurement" }]
+      "answers": [
+        {
+          "question": "relationship to",
+          "text": "In-house. I manage paid social and performance ads."
+        },
+        {
+          "question": "goal",
+          "pick": "Campaign measurement"
+        }
+      ]
     },
     {
       "code": "FR3",
       "persona": "Organic social manager",
       "flow": "claude",
-      "start": { "profile": true, "instagram": true },
+      "start": {
+        "profile": true,
+        "instagram": true,
+        "invited": false
+      },
       "firstMessage": "/aspire:aspire",
       "reply": "I run organic social at {brand} ({website}, Instagram @{handle}). I want to see how our Instagram is doing and what to post next. Go with your recommended options.",
-      "answers": [{ "question": "goal", "pick": "Brand awareness" }]
+      "answers": [
+        {
+          "question": "relationship to",
+          "text": "In-house. I run organic social and content."
+        },
+        {
+          "question": "goal",
+          "pick": "Brand awareness"
+        }
+      ]
     },
     {
       "code": "FR4",
       "persona": "Agency strategist",
       "flow": "claude",
-      "start": { "profile": true, "instagram": true },
+      "start": {
+        "profile": true,
+        "instagram": true,
+        "invited": false
+      },
       "firstMessage": "/aspire:aspire",
       "reply": "I'm a strategist at an agency that runs social for {brand} ({website}, Instagram @{handle}). I want to benchmark them against {competitor}. Go with your recommended options.",
       "answers": [
-        { "question": "relationship to", "pick": "^Agency" },
-        { "question": "goal", "pick": "Competitive tracking" }
+        {
+          "question": "relationship to",
+          "text": "Agency. I'm a strategist at the agency that runs their social."
+        },
+        {
+          "question": "goal",
+          "pick": "Competitive tracking"
+        }
       ]
     },
     {
       "code": "FR5",
       "persona": "Organic social manager with no linked account",
       "flow": "claude",
-      "start": { "profile": false, "instagram": false },
+      "start": {
+        "profile": false,
+        "instagram": false,
+        "invited": false
+      },
       "firstMessage": "/aspire:aspire",
       "reply": "I run organic social at {brand} ({website}). I'm not connecting our Instagram yet. I want to see what creators are posting about brands like ours, starting with {competitor}. Go with your recommended options.",
-      "answers": [{ "question": "goal", "pick": "Competitive tracking" }]
+      "answers": [
+        {
+          "question": "relationship to",
+          "text": "In-house. I run organic social and content."
+        },
+        {
+          "question": "goal",
+          "pick": "Competitive tracking"
+        }
+      ]
     },
     {
       "code": "FR6",
       "persona": "Invited user who connected Instagram on atlas.aspire.io",
       "flow": "invited",
-      "start": { "profile": true, "instagram": true },
+      "start": {
+        "profile": true,
+        "instagram": true,
+        "invited": true
+      },
       "firstMessage": "/aspire:aspire",
-      "reply": "I set up {brand} on the Atlas site and connected Instagram (@{handle}). Show me what you found and then find creators who fit us. Go with your recommended options."
+      "reply": "I set up {brand} on the Atlas site and connected Instagram (@{handle}). Show me what you found and then find creators who fit us. Go with your recommended options.",
+      "answers": [
+        {
+          "header": "Next step",
+          "pick": "creator"
+        }
+      ]
     },
     {
       "code": "FR7",
       "persona": "Invited user who skipped connecting on atlas.aspire.io",
       "flow": "invited",
-      "start": { "profile": true, "instagram": false },
+      "start": {
+        "profile": true,
+        "instagram": false,
+        "invited": true
+      },
       "firstMessage": "/aspire:aspire",
-      "reply": "I set up {brand} ({website}) on the Atlas site and skipped connecting social for now. Show me what you can and then find creators who fit us. Go with your recommended options."
+      "reply": "I set up {brand} ({website}) on the Atlas site and skipped connecting social for now. Show me what you can and then find creators who fit us. Go with your recommended options.",
+      "answers": [
+        {
+          "header": "Next step",
+          "pick": "creator"
+        },
+        {
+          "header": "Next step",
+          "pick": "^(?!Connect)"
+        },
+        {
+          "pick": "^Wait for the report"
+        }
+      ]
     }
   ]
 }
