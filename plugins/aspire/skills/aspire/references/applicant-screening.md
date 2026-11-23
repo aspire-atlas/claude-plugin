@@ -268,8 +268,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - `schedule_run`: `{run}`, for the keys in step 6;
    - `fit_map`: the map step 1 found, for every batch, the first included; with none, the first
      batch builds it and every later batch gets the one it returned;
-   - the R4 answer: Save; `visual_check`: none (a scheduled run runs no visual check, so its batches
-     stay at 100); `sheet_calls`: none; `recipient`: `team`;
+   - the R4 answer: Save; `visual_check`: none (a scheduled run runs no visual check, not even the
+     review's saved `-visuals` checks, so its batches stay at 100); `sheet_calls`: none; `recipient`: `team`;
    - every input **Main thread: the run**, step 4, gives a later batch of a split list, for the
      second batch on.
 6. **What the agent writes**, under `job: screen`:
@@ -307,11 +307,13 @@ Each batch's launch gets its own `runId` per **Running agents**.
    agent's packets: a packet that counts differently is named in the summary), the applicants still due (from the last step 3 read), the claims made that were
    not screened (claims this run kept but did not finish), `claimedElsewhere` (each applicant step 4
    dropped because an overlapping run claimed it first, with that run's id), the team calls saved and **Rows to fix** (step 2, or why the Sheet wasn't read),
-   the rows the Sheet writes updated (or why none were), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
+   the rows the Sheet writes updated (or why none were), `visualChecksNotRun` (the review's
+   saved visual checks by name, when it has any), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
    on {date}; scores before and after are on different maps"). With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
-   approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new."
+   approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new.{ Visual
+   checks not run: {names}.}" The last sentence is there only when the review has saved checks.
 
    A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
    no Sheet call saved, no Sheet row written) adds no summary: like a quiet review, it ends with

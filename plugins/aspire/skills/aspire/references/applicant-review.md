@@ -473,7 +473,8 @@ Each run fetches the Instagram and TikTok accounts Atlas doesn't hold yet or hol
 posts (a TikTok account costs one paid lookup), saves each applicant's recommendation and status and the team's new calls from
 the review Sheet to {brand}'s Atlas{, and writes the results to the review Sheet}, without asking
 each time. It never sends anything, never saves a creator note or a lesson, and never changes the
-review." Options: 1) Save and create it (Atlas tools are set to Always allow) (Recommended); 2) Not
+review.{ It runs none of the review's visual checks: run one from /aspire:aspire on the applicants
+it approves or marks maybe.}" The last sentence is there only when `-visuals` holds a check. Options: 1) Save and create it (Atlas tools are set to Always allow) (Recommended); 2) Not
 now. On option 1:
 
 1. Write `-schedule` with `append_calibration` (`provenance: "interview"`), its body from AR9 and
@@ -517,7 +518,7 @@ a missing pointer is asked per steps 3 and 4.
 5. **Unattended (scheduled screening).** Steps 1, 3, and 4 ask nothing. The review is the one the
    task's prompt names by its slug, and its `-schedule` record is the pick. A gap in the review, a
    missing `-schedule`, or a pointer to a record that no longer exists stops the run with "setup
-   needed: the {campaign} applicant review" and writes nothing (**Creator vetting**, **Scheduled
+   needed: the {campaign} applicant review" and writes nothing (**Applicant screening**, **Scheduled
    screening**, step 1).
 6. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
    slug, the campaign's name and `campaign key`, criteria, thresholds, the `reject:`
@@ -542,7 +543,7 @@ What changes against a `vetting` run in **Creator vetting**:
 | `vetting:criteria`, `vetting:thresholds`, `vetting:hard-rejects` | Not read; the review replaces them. Bought engagement and no recent posts are Flags, never rejects on their own |
 | Form answer rules and responses | Applied to every applicant per **Applying the form rules** below, whose step 3 table says what each rule does to the call; every response is read as evidence beside Atlas's own analysis |
 | Priority order | Within each recommendation, applicants are ordered by their priority keys once every call is made (**Applying the form rules**, **5. Priority**), not by fit score alone; the card numbers follow that order |
-| Visual checks | The review's saved checks feed R5 (**Creator vetting**, **4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **Creator vetting**'s **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing |
+| Visual checks | The review's saved checks feed R5 (**Creator vetting**, **4. Visual check**): R5 is still asked, with up to two of the review's `-visuals` checks as its options after "No visual check", the first marked (Recommended). A `named:` check runs as a named check with its saved definition; a `free:` check runs as a free-text check. One check per run, held to **Creator vetting**'s **What a visual check may look for**; it never changes a call. A saved check not run this time is listed under what is missing. A scheduled run runs none (**Applicant screening**, **Scheduled screening**, step 5) |
 | The page | Shows the campaign's name, the review's checks and form rules in words, and the Sheet link when the review holds one. Each card's `{DETAILS}` shows the applicant's form rule results and the responses that shaped the call; a rule not checked for an applicant (no record, or the form had no such question) is listed under what is missing |
 
 Everything else (brand safety and fit, competitor deals and disclosure, `vetting:safety-scope` and
