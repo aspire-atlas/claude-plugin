@@ -70,6 +70,9 @@
     {
       "header": "Audit",
       "pick": "^Not now"
+    },
+    {
+      "pick": "^Wait for the report"
     }
   ],
   "scenarios": [
@@ -86,7 +89,15 @@
       "reply": "I run the influencer program at {brand} ({website}, Instagram @{handle}). I want creators for our next campaign. Go with your recommended options.",
       "answers": [
         {
+          "header": "Role",
+          "pick": "^Influencer manager"
+        },
+        {
           "question": "relationship to",
+          "text": "In-house. I run the influencer program."
+        },
+        {
+          "header": "Relationship",
           "text": "In-house. I run the influencer program."
         },
         {
@@ -108,7 +119,15 @@
       "reply": "I manage paid social at {brand} ({website}, Instagram @{handle}). I want to know which creator posts we could run as ads. Go with your recommended options.",
       "answers": [
         {
+          "header": "Role",
+          "pick": "^Paid social manager"
+        },
+        {
           "question": "relationship to",
+          "text": "In-house. I manage paid social and performance ads."
+        },
+        {
+          "header": "Relationship",
           "text": "In-house. I manage paid social and performance ads."
         },
         {
@@ -130,7 +149,15 @@
       "reply": "I run organic social at {brand} ({website}, Instagram @{handle}). I want to see how our Instagram is doing and what to post next. Go with your recommended options.",
       "answers": [
         {
+          "header": "Role",
+          "pick": "^Organic social manager"
+        },
+        {
           "question": "relationship to",
+          "text": "In-house. I run organic social and content."
+        },
+        {
+          "header": "Relationship",
           "text": "In-house. I run organic social and content."
         },
         {
@@ -152,7 +179,15 @@
       "reply": "I'm a strategist at an agency that runs social for {brand} ({website}, Instagram @{handle}). I want to benchmark them against {competitor}. Go with your recommended options.",
       "answers": [
         {
+          "header": "Role",
+          "text": "Agency strategist running the brand's social"
+        },
+        {
           "question": "relationship to",
+          "text": "Agency. I'm a strategist at the agency that runs their social."
+        },
+        {
+          "header": "Relationship",
           "text": "Agency. I'm a strategist at the agency that runs their social."
         },
         {
@@ -174,7 +209,15 @@
       "reply": "I run organic social at {brand} ({website}). I'm not connecting our Instagram yet. I want to see what creators are posting about brands like ours, starting with {competitor}. Go with your recommended options.",
       "answers": [
         {
+          "header": "Role",
+          "pick": "^Organic social manager"
+        },
+        {
           "question": "relationship to",
+          "text": "In-house. I run organic social and content."
+        },
+        {
+          "header": "Relationship",
           "text": "In-house. I run organic social and content."
         },
         {
@@ -185,7 +228,7 @@
     },
     {
       "code": "FR6",
-      "persona": "Invited user who connected Instagram on atlas.aspire.io",
+      "persona": "Invited person who connected Instagram on atlas.aspire.io",
       "flow": "invited",
       "start": {
         "profile": true,
@@ -207,7 +250,7 @@
     },
     {
       "code": "FR7",
-      "persona": "Invited user who skipped connecting on atlas.aspire.io",
+      "persona": "Invited person who skipped connecting on atlas.aspire.io",
       "flow": "invited",
       "start": {
         "profile": true,
@@ -228,9 +271,6 @@
         {
           "header": "Next step",
           "pick": "^(?!Connect)"
-        },
-        {
-          "pick": "^Wait for the report"
         }
       ]
     }

@@ -125,7 +125,7 @@ test('get_status gives the starting state and the credits consumed', () => {
   expect(startProblems(LINKED, read(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }])), 'Eval Two')[0]).toContain('another organization')
   // A run leaves brand context behind; the next run on that organization would skip the first run.
   const ig = [{ channels: [{ network: 'instagram' }] }]
-  expect(startProblems(LINKED, read(status(ig, 0, { setup: { done: 3 } })))[0]).toContain('reset it')
+  expect(startProblems(LINKED, read(status(ig, 0, { setup: { done: 3 } })))[0]).toContain('fresh organization')
   expect(startProblems(LINKED, read(status(ig, 0, { work: { programs: [{ name: 'p' }], campaigns: [] } })))[0]).toContain('saved programs')
   // The invited first turn needs an invited organization, and only the invited scenarios may have one.
   const invited = read(status(ig, 0, { firstRun: { organization: { invited: true } }, setup: { done: 2 } }))
@@ -142,7 +142,8 @@ test('get_status gives the starting state and the credits consumed', () => {
   // An invited organization holds the site's answers; only a last-run record stops it.
   expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, records(['brand_fact', 'brand:summary'])))).toEqual([])
   expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, records(['insight', 'lastrun:readout'])))[0]).toContain('repeat run')
-  // Calibrations that were not read leave the state unknown; an organization with no Profile has none to read.
+  // Calibrations that were not read leave the state unknown. With no Profile they cannot be read at all, so they
+  // count as none and that scenario relies on a fresh organization.
   expect(startProblems(LINKED, read(status(ig), null))[0]).toContain('could not be read')
   expect(startProblems(LINKED, read(status(ig), 'not json'))[0]).toContain('could not be read')
   expect(read(status([]), null).brandRecords).toBe(0)
@@ -228,6 +229,8 @@ function onboardingPickers(): { question: string; options: string[] }[] {
     { question: 'Instagram is not connected yet. What next?', options: ['Try connecting again (Recommended)', 'Connect later'] },
     { question: "Put Atlas's pages in Brand's colors? It takes about two minutes.", options: ['Set it up now (Recommended)', 'Not now', "Don't ask again"] },
     { question: "Set Brand's creator rates? Fees on creator profiles will use them.", options: ['Set them up now (Recommended)', 'Later', "Don't ask again"] },
+    // invited-first-turn.md 6, while the report builds.
+    { question: 'What would you like to do meanwhile?', options: ['Answer the brand questions', 'Wait for the report'] },
   ]
   for (const line of text.split('## Extended set')[0].split('\n')) {
     const cells = line.split('|').map(cell => cell.trim())
@@ -250,7 +253,7 @@ test('every scenario answers the onboarding pickers without typing nothing, conn
       const input = { questions: [{ header: '', question: picker.question, options: picker.options.map((label: string) => ({ label, description: '' })) }] }
       const answer = answersFor(input, rules)[picker.question]?.answer ?? ''
       // "I'll list them (type them)" with nothing typed brings a follow-up picker; Connect goes to a refused tool.
-      expect(`${scenario.code}: ${picker.question} -> ${answer}`).not.toMatch(/type them| -> Try connecting|Yes, continue|Set (it|them) up now|Don't ask again| -> Instagram/)
+      expect(`${scenario.code}: ${picker.question} -> ${answer}`).not.toMatch(/type them| -> Try connecting|Yes, continue|Set (it|them) up now|Don't ask again| -> Instagram| -> Answer the brand questions/)
     }
     // The invited next step, without Instagram, leads with Connect Instagram: the invited scenarios pass it by.
     const next = { questions: [{ header: 'Next step', question: 'What should we do next?', options: [
@@ -258,7 +261,21 @@ test('every scenario answers the onboarding pickers without typing nothing, conn
       { label: 'Find creators who fit', description: '' }] }] }
     if (scenario.flow === 'invited') expect(answersFor(next, rules)['What should we do next?'].answer).toBe('Find creators who fit')
   }
-  // Each persona names its own role, so the flow routes it to its own reader.
-  const relationship = (code: string) => config.scenarios.find((s: any) => s.code === code).answers.find((r: any) => r.question === 'relationship to')?.text
-  expect(new Set(['FR1', 'FR2', 'FR3', 'FR4'].map(relationship)).size).toBe(4)
+  // Each persona names its own role, so the flow routes it to its own reader. The Role and Relationship pickers come
+  // with the Remember question on a first agent run (remember-answers.md).
+  const ask = (code: string, header: string, question: string, options: string[]) => {
+    const scenario = config.scenarios.find((s: any) => s.code === code)
+    const rules = scenarioAnswers(scenario.answers ?? [], config.answers, values, 'Eval One')
+    return answersFor({ questions: [{ header, question, options: options.map(label => ({ label, description: '' })) }] }, rules)[question]?.answer
+  }
+  const roles = ['Influencer manager', 'Paid social manager', 'Organic social manager']
+  expect(['FR1', 'FR2', 'FR3', 'FR4', 'FR5'].map(code => ask(code, 'Role', 'What is your role?', roles)))
+    .toEqual(['Influencer manager', 'Paid social manager', 'Organic social manager', "Agency strategist running the brand's social", 'Organic social manager'])
+  const relationships = ['In-house marketer or social lead', "Agency working on the brand's behalf", 'Founder or owner']
+  for (const code of ['FR1', 'FR2', 'FR3', 'FR4', 'FR5']) {
+    // Matched by header, whatever the question's wording.
+    expect(ask(code, 'Relationship', 'How do you work with Brand?', relationships)).toBe(ask(code, '', 'What is your relationship to Brand?', relationships))
+  }
+  expect(ask('FR4', 'Relationship', 'How do you work with Brand?', relationships)).toStartWith('Agency')
+  expect(new Set(['FR1', 'FR2', 'FR3', 'FR4'].map(code => ask(code, 'Relationship', 'x', relationships))).size).toBe(4)
 })

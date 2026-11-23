@@ -54,6 +54,8 @@ const STATE_KEYS = /^(lastrun:|theme:|fees:)/
 
 /** The status reading with what `search_calibrations` returned for the organization added. */
 export function withCalibrations(status: StatusRead, text: string | null): StatusRead {
+  // Calibrations belong to the organization, but they are read through a brand Profile: with none, an earlier
+  // run's records cannot be seen, and a scenario that starts with no Profile relies on a fresh organization.
   if (text === null) return status.profiles === 0 ? { ...status, brandRecords: 0, lastRuns: 0 } : status
   let records: any[]
   try {
@@ -285,8 +287,8 @@ export function startProblems(start: Start, status: StatusRead | null, organizat
   if (!start.invited && status.invited) problems.push('it needs an organization the person was not invited to, and this one was: it would take the invited first turn')
   // A run answers the brand questions and saves calibrations, so the next run on the same organization would see
   // a configured organization and skip the first run.
-  if (!start.invited && status.setupDone > 0) problems.push(`it needs an organization with no brand questions answered, and this one has ${status.setupDone}: reset it`)
-  if (status.savedWork > 0) problems.push('it needs an organization with no saved programs or campaigns: reset it')
+  if (!start.invited && status.setupDone > 0) problems.push(`it needs an organization with no brand questions answered, and this one has ${status.setupDone}: use a fresh organization`)
+  if (status.savedWork > 0) problems.push('it needs an organization with no saved programs or campaigns: use a fresh organization')
   if (status.brandRecords === null || status.lastRuns === null) {
     problems.push('its brand calibrations could not be read, so whether an earlier run left records behind is unknown')
   } else if (!start.invited && status.brandRecords > 0) {
@@ -295,7 +297,7 @@ export function startProblems(start: Start, status: StatusRead | null, organizat
     problems.push('an earlier run on this organization left a last-run record, so the flow would start a repeat run: use a fresh organization')
   }
   if (start.profile && status.profiles === 0) problems.push('it needs a brand Profile and the organization has none')
-  if (!start.profile && status.profiles > 0) problems.push(`it starts with no brand Profile and the organization has ${status.profiles}: delete them first`)
+  if (!start.profile && status.profiles > 0) problems.push(`it starts with no brand Profile and the organization has ${status.profiles}: use a fresh organization`)
   if (start.instagram && !status.instagram) problems.push('it needs a live Instagram link and the organization has none')
   if (!start.instagram && status.instagram) problems.push('it starts with no Instagram link and the organization has one: use another test organization')
   return problems

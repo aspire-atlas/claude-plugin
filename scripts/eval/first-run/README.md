@@ -25,8 +25,9 @@ organization in the right starting state.
 without value or a picker. The flow asks almost everything through pickers, so the answers carry each person's role
 and choices: the relationship question gets their own role in words, so the flow routes them to their own reader, and
 the rest take the short road a person who says "go with your recommended options" takes: no optional questions, no
-lists to type, no account to connect (and "Connect later" when the flow offers a retry), and "Not now" or "Later" to
-the theme, creator rates and audit offers. "Don't ask again" is never picked: it saves a record, which counts as brand
+lists to type, no account to connect (and "Connect later" when the flow offers a retry), "Wait for the report" while
+the invited brand report builds, and "Not now" or "Later" to the theme, creator rates and audit offers. The Role
+picker a first agent run asks gets the person's own role. "Don't ask again" is never picked: it saves a record, which counts as brand
 context on the next run.
 
 | Code | Person | Starts with |
@@ -75,10 +76,11 @@ Under the table: how many scenarios reached value, and the medians of those that
   (`../session.ts`), so the flow's pickers are there and answered.
 - One test organization per scenario on the dev Atlas server, in the scenario's starting state, billed to a customer
   billing account (not covered by Aspire), or the credits column stays blank. Every run answers the brand questions
-  and saves calibrations, so an organization is in its starting state once only: reset it, or use a fresh one,
-  before the next run, whether that is the next model, the "after" run or another scenario. Use a fresh organization
-  each time: a run also leaves the person's own facts and a last-run record, which retracting the brand answers
-  does not remove. The harness reads `get_status` and the organization's calibrations before each scenario and does
+  and saves calibrations, so an organization is in its starting state once only: use a fresh one for the next run,
+  whether that is the next model, the "after" run or another scenario. Resetting one is not enough: a run also leaves
+  the person's own facts and a last-run record, and calibrations belong to the organization, so deleting its Profile
+  leaves them behind. With no Profile they cannot be read, so FR5's check cannot see them: give FR5 a fresh
+  organization every time. The harness reads `get_status` and the organization's calibrations before each scenario and does
   not run one whose organization is not the named one or is in the wrong state (a Profile or Instagram link missing
   or extra, invited or not, brand questions answered, programs or campaigns saved, or any brand context, own-fact,
   decline, theme, rate-card or last-run record; for FR6 and FR7, which are set up on the site, only a last-run
@@ -121,8 +123,8 @@ before and after, scenario by scenario, ready for the ticket. Other options: `--
 ## What a run may and may not do
 
 - It makes the writes a first run makes: a brand Profile, calibrations, insights, hashtags, the brand instruction and
-  business discovery. So every scenario leaves brand context behind, and FR5 a Profile too: reset the organization
-  before running on it again, or the harness will not start it.
+  business discovery. So every scenario leaves brand context behind, and FR5 a Profile too: run the next one on a
+  fresh organization.
 - It refuses every Atlas tool that removes, renames or replaces a record (`update_profile` included), sends feedback,
   or moves billing, and `connect_channel`, whose sign-in needs a browser. `lib.test.ts` fails when the two lists stop covering every Atlas
   write.
