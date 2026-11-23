@@ -1,6 +1,6 @@
 # Atlas search: ids, fields and paging
 
-Read this before the first search. The live server accepted every field below. Read a
+Read this before the first search. The live server accepted every field here. Read a
 `list_*_search_fields` census only for a path neither this file nor the flow's reference names;
 never guess one.
 
@@ -10,8 +10,8 @@ never guess one.
   `list_my_organizations`, `list_my_profiles` or `create_profile` result, or the launch message.
   Never from memory, an earlier session or a summary.
 - `forbidden` or `not-found` on an id: call `list_my_profiles` once, match the brand by name, and
-  retry with the id it lists. No match, several, or the same id again: stop and say so (an
-  unattended run publishes the "setup needed" card). Never resend a refused id.
+  retry with the id it lists. No match, several, or the same id again: stop and say so (unattended:
+  the "setup needed" card). Never resend a refused id.
 
 ## Fields to ask for
 
@@ -56,8 +56,8 @@ median views, interaction or engagement rate, badges, past partners, category, p
 - Insights: `role`, `entityKind`, `entityId`, `createdAt`; a run's findings with `prefix` on
   `detail.account_review.runKey`.
 - Atlas holds no paid-partnership field: never project or filter on one. With an explicit
-  `asProfileId`, the `partnership` filter (**Partnership content**) finds the brand's own;
-  otherwise the flow names it a gap.
+  `asProfileId`, the `partnershipAds` overlay and `partnership` filter (**Partnership content**)
+  show the brand's own; otherwise it is a gap.
 
 ## Names that do not exist
 
@@ -69,7 +69,7 @@ median views, interaction or engagement rate, badges, past partners, category, p
 | `instagram.engagedAudienceDemographics` | `instagram.creatorEngagedAccountsBreakdowns` |
 | `embedding`, any `attribution.*` | Nothing: never readable |
 
-"Invalid projection" names the field: drop it and run the call once more.
+"Invalid projection" names the field: drop it and retry once.
 
 ## limit, aggs and cursor
 
@@ -80,8 +80,8 @@ median views, interaction or engagement rate, badges, past partners, category, p
   `search_creators` it counts channels, not creators. Distinct creators on posts:
   `aggs: {"creators": {"cardinality": {"field": "author.username"}}}` with `limit: 0`.
 - `cursor` is only the `nextCursor` of the previous page of the same call, unchanged. Re-send the
-  same `esFilter`, `queryText`, `sort`, `includeDeleted`, `asProfileId` and `partnership`, and
-  `fields` or `exclude` again. Any change starts over without a cursor. Never pass a link, page
-  text, an id or another call's cursor.
+  same `esFilter`, `queryText`, `sort`, `includeDeleted`, `asProfileId` and `partnership`; a change
+  to any starts over without a cursor. `fields` and `exclude` are sent on every page and may
+  change. Never pass a link, page text, an id or another call's cursor.
 - No `nextCursor` means the last page (with `queryText`, the top 1,000 or so). `invalid-input`
   about the cursor: start again from page one.

@@ -194,7 +194,7 @@ Filter path unless noted, `context` on every call, field paths from **Atlas sear
      each topic, two calls: one for posts and creators (`totalHits`, and `aggs` `cardinality` on
      `author.username`), and one with `viewCount` at or above the threshold (a `range` filter) for
      posts and creators at the threshold, plus `aggs` `terms` on `author.username` (size 2) for
-     how many of them the topic's top two creators made. The method says no post carries a paid label (Atlas holds no paid-partnership field);
+     how many of them the topic's top two creators made. The method says no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts;
      count each topic's program-tagged posts beside them.
    - **Gap.** List the other tools the posts read in step 6 name for the step after the brand's
      product (the build, the edit, the launch: whatever those posts say comes next), saved
@@ -381,7 +381,7 @@ when the page has no insights), built per **Where the brand wins, and how to sta
    gets one sentence of it, pointing here.
 2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
    ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
-   the network, the period, and that no post carries a paid label (Atlas holds no paid-partnership field). The
+   the network, the period, and that no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts. The
    concentrated-topic line goes under it.
 3. The win cards, then the gap card.
 4. How to stand apart: the moves, then the "So:" line.
@@ -390,7 +390,7 @@ The positioning decision goes in the page's decisions (3.5), the briefing and ga
 its next steps (3.6), each with its cost line, and a move that became a test in a test plan
 block (3.15) under the moves. The method gives each message test's two figures, its post counts,
 and the words that were matched. The method states the period, the threshold and why it was picked, the
-brand's rate, that no post carries a paid label (Atlas holds no paid-partnership field), the topics with too few
+brand's rate, that no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts, the topics with too few
 posts, and the
 posts left out for having no view count. The leadership
 page (**Leadership page (O3)**) leaves this section out.

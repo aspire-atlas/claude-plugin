@@ -63,7 +63,7 @@ It reuses the checks of other flows rather than defining its own:
 | What | Defined in |
 | ---- | ---------- |
 | Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | **Content review**, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
-| The paid partnership label is not held in Atlas: a gap, never "absent"; trackers treat it as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
+| The paid partnership label: found from the `partnershipAds` overlay where it is available; without the `partnershipAds` overlay (not Instagram, no explicit `asProfileId`, or the Profile lacks its Meta links) a gap, never "absent", which trackers treat as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
 | Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | **Content review**, **Media**, Atlas analysis fields |
 | Templates, channels, voice, and what never goes in a draft | **Creator outreach**, **Channels** and **Templates**; **Influencer program** **5** |
 | The deal for each creator | **Influencer program**, **Who owns a deal**; **Creator negotiation**, **Records written** |
@@ -133,8 +133,8 @@ decision-audit line.
    unsure); more than four, the first four, then the rest in the next call. T5: one per open
    item, exactly as the agent worded it, the recommended answer first, then the alternatives
    and "Decide later". Posts whose only unclear part is the paid partnership label come as one
-   multiSelect for the run ("Which of these posts carry it?"); Atlas can't see the label, so it
-   is never treated as missing. When T2 or T5 answers change a status, relaunch
+   multiSelect for the run ("Which of these posts carry it?"); only posts with no overlay to read
+   go in it, and an unseen label is never treated as missing. When T2 or T5 answers change a status, relaunch
    `pass: propose` with them as `overrides` and relay the new counts.
 5. Then ask T1, T3 (only when there are drafts) and T4, at most four questions per call
    (SKILL.md **Guardrails**, Pickers).
@@ -358,7 +358,7 @@ Each is returned as a T5 question, recommended answer first:
 | ---- | -------- | ------- |
 | Format differs | "@a posted a {format} where the deal says {format}. Count it?" | Ask for the agreed format (Recommended); Count it as delivered; Decide later |
 | Disclosure unclear | "@a's post {why unclear}. Is the disclosure fine?" | Ask for a clear disclosure (Recommended); It's fine (I checked the post); Decide later |
-| Label not seen (multiSelect, one per run) | "Atlas can't see the paid partnership label. Which of these posts carry it? Pick the ones you checked." One option per post, "@a: {format} {date}" | Picked: label found, the post can be `posted`. Not picked: stays unclear, shown on the page as "label: check on the post"; never a fix request unless the user asks for one |
+| Label not seen (multiSelect, one per run) | "Atlas can't see the paid partnership label on these posts. Which of them carry it? Pick the ones you checked." One option per post, "@a: {format} {date}" | Picked: label found, the post can be `posted`. Not picked: stays unclear, shown on the page as "label: check on the post"; never a fix request unless the user asks for one |
 | Confirm by hand | "Did @a post {deliverable}? Atlas doesn't hold Stories." | Not yet (Recommended); Yes, it went up; Waive it |
 
 "It's fine" and "Count it" set the row `posted` with `checks` noting the user's call.
@@ -569,8 +569,8 @@ actions); render for the primary `recipient` lens. Sections, in order:
     button, bracketed blanks highlighted, and a chip "In your {mailbox}" when a mailbox draft
     exists. Leave out in an unattended run.
 12. **Footer**: "posts and numbers come from Atlas as of {timestamp}", the grace days used, that
-    the paid partnership label is not held in Atlas, shows as unclear, and is checked on the
-    post itself, that
+    a paid partnership label Atlas could not read from the brand's Meta partnership data shows
+    as unclear and is checked on the post itself, that
     Stories show only when Atlas holds them, and that images are a snapshot. Then the footnote with
     the team audience line (**Artifact standard**).
 
@@ -584,7 +584,7 @@ address, or a street address. More than 12 creators: the headline and section 7 
 - Send a message, or create a mailbox draft without T4. Never a draft in an unattended run.
 - Force a match, count an open match as posted, or mark a row missing inside its grace days,
   while a match is open, or while Atlas holds no posts from the creator since the due date.
-- Call the paid partnership label absent because Atlas does not hold it.
+- Call the paid partnership label absent because Atlas could not read it.
 - Waive a deliverable, or propose a waiver as the default.
 - Fetch a post the user did not paste, fetch anything in an unattended run, or start discovery
   (`lookup_creators`, `search_creator_marketplace`, `start_business_discovery`).

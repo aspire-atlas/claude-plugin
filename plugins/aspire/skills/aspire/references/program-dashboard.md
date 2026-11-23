@@ -188,14 +188,18 @@ up to 500. Project the fields of the "Program tracking" row of the required metr
 (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
 `instagram.permalink`, `text`, `instagram.mediaProductType`, and
 `instagram.account` (container).
-Stories count only when Atlas holds them. Say when the set is capped.
+Stories count only when Atlas holds them. Say when the set is capped: the sums past 5,000 posts,
+and the figures that read only the first 500 past 500 posts.
 
 The same filter once more with `limit: 0` and `aggs` `cardinality` on `author.username`, no
 cursor: `totalHits` is the post count and the `aggs` the distinct creators. `aggs` takes only
 `terms` and `cardinality`, so the sums of `likeCount`, `commentCount` and `viewCount` and the
-weekly counts come from every post in the set: when it holds more than 500, page the same filter
-to the end with only those three fields, `postedAt`, and `exclude: ["media", "instagram.account",
-"tiktok.account", "youtube.account"]`. The cards and the baselines come from the first 500.
+weekly counts are added up from the hits. When the set holds more than 500 posts, keep paging the
+first call's cursor past 500, up to 5,000 posts, sending only those three fields and `postedAt`
+with `exclude: ["media", "instagram.account", "tiktok.account", "youtube.account"]` (the cursor
+allows a new projection), and add each page to the sums: every post is counted once. Engagement
+rate, lift, **By type** and **Top posts** read only the first 500, because they need the authors
+and follower counts that the lighter pages leave out.
 
 **Each creator's own baseline.** For each creator with program posts, `search_posts` on their
 username for the 90 days before their first program post, program posts left out, limit 50.
@@ -431,7 +435,7 @@ day, the newer `recordedAt` wins.
 | `offLine` | `{declined, noReply, dropped, paused}` |
 | `deliverables` | `{owed, onTime, postedLate, late, missing, needsFix, dueNext7, waived, expectedPosted, expectedNoPost, onTimeRate, disclosure: {found, missing, unclear, checked}}` |
 | `content` | `{assets, clearedForAds, clearedOrganic, expiring30, requested, wanted}` |
-| `performance` | `{posts, creatorsPosting, views, engagement, likesHidden, engagementRateMedian, liftMedian, liftJudged, capped}` |
+| `performance` | `{posts, creatorsPosting, views, engagement, likesHidden, engagementRateMedian, liftMedian, liftJudged, capped}`; `capped` is `{sums, perPost}`: `sums` true when views and engagement stop at 5,000 posts, `perPost` true when engagement rate and lift read only the first 500 |
 | `spend` | One entry per currency: `{currency, paid, owed, committed, productCost, spentAndCommitted, offersOut, overdue, basis, costPerEngagement}`; `committed` is the ledger's figure, `basis` is `ledger` or `deals` |
 | `sales` | One entry per currency: `{currency, revenue, orders, periods, partial, sourceLabel, roas}` |
 | `budget` | `{amount, currency, used}`, or null |
