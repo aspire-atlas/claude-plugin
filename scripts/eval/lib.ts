@@ -222,6 +222,9 @@ export const ASK_TOOL = 'AskUserQuestion'
 /** The type of the line the harness adds to a turn's transcript for each picker it answers or declines. */
 export const ANSWER_EVENT = 'eval_answer'
 
+/** The type of the first line of a stamped turn's transcript (session.ts), carrying when the turn started. */
+export const TURN_START_EVENT = 'eval_turn_start'
+
 const str = (value: unknown) => (typeof value === 'string' ? value : '')
 
 export function askedQuestions(input: Record<string, any> | undefined): Asked[] {
