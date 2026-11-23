@@ -37,9 +37,9 @@ findings, delivery, and the unattended rules. Follow them exactly.
    with `forceRefresh: true` and then the re-reads without it, when
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.5 calls for it and 9.6
    says how. It starts no discovery.
-4. **A paid label is kept apart.** Keep partnership-marked posts apart from posts with no paid
-   label in every share of voice figure. A post with no paid label may still be paid: never call
-   it organic or unpaid.
+4. **No paid label is assumed.** Atlas holds no paid-partnership field, so every post in a set has
+   no paid label, and the method says so. Such a post may still be paid: never call it organic or
+   unpaid.
 5. **Writes need approval.** Interactive runs write findings only when the launch says the user
    chose to save them; on "Page only", publish and say nothing was saved. Unattended runs write
    on the standing approval given at setup (**Findings** in the reference).
@@ -61,7 +61,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 5. Take field paths from `atlas-search.md`, with tone at `analysis.emotionalAnalysis.tone`; call
    `list_post_search_fields` only for a path it does not list. No post field marks a paid
    partnership: name that, and any other field missing, under gaps.
-6. Build the mention sets, the split by paid label, and the comparison set per **Data
+6. Build the mention sets and the comparison set per **Data
    method**. Read the tracked hashtags with `list_hashtag_posts` for the window. For a team page
    with a `pmm`, `team`, or `growth` reader or lens, count reach by topic per **Data method**,
    step 8.

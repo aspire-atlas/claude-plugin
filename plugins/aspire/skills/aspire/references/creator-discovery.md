@@ -154,8 +154,8 @@ brand's own history is the stronger signal.
 
 | Tier | Who | How to find them |
 | ---- | --- | ---------------- |
-| 1 | Creators the brand has worked with | The brand's partnership content: `search_posts` with the `partnership` filter and the explicit `asProfileId` (**Partnership content**), plus the brand's own posts that tag another account. Union with every `partner` calibration. Without the Profile's Meta Business and Instagram links, tier 1 is the `partner` records and the brand's own posts that tag another account, and the summary says so. |
-| 2 | Creators who have posted about the brand | The same mention query, minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
+| 1 | Creators the brand has worked with | The brand's partnership content: `search_posts` with the explicit `asProfileId` and `partnership: {"contentTypes": ["BRANDED_CONTENT", "COLLAB_POST", "AFFILIATE", "PRODUCT"]}` (**Partnership content**), plus the brand's own posts that tag another account. Union with every `partner` calibration. Without the Profile's Meta Business and Instagram links, tier 1 is the `partner` records and the brand's own posts that tag another account, and the summary says so. |
+| 2 | Creators who have posted about the brand | `search_posts` where `match_phrase` on `text` names the brand, `instagram.hashtags` holds a brand handle, or a brand handle is tagged or mentioned (the `nested` clause on `instagram.mentions` or `tiktok.mentions` in **Atlas search**), minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
 | 3 | Lookalikes of what's working | Creators who resemble the brand's best-performing creators, per **Lookalike seeds** below. |
 | 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
 | 5 | New creators from outside the index | `search_creator_marketplace` against the criteria (one call per keyword, `networks` = the campaign's Networks answer, each network's filters mapped from the size band and countries, TikTok topic labels from `list_creator_marketplace_labels`; see **Marketplace search** below), and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
@@ -255,7 +255,7 @@ How it applies to discovery:
 - **The posts read per candidate** are vetting's (**What to read per creator**): `search_posts`
   on the author, the last 90 days, newest first, limit 50, widened once to 180 days when fewer
   than 5 are indexed. Every count is over those posts. A post found by a sourcing query (a tier 1
-  or 2 mention, a lookalike hit, a marketplace result) counts only when it is among them, so a
+  partnership post or a tier 2 mention, a lookalike hit, a marketplace result) counts only when it is among them, so a
   candidate later vetted on the same Atlas data gets the same counts. The card and the finding
   name the window and the count ("4 of 31 posts, 90 days").
 - **One map per campaign, kept between runs.** Build the map before scoring the first candidate

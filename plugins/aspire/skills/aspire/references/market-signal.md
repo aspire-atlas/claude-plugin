@@ -362,7 +362,7 @@ Ranking (**Recipient lens**, Headline and rank by the reader's result), as it ap
 
 Title "<Brand> Market Signal", republished to the same path each run. Sections: header with the
 window, the "Prepared for" chip, and the animated mark at the top right; since last run; share of voice (a bar chart of posts and
-creators per entity, split by paid label or none); the primary lens section; the other lens
+creators per entity, with the no-paid-label method note); the primary lens section; the other lens
 sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
 quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
 footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
@@ -432,7 +432,7 @@ Below the split, in the order the claims use them:
    readings and its signals, and no decision rests on it.
 6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
    (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
-   share and growth by entity), the split by paid label or none, and "What this means for you" as the
+   share and growth by entity), the no-paid-label method note, and "What this means for you" as the
    "So:" line.
 7. **Competitor comparison**: a table of each competitor with its share of voice, the features
    it wins and loses on, and the friction creators raise about it, then a message ownership table
