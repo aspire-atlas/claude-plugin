@@ -168,7 +168,7 @@ Read with the agent's own calls, every pass:
   hold is listed under "Needs the main thread" ("Atlas doesn't hold this post: run the content
   library or a post analysis on it first"). Sourcing never fetches a post.
 - **Creators**: `search_creators` once per creator for the account id, followers, profile
-  picture, and a business email when the field census lists one.
+  picture, and a business email (`instagram.email`).
 
 ## Who gets a request
 
@@ -647,7 +647,7 @@ finding's `mailDraftId`. A failed draft stays copy-ready and is reported. Never 
 
 **The `page` finding.** When none with key `sourcing` exists, the first approved write (S1 or
 S3) adds one: `recordType` `page`, `key` `sourcing`, `url`, `title`, anchored to the brand's
-own account on its first linked network, `went_well` `low`.
+own account on its first linked network, `went_well`.
 
 ## The sourcing page
 

@@ -32,7 +32,7 @@ points**), and `recipient` (one or more lenses per
 profile id, never the slug) to every tool whose schema takes it; `get_job_status`,
 `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no
 profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it
-per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` before starting. It
 holds the checks, the recommendation rule, the feedback loop, the creator calibrations, the
@@ -122,8 +122,8 @@ asks nothing and writes nothing, so it runs the same in an unattended run.
    Drop every `review:`, `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` key: an applicant review run uses the review resolved in the launch, never a prefix read of its keys. Use only active records;
    superseded ones tell you what changed. Then `get_brand_instruction` with
    `agentType: "brand_safety"`.
-4. `list_creator_search_fields`, `list_post_search_fields`, and `list_insight_search_fields`
-   once each; use only paths they return.
+4. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list.
 5. **Resolve the list.** `search_creators` with a `terms` filter on the username field, one
    call per network, for every handle. For the approved missing handles, `lookup_creators` in
    one batch per network, then re-read `fetching` items per the reference's quirks and re-run

@@ -15,7 +15,7 @@ profile id and slug, the post's link, `recipient` (one or more lenses per `recip
 `brand`), `baseline` (`held`, `refresh`, or `skip`), whether the user approved saving the
 findings, an earlier analysis of the same post when there is one, and a digest of the brand's
 calibrations (summary, business context, competitors, partners, red lines, campaign briefs).
-Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/post-analysis.md`,
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/content-review.md` (**Media: what the agent can
@@ -55,7 +55,7 @@ and the cut list (**Ad reuse check (content review)**).
 2. Read the shell clock for `started`. When the launch carries no calibration digest, read
    `search_calibrations` (limit 100 per page, paged to the end) and keep the records listed in
    the reference's **Inputs**.
-3. Call `list_post_search_fields` once and use only paths it returns.
+3. Take field paths from `atlas-search.md` and the reference; call `list_post_search_fields` only for a path neither lists.
 4. Fetch the post per **Fetching the post**, then the author, and the baseline per `baseline`.
    `search_insights` for earlier findings on this post, with a `prefix` filter on
    `detail.account_review.runKey` = `post-analysis-{profile}-{shortcode or video id}`, newest

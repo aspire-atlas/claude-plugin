@@ -1439,9 +1439,8 @@ line.
 
 **Where the viewer's fields come from.** Read by Claude at publish, with the card's pulls
 (**Creator card**, **Data: what fills each section**) widened as below, and written into the page
-itself for a creator sent to the client, or `agency/pool-{net}-{handle}` for one not sent yet. Every field path is
-checked against the live census (`list_creator_search_fields`, `list_post_search_fields`) first; one
-the census doesn't list leaves its part out, never guessed.
+itself for a creator sent to the client, or `agency/pool-{net}-{handle}` for one not sent yet. Field paths come from
+**Atlas search** or the live census; one neither lists leaves its part out, never guessed.
 
 | In the viewer | From |
 | ------------- | ---- |

@@ -281,7 +281,7 @@ frames. Report the ratio ("legible in 14 of 23 content frames") and the timestam
 fails. Something that covers the required item counts against it: burned-in captions,
 graphics, a cut-out, a hand, or a crop. Name what covered it.
 
-**Atlas analysis fields.** Project `analysis` on the post and use what the census exposes:
+**Atlas analysis fields.** Project `analysis` on the post and use the fields **Atlas search** lists:
 
 - **`analysis.transcript`: spoken content.** It is Atlas's AI transcript, not a recording
   the user checked. Spoken checks may Pass or Fail on it, and the evidence says "per Atlas

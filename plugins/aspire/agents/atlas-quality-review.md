@@ -20,7 +20,7 @@ default, `file:{path}`, or `none`), `log` (`file:{path}`, `docs:{link}`, or `non
 (`interactive`; `unattended` only for the English read and the UX review). Every Atlas tool needs a `context`
 argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward
 them).
-Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it.
+Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read these before starting:
 
@@ -54,8 +54,8 @@ question was asked before you started, and anything still open goes in your outp
    not-run log row when `log` is not `none` (**10**), and stop without publishing.
 2. **With a brand profile:** load the read tools and `report_checkpoint` with `ToolSearch`
    (`select:` under the given prefix), read the calibrations (no filter, limit 100 per page, paged to the end) for the theme
-   and the category, and call `list_post_search_fields` and `list_creator_search_fields` once each
-   before any search. Use only field paths they return. Without a brand profile, load only
+   and the category, and take field paths from `atlas-search.md`; call a `list_*_search_fields` census only
+   for a path it does not list. Without a brand profile, load only
    `report_checkpoint` the same way.
 3. **Pick the checks** per **3**.
 4. **Run the rubric** per **4**, in order, 4.0 to 4.15 with the reader standard as 4.14: one

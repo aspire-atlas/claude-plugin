@@ -169,8 +169,8 @@ instructions.
 
 ### Atlas performance
 
-`list_post_search_fields` and `list_creator_search_fields` once each; use only paths they
-return. Filter path, so `aggs` work.
+Field paths from **Atlas search**; a `list_*_search_fields` census only for a path it does not list.
+Filter path, so `aggs` work.
 
 **Program posts** are the posts that count toward the program, deduped by post id:
 
@@ -178,21 +178,28 @@ return. Filter path, so `aggs` work.
    `posted` or `needs fix`, owed or expected.
 2. **Brand-tagged posts by roster creators.** Posts by creators on the roster at Agreed or later
    (Paused included, Declined, No reply and Dropped left out), from the later of the term start
-   and the creator's `agreedAt` (gifting: the newest `shippedAt`) to today, that carry the
-   partnership marker the census exposes, or name one of the brand's handles in the mentions,
-   or match the brand's name in the text (`match_phrase`). Exclude the brand's own handles.
+   and the creator's `agreedAt` (gifting: the newest `shippedAt`) to today, that tag or mention
+   one of the brand's handles (the `nested` clause on `instagram.mentions` or `tiktok.mentions` in
+   **Atlas search**), or match the brand's name in the text (`match_phrase`). Exclude the brand's own handles.
 
 One `search_posts` call for the set: the ids in 1, or the author and brand conditions in 2,
 `postedAt` from the term start, sorted by `postedAt` descending, limit 100, paged on the cursor
 up to 500. Project the fields of the "Program tracking" row of the required metrics
 (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), with `media` as the container, never leaf URLs, plus
-`instagram.permalink`, `text`, `instagram.mediaProductType`, the partnership marker, and
+`instagram.permalink`, `text`, `instagram.mediaProductType`, and
 `instagram.account` (container).
-Stories count only when Atlas holds them. Say when the set is capped.
+Stories count only when Atlas holds them. Say when the set is capped: the sums and weekly counts past 5,000 posts,
+and the figures that read only the first 500 past 500 posts.
 
-The same filter with `aggs`: sums of `likeCount`, `commentCount`, `viewCount`; `cardinality` on
-`author.username`; `date_histogram` on `postedAt` by week. The totals come from the `aggs`, the
-cards and the baselines from the hits.
+The same filter once more with `limit: 0` and `aggs` `cardinality` on `author.username`, no
+cursor: `totalHits` is the post count and the `aggs` the distinct creators. `aggs` takes only
+`terms` and `cardinality`, so the sums of `likeCount`, `commentCount` and `viewCount` and the
+weekly counts are added up from the hits. When the set holds more than 500 posts, keep paging the
+first call's cursor past 500, up to 5,000 posts, sending only those three fields and `postedAt`
+with `exclude: ["media", "instagram.account", "tiktok.account", "youtube.account"]` (the cursor
+allows a new projection), and add each page to the sums: every post is counted once. Engagement
+rate, lift, **By type** and **Top posts** read only the first 500, because they need the authors
+and follower counts that the lighter pages leave out.
 
 **Each creator's own baseline.** For each creator with program posts, `search_posts` on their
 username for the 90 days before their first program post, program posts left out, limit 50.
@@ -321,7 +328,7 @@ Over the program posts:
 - **Against their own baseline**: per creator, the median engagement of their program posts ÷
   the median of their own posts in the 90 days before. Judged with 2 or more program posts and
   5 or more own posts. The program figure is the median of the creators judged, with the count.
-- **By week**: program posts and engagement per week across the term, from the `aggs`.
+- **By week**: program posts and engagement per week across the term, from the paged hits.
 - **Top posts**: up to six by engagement, as post cards: media, the creator, format, date,
   views, engagement, the creator's own lift, and whether it was a matched deliverable or
   brand-tagged.
@@ -410,7 +417,7 @@ One finding per run that saves, so the Program manager's status screen, later da
 the quarterly signal read the headline numbers without re-running the dashboard.
 
 `append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
-`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the brand's own
+`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well`, anchored to the brand's own
 account on its first linked network (`schema` the network, `entityKind` `account`, `entityId`
 the network's own account id, from `search_creators` on the brand's handle). `idempotencyKey`
 `dash-snap-{slug}-{recordedAt}`. Identity is the program and the date; on a second save the same
@@ -428,7 +435,7 @@ day, the newer `recordedAt` wins.
 | `offLine` | `{declined, noReply, dropped, paused}` |
 | `deliverables` | `{owed, onTime, postedLate, late, missing, needsFix, dueNext7, waived, expectedPosted, expectedNoPost, onTimeRate, disclosure: {found, missing, unclear, checked}}` |
 | `content` | `{assets, clearedForAds, clearedOrganic, expiring30, requested, wanted}` |
-| `performance` | `{posts, creatorsPosting, views, engagement, likesHidden, engagementRateMedian, liftMedian, liftJudged, capped}` |
+| `performance` | `{posts, creatorsPosting, views, engagement, likesHidden, engagementRateMedian, liftMedian, liftJudged, capped}`; `capped` is `{sums, perPost}`: `sums` true when views, engagement and the weekly counts stop at 5,000 posts, `perPost` true when engagement rate and lift read only the first 500 |
 | `spend` | One entry per currency: `{currency, paid, owed, committed, productCost, spentAndCommitted, offersOut, overdue, basis, costPerEngagement}`; `committed` is the ledger's figure, `basis` is `ledger` or `deals` |
 | `sales` | One entry per currency: `{currency, revenue, orders, periods, partial, sourceLabel, roas}` |
 | `budget` | `{amount, currency, used}`, or null |
@@ -460,7 +467,7 @@ shows as "not compared".
 
 **The `page` finding.** On a first publish (no `page` finding with key `dashboard`), write one in
 the same `append_insights` call: `recordType` `page`, `key` `dashboard`, `url`, `title`, anchored
-like the snapshot, `went_well` `low`, `idempotencyKey` `dash-page-{slug}`.
+like the snapshot, `went_well`, `idempotencyKey` `dash-page-{slug}`.
 
 The dashboard writes no other record type and no calibration.
 

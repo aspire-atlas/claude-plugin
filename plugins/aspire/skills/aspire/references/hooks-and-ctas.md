@@ -112,7 +112,7 @@ Atlas holds: no lookups, no marketplace, no discovery.
    **Rounds**), so rounds that overlap never score the same post, video only (`exists mediaKind`,
    Reels and TikTok videos), that mention or tag the brand. Project `postedAt`, `text`, `url`,
    `author.username`, the metrics, `media` (container), and `analysis.transcript` and
-   `analysis.overlayText` when the census lists them.
+   `analysis.overlayText`.
 2. **Match each post to a briefed hook.** Compare the post's opening (the transcript's first
    three seconds, then the overlay text) with the round's `hook` findings. A semantic
    `search_posts` with `queryText` set to the hook's "Said" line, filtered to the creator, helps

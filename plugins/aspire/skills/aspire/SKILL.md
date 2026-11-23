@@ -92,7 +92,8 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Recipient lens** (who the reader is: the lens catalog and cues) | `references/recipient-lens.md` |
 | **List agents**, **Agents menu hand-off**, **Older agent names** | `references/agents-menu.md` |
 | **Running agents**, **Checkpoints**, **Reading the ask**, **Examples library**, **Decision audit** | `references/running-agents.md` (the decision audit brief a subagent is handed: `references/agents/decision-audit.md`) |
-| **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, **After a widget**, Destructive tools, Calibration kinds) | `references/atlas-tools.md` |
+| **Atlas tools** (the tool list and load order, Phase map, **Partnership content**, **After a widget**, Destructive tools, **Write shapes**, Calibration kinds) | `references/atlas-tools.md` |
+| **Atlas search** (ids, fields, `limit`, `aggs` and cursors for every search) | `references/atlas-search.md` |
 | Phase 1 guided add (1.1 steps 4 and 5, the one card rule, 1.3 to 1.4); **Connection card** | `references/connect.md`; `references/connection-card.md` |
 | **Phase overview**, Phase 4, Phase 5; **Onboarding questions**; **Invited first turn** (an invited person's run before any work is saved: what is on file, then the brand report; also "show my brand report") | `references/onboarding.md`; `references/onboarding-questions.md`; `references/invited-first-turn.md` |
 | Phase 6 (first insights, account review); **Account resolution** | `references/account-review.md`; `references/account-resolution.md` |
@@ -321,10 +322,11 @@ Once a profile is chosen or created, keep its `id` as `profile_id` and its `slug
 `asOrganizationId` = the org's `id` where a flow says so); tools reject slugs.
 `create_profile` takes `asOrganizationId` only; `get_job_status`,
 `list_creator_marketplace_labels`, `list_*_search_fields`, `list_my_*` and `mint_run_id` take neither. The slug is
-for naming only: record keys, file names, and the profile slug handed to agents. Never
-construct either value. When `profile_id` is missing (a resumed session, or a scheduled run
-whose prompt names only the brand), re-read it with `list_my_profiles` and match the brand by
-profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
+for naming only: record keys, file names, and the profile slug handed to agents. Take both ids
+only from this session's `get_status`, `list_my_*` or `create_profile` results, never from memory or
+an earlier session. When `profile_id` is missing (a resumed session, or a scheduled run
+whose prompt names only the brand), or a call refuses it as `forbidden` or `not-found`, re-read
+it with `list_my_profiles` and match the brand by profile name (exact, ignoring case) across `organizations[].profiles[]`. An unattended run that finds no match or
 more than one publishes the "setup needed" card and stops; it never asks and never falls back to unattributed calls.
 
 Speak in handles and brand names. Never surface slugs, ids, or tool names.

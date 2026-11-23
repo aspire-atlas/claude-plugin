@@ -156,7 +156,7 @@ ladder.
 | ------ | ------ | ------ | ---- |
 | Views | Median views ÷ followers, on the format priced | Top third of the program's roster creators in the same tier | Bottom third |
 | Engagement | Mean (likes + comments) ÷ followers over the last 12 posts, hidden likes left out (**Creator card** stats) | Top third of the roster in the same tier | Bottom third |
-| Paid track record | Posts with the paid partnership marker or a clear disclosure in 180 days, and past partners on the account | Two or more disclosed paid posts | A paid post with no disclosure (also a note) |
+| Paid track record | Posts with a clear disclosure in 180 days, and past partners on the account | Two or more disclosed paid posts | A paid post with no disclosure (also a note) |
 | Audience fit | The newest vetting `fitScore` or discovery fit score for this creator; else the audience breakdown against the brand's market | At or above the vetting approve line | Under the maybe line |
 
 - The roster comparison needs three or more roster creators in the same tier with the number.
@@ -533,7 +533,7 @@ creator.
 
 **The `page` finding.** When no `page` finding with key `negotiation` exists, the first `record`
 write (N1 or N3) adds one: `recordType` `page`, `key` `negotiation`, `url`, `title`, anchored to
-the brand's own account on its first linked network, `went_well` `low`, idempotencyKey
+the brand's own account on its first linked network, `went_well`, idempotencyKey
 `neg-{slug}-page`. "Page only" writes nothing, so the link is saved on the next approved write.
 
 `terms` kinds follow **Influencer program**: `action_item` `medium` while offered or countered, `went_well`

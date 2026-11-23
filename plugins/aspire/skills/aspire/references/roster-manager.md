@@ -114,15 +114,15 @@ newest first, paged to the end), the newest finding per identity:
 - `draft` and `reply`: `sentAt`, `receivedAt`, `channel`, `class`.
 - The newest `roster-health` (the last review, for "changed since").
 
-From Atlas (`list_post_search_fields` and `list_creator_search_fields` once each; use only
-paths they return):
+From Atlas (field paths from **Atlas search**; a `list_*_search_fields` census only for a path it does
+not list):
 
 - `search_creators` for the account: followers (for the tier and the band), bio.
 - `search_posts` on the creator's author username, the review window plus the 90 days before
   it, newest first, projecting the fields of the "Program tracking" row of the required metrics
   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus `instagram.permalink`, `text`,
-  `instagram.mediaProductType`, the partnership marker, `analysis.brandSafety`,
-  `analysis.commentSentimentBreakdown`, and `analysis.transcript` when the census lists them.
+  `instagram.mediaProductType`, `analysis.brandSafety`,
+  `analysis.commentSentimentBreakdown`, and `analysis.transcript`.
 - Once per brand red line (**Atlas tools**, Calibration kinds): one semantic `search_posts` with `queryText` the
   red line's wording, filtered to the reviewed creators' usernames and the window.
 
@@ -130,7 +130,7 @@ Work in batches of ten creators.
 
 **Program posts** are the posts named by `postId` or `postUrl` on the creator's posted
 `deliverable` findings. With no deliverable tracker records yet, add posts in the window that
-carry the partnership marker with the brand, or tag or mention the brand's handles, and label
+tag or mention the brand's handles, and label
 them "matched by mention". **Own posts** are the creator's other posts in the 90 days before
 the window's end.
 
@@ -518,7 +518,7 @@ to 25 findings per call.
 | `roster-health`, slipping, dormant, retire | `needs_improvement` | same |
 | `roster-health`, insufficient | `action_item` `low` | same |
 | `draft`, unsent | `action_item` `low` | `rm-draft-{slug}-{net}-{handle}-{template}-{channel}-{recordedAt}` |
-| `page` | `went_well` `low` | `rm-page-{slug}-roster` |
+| `page` | `went_well` | `rm-page-{slug}-roster` |
 
 `{net}` is `ig` or `tt`.
 
