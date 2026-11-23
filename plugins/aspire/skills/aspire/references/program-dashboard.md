@@ -178,8 +178,9 @@ Filter path, so `aggs` work.
    `posted` or `needs fix`, owed or expected.
 2. **Brand-tagged posts by roster creators.** Posts by creators on the roster at Agreed or later
    (Paused included, Declined, No reply and Dropped left out), from the later of the term start
-   and the creator's `agreedAt` (gifting: the newest `shippedAt`) to today, that name one of
-   the brand's handles in the mentions, or match the brand's name in the text (`match_phrase`). Exclude the brand's own handles.
+   and the creator's `agreedAt` (gifting: the newest `shippedAt`) to today, that tag or mention
+   one of the brand's handles (the `nested` clause on `instagram.mentions` or `tiktok.mentions` in
+   **Atlas search**), or match the brand's name in the text (`match_phrase`). Exclude the brand's own handles.
 
 One `search_posts` call for the set: the ids in 1, or the author and brand conditions in 2,
 `postedAt` from the term start, sorted by `postedAt` descending, limit 100, paged on the cursor

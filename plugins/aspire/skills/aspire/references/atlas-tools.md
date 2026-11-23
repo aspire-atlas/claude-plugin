@@ -445,7 +445,7 @@ Both writes are refused whole when one part breaks its shape, so build every cal
   `index`, `web`, `inferred` or `known-absent`.
 - Build the key from the key rules after the **Calibration kinds** table (the pattern, the
   `{slug}` cap and the key namespaces), then check it: a namespace from that list, one colon, then
-  1 to 48 lowercase letters, digits and hyphens. Turn every capital into lowercase and every other
+  1 to 48 lowercase letters, digits and hyphens. In the slug, turn every capital into lowercase and every other
   character (space, dot, underscore, `@`) into a hyphen, then drop doubled, leading and trailing
   hyphens in the slug. Never send a key that has not passed that check.
 

@@ -364,7 +364,7 @@ for a lens**); a page that cannot rank by it says in one line which metric it us
 
 Take field paths from `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md`, and call a
 `list_*_search_fields` census only for a path it does not list; request only the fields the page
-shows. A field above that the server refuses as unknown is a gap, named on the page like any other
+shows. A field above that neither Atlas search nor the census lists is a gap, named on the page like any other
 missing metric. Add the flow's own fields (captions, analysis) to the same call.
 
 **How each figure is worked out:**

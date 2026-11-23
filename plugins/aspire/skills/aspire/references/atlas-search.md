@@ -33,7 +33,7 @@ median views, interaction or engagement rate, badges, past partners, category, p
 
 - List: `["externalId", "url", "postedAt", "mediaKind", "text", "likeCount", "commentCount",
   "viewCount", "author.username"]`. `media` and the author's picture come back on every hit;
-  with no card on show, `exclude: ["media", "instagram.account", "tiktok.account"]`.
+  with no card, `exclude: ["media", "instagram.account", "tiktok.account", "youtube.account"]`.
 - Cards add `instagram.mediaProductType`.
 - Analysis: `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, `analysis.aestheticTags`,
   `analysis.subjectAnalysis`, `analysis.emotionalAnalysis.tone`,
