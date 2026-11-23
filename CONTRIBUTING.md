@@ -43,6 +43,7 @@ bash scripts/check-tool-contract.sh
 bash scripts/check-agent-roster.sh
 bash scripts/check-agent-triggers.sh
 bash scripts/check-artifact-standard.sh
+bash scripts/check-page-templates.sh
 bash scripts/check-orchestration.sh
 bash scripts/check-calibration-keys.sh
 bash scripts/check-agent-specs.sh
@@ -127,6 +128,7 @@ The scaffold passes every check as written. Each line you still have to write sa
 3. **The spec.** The job to be done, the kind of page, the skills it carries, the universal skills, the trigger phrases, and the non-goals.
 4. **The roster rows.** The README description, the **Model tiers** reason, the permission level note (for an agent that writes, sends or spends), and the agents panel blurb, costume name and prop.
 5. **The eval question.** Add the agent and flow paths to the question in `scripts/eval/questions.json` that asks its code, or add a question for it, and rerun it with `bun run eval:pages --only <code>`. Set the agent's `approved` to the ticket that holds its approved page once it has one.
+6. **The page template.** Put the agent under one template in `plugins/aspire/skills/page-standard/page-templates.json` and in the mapping table in `templates.md`, section 6, or in `notTemplated` with the reason. Add it to the `job` list in `page-data.schema.json`. `scripts/check-page-templates.sh` fails until it does.
 
 Then check that nothing is left, run the checks under [Local testing](#local-testing) and `claude plugin test plugins/aspire-mod`, and open the pull request with the template's **The standard** list ticked:
 

@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "template": "plan",
+  "example": true,
+  "title": "How do we get 3 creator videos live for the Dec 7 launch?",
+  "answer": "Send the brief by Nov 26 and approve drafts by Dec 3 to have 3 videos live on Dec 7.",
+  "takeaway": "Creators need 7 days from brief to draft, so the brief has to go out this week.",
+  "scope": {
+    "reader": "the influencer manager",
+    "brand": "Brightside Toys",
+    "range": "Nov 23 to Dec 14, 2026",
+    "question": "I4",
+    "accounts": [
+      "instagram:brightsidetoys",
+      "tiktok:brightsidetoys"
+    ],
+    "platforms": [
+      {
+        "network": "instagram",
+        "posts": 214
+      },
+      {
+        "network": "tiktok",
+        "posts": 131
+      },
+      {
+        "network": "youtube",
+        "posts": 0,
+        "note": "Connecting it would add long-form reviews."
+      }
+    ],
+    "tools": [
+      "Shopify"
+    ]
+  },
+  "figures": [
+    {
+      "label": "Days to launch",
+      "value": 14,
+      "comparison": "creators need 7 from brief to draft",
+      "status": "warn",
+      "source": "Our read"
+    },
+    {
+      "label": "Creators booked",
+      "value": "3 of 3",
+      "comparison": "the plan's target",
+      "status": "ok",
+      "source": "Atlas"
+    }
+  ],
+  "insights": [
+    {
+      "text": "Build videos posted on a weekend evening drew the most views this fall.",
+      "evidence": "11 build videos posted Saturday or Sunday after 5 PM averaged 64,000 views.",
+      "comparison": "29,000 for build videos posted on weekdays",
+      "so": "Schedule all 3 launch videos for Dec 6 and 7 after 5 PM.",
+      "source": "Atlas"
+    }
+  ],
+  "actions": [
+    {
+      "rank": 1,
+      "verb": "Send",
+      "object": "the creator brief to the 3 creators",
+      "owner": "Influencer manager",
+      "due": "2026-11-26",
+      "effect": "Drafts back by Dec 2",
+      "job": "creator-brief",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Our read",
+      "first": true
+    },
+    {
+      "rank": 2,
+      "verb": "Ship",
+      "object": "one playset to each creator",
+      "owner": "Operations lead",
+      "due": "2026-11-27",
+      "effect": "Product in hand before filming",
+      "job": "product-fulfillment",
+      "cost": {
+        "kind": "money",
+        "line": "About USD 360: 3 playsets at USD 120 each (estimate, from the catalog's unit cost)"
+      },
+      "source": "Shopify"
+    },
+    {
+      "rank": 3,
+      "verb": "Review",
+      "object": "the 3 drafts against the brief",
+      "owner": "Influencer manager",
+      "due": "2026-12-03",
+      "effect": "3 approved drafts by Dec 3",
+      "job": "content-review",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Our read"
+    }
+  ],
+  "decisions": [
+    {
+      "text": "Approve the brief",
+      "approver": "the influencer manager",
+      "by": "2026-11-25",
+      "then": "The brief goes to the 3 creators.",
+      "cost": {
+        "kind": "none",
+        "line": "Cost: no spend. The fees are already agreed."
+      }
+    }
+  ],
+  "evidence": [],
+  "gaps": [
+    "Paid results: connecting the Meta ad account would show whether to boost the launch videos."
+  ],
+  "confidence": {
+    "level": "medium",
+    "why": "The weekend lift rests on 11 videos from one season."
+  },
+  "sources": [
+    "Posts Atlas holds for the brand and the 3 creators, Aug 24 to Nov 22, 2026",
+    "Products and stock in the connected store"
+  ],
+  "drafts": [
+    {
+      "draft": "The creator brief",
+      "waitsOn": "When you ask"
+    }
+  ],
+  "sections": {
+    "steps": [
+      {
+        "when": "Nov 26",
+        "what": "The brief goes to the 3 creators.",
+        "who": "Influencer manager"
+      },
+      {
+        "when": "Nov 27",
+        "what": "Playsets ship.",
+        "who": "Operations lead"
+      },
+      {
+        "when": "Dec 2",
+        "what": "Drafts come back."
+      },
+      {
+        "when": "Dec 3",
+        "what": "Drafts approved or sent back with one round of notes.",
+        "who": "Influencer manager"
+      },
+      {
+        "when": "Dec 6 and 7",
+        "what": "The 3 videos go live after 5 PM."
+      },
+      {
+        "when": "Dec 14",
+        "what": "First read on views and comments."
+      }
+    ]
+  },
+  "footer": {
+    "updated": "2026-11-23T14:05Z",
+    "freshness": [
+      {
+        "account": "instagram:brightsidetoys",
+        "newest": "2026-11-22",
+        "fetched": "2026-11-23"
+      },
+      {
+        "account": "tiktok:brightsidetoys",
+        "newest": "2026-11-21",
+        "fetched": "2026-11-23"
+      }
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas or the store. Not for any decision. Internal use only. Not for public publishing."
+  }
+}
