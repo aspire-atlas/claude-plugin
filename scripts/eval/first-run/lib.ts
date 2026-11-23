@@ -81,7 +81,10 @@ export type Metrics = {
   reachedValue: boolean
   /** The value tool whose result came first, without its connector prefix. */
   valueTool: string | null
-  /** Wall-clock seconds from the first message to the first value result. Picker answers take no time here. */
+  /**
+   * The flow's own seconds to the first value result: summed over turns, each timed from its session's init line, so
+   * start-up and the time between turns are left out. Picker answers take no time here.
+   */
   secondsToValue: number | null
   /**
    * Questions the flow asked before the first value result: each picker question the harness answered (the
@@ -150,7 +153,7 @@ const endOf = (events: Event[]) => [...events].reverse().find(event => typeof ev
 
 /**
  * Everything one scenario measures, from its turns' stamped transcripts in order. A turn after the first was started
- * by a typed reply, so every turn before the value turn adds one typed reply to the questions.
+ * by a typed reply: a question when the turn before it ended on one, and a nudge otherwise.
  */
 export function measure(turns: Event[][], valueTools: string[], prefix: string): Metrics {
   const summaries = turns.map(summarizeTurn)

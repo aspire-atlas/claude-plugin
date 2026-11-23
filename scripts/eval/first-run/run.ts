@@ -112,8 +112,8 @@ type Session = Omit<TurnOptions, 'prompt' | 'out' | 'resume' | 'maxAsks'>
 
 /**
  * One reading of the test organization: `get_status`, then `search_calibrations` when it has a brand Profile, and
- * nothing else, on a small model. It runs in its own session,
- * so the scenario's transcript, time and tokens hold none of it.
+ * nothing else, on a small model. It runs in its own session, so the scenario's transcript, time and tokens hold
+ * none of it.
  */
 async function probe(session: Session, atlas: string, organization: string | undefined, out: string, model: string): Promise<StatusRead | null> {
   const prompt = [
