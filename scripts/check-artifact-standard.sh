@@ -160,6 +160,8 @@ else
     trap 'rm -rf "$tmp"' EXIT
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
+    # The page check reads the banned phrases from glossary.md beside it, as the skill's command copies it.
+    cp "$P/skills/page-standard/glossary.md" "$tmp/" 2>/dev/null || err "$P/skills/page-standard/glossary.md is missing"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
     # Each fixture prints one result per scripted check (as many as pass.html prints) and no error:
     # a pass*.html page fails nothing, and a fail-rN*.html page fails RN and nothing else. Exit 2
@@ -268,7 +270,9 @@ print("ok" if a and a == b and ca == cb else "table %s; script %s" % (
         echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$n" ] ||
+      # R10's length budget is measured on a page built from a template only, so it is unmarked here.
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$((n - 1))" ] &&
+        grep -q '"check": "R10", "name": "Fits the reader", "result": "unmarked"' <<< "$out" ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

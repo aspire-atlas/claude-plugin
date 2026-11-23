@@ -29,8 +29,8 @@ and the order. What each part says, the reader rules, and the R1 to R15 checks s
 4. Publish the printed page as `SKILL.md`, section 4, step 5 says.
 
 `page-data.schema.json` is the shape as JSON Schema. `page-templates.json` holds the templates,
-the page order, and the length budgets. The fill script reads both, and the length budgets are
-there as data for a check of page length to read.
+the page order, and the length budgets. The fill script reads both, and the page check measures
+each page against its length budget (R10).
 
 ## 2. The page data
 
@@ -108,6 +108,7 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `cost`: a cost that cannot be priced names the missing figure and who has it, both in its line.
 - `freshness`: one entry for every cited account and none for any other, each with a fetch or a change date.
 - `shared-page`: a page whose source line says "Shared with" lists no gaps and no freshness notes. It still shows its confidence.
+- `banned-phrase`: no phrase on the banned-phrase list (`glossary.md`, section 2) in any field the reader sees.
 - `no-internal-names`: no Atlas tool name (the page check's list, alone or inside a prefixed name) or record id in any field the reader sees, `scope.tools` included.
 - `theme`: the theme holds token rules only: custom-property declarations in plain or `@media` rules, with no `<`, backslash, `url(` or `image-set(`.
 
@@ -132,11 +133,14 @@ A Shortlist groups its creators by verdict and shows the tally under the answer.
 
 ## 5. Length budgets
 
-A screen is 1280 by 800 pixels. `page-templates.json` holds each budget as data.
+A screen is 1280 by 800 pixels. `page-templates.json` holds each budget as data. A budget covers
+the argument: the page from the top to the end of its decisions. The evidence and everything after
+it sit below and are not counted. The page check estimates the height and fails a page over its
+budget (R10; `rubric.md`, section 4).
 
 | Template | Budget |
 | -------- | ------ |
-| Readout | One screen for a daily readout, two for a weekly one |
+| Readout | Two screens, daily or weekly. The head, the scope and the first insight take most of a screen, so a daily readout cannot fit one |
 | Profile | Two screens |
 | Verdict | Two screens |
 | Shortlist | As long as its creators and posts |

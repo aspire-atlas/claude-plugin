@@ -27,7 +27,7 @@ This skill sets what a page says. `skills/aspire/references/artifact-standard.md
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
 the parts pages are built from, `templates.md` the six page templates a flow may fill from, `page-check.md` the self-check
-script, `comparisons.md` the four checks on every comparison, `recommendations.md` what every recommendation costs and the trend to watch, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, `packet.md` what each field of the result packet holds, and `examples.md` lists the evidence each
+script, `rubric.md` what each scripted check means and how to fix a failure, `glossary.md` the words every page uses and the phrases none does, `comparisons.md` the four checks on every comparison, `recommendations.md` what every recommendation costs and the trend to watch, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, `packet.md` what each field of the result packet holds, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
 evidence takes. This skill fills in what the reference leaves open. One exception: a reference
@@ -39,7 +39,7 @@ may ask Atlas for more metrics than section 8's row, never fewer.
 - [2. Reader rules](#2-reader-rules)
 - [3. Evidence standards](#3-evidence-standards)
 - [4. Build loop](#4-build-loop)
-- [5. Markup and the scripted checks (R1, R2, R5, R6, R7, R11, R13, R14, R15)](#5-markup-and-the-scripted-checks-r1-r2-r5-r6-r7-r11-r13-r14-r15)
+- [5. Markup and the scripted checks (R1 to R7, R10, R11, R13 to R15)](#5-markup-and-the-scripted-checks-r1-to-r7-r10-r11-r13-to-r15)
 - [6. How each check is judged](#6-how-each-check-is-judged)
 - [7. The page check in the result](#7-the-page-check-in-the-result)
 - [8. Required metrics, by kind of question](#8-required-metrics-by-kind-of-question)
@@ -174,14 +174,13 @@ creator vetting's verdicts and check order), follow the reference. Otherwise:
    **3a. Like for like.** As you write each comparison (two groups, two periods, or two brands side by side, or a share), run the four checks in `comparisons.md` in this folder (same kind, every mention counted, enough posts, share against size). One that fails a check and stays says which, in one line.
    **3b. Explanations.** Before you write why something happened (a sales spike, a top seller, a drop), run the wider search in `explanations.md` and save outside evidence that can disappear as it is read.
    **3c. Recommendations.** As you write each decision, next step, and recommendation, end it with its cost line; write a finding that could help or hurt the brand as a trend to watch. Both rules are in `recommendations.md`.
-4. **Self-check R1 to R15.** Run the script in section 5 for R1, R2, R5's cost lines, R6, R7's links, R11, R13, R14, and R15, and judge
-   the others against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
-5. **Publish** in the publish pass (steps 4b and 4c), even when a check still fails; report it (section 7). An open UX Must holds an interactive publish (`ux-review.md`).
+4. **Self-check R1 to R15.** Run the script in section 5 for the checks it covers (`rubric.md`), and judge the rest against `reader-standard.md`. Fix every fail you can and check again. **4b.** The English read by a separate reviewer: follow `english-read.md` in this folder. **4c.** The rendered UX review, on the same draft: follow `ux-review.md`.
+5. **Publish** in the publish pass (steps 4b and 4c), and only once the page check, run again on the final page, fails nothing. Fix a `fail` as `rubric.md` says and run it again. One you cannot fix holds the page: save it as a file (`page-file.md`), hold the Atlas writes and deliveries as the draft pass does, and set the page check's `held` to `true` with the fails in `stillFailing` (section 7). The main thread asks whether to fix it first or publish it as it is, and relaunches with `pageCheck.personFix` (apply it, then check again) or `pageCheck.publishFailing` `true` (publish and report the fails). A scheduled run publishes nothing and names each failing check in one line of its delivery message. An open UX Must also holds an interactive publish (`ux-review.md`).
    With no Artifact tool, save the page as a file (`page-file.md`). Never skip the page.
 
 Write the headline last. Draft every other part, then write the headline from the decision the page supports.
 
-## 5. Markup and the scripted checks (R1, R2, R5, R6, R7, R11, R13, R14, R15)
+## 5. Markup and the scripted checks (R1 to R7, R10, R11, R13 to R15)
 
 Mark the parts the script reads. The attributes carry no styling; style the page as the flow and
 `theme.md` say.
@@ -207,8 +206,7 @@ Mark the parts the script reads. The attributes carry no styling; style the page
 <!-- ...or: <section data-page="decisions"><h2>Decisions</h2><p>Nothing needs approval.</p></section> -->
 
 <!-- Part 4, never inside the decisions section and never around it. -->
-<section data-page="next-steps"><ol><li data-recommend data-cost="none">Send the 11 first messages, by
-  Nov 5. <span data-cost-line>Cost: no spend, time only.</span></li></ol></section>
+<section data-page="next-steps"><ol><li data-recommend data-cost="none" data-owner="Influencer manager">Influencer manager: send the 11 first messages, by Nov 5. <span data-cost-line>Cost: no spend, time only.</span></li></ol></section>
 
 <!-- Part 7 repeats every data-platform element from the scope, with the same counts. -->
 <section data-page="method">...</section>
@@ -272,13 +270,14 @@ Mark the parts the script reads. The attributes carry no styling; style the page
   `data-newest` the newest post's date or `none`, and `data-fetched` the last fetch's date, `none`,
   or `unknown`, or, with no `freshness` on record, `data-changed` ("last changed"). The entry shows
   each date and the platform. A page that cites and reports on no account gets `n/a`.
-- A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked` for R1, R2, R5, R6, R7, R13, R14, and R15, and a page that marks no comparison (`comparisons.md`) gets it for R15. Judge those by reading; R11 still runs.
+- A page with no `data-page` markup yet (a flow whose reference does not add it) gets `unmarked` for every check but R11, and a page that marks no comparison (`comparisons.md`) gets it for R15. Judge those by reading.
+- A page from a template carries every mark R3, R4, R5's owners, R7's source labels and R10 read. A hand-written page marks each KPI tile's and insight's comparison `data-vs`, each insight's source `data-source` (the label shown), and a step's owner `data-owner` (shown); `rubric.md` lists them.
 
 Run the check on every page before you publish it. Copy the page into a new temporary folder,
 extract the script there from `page-check.md` in this folder (never retype it), and run it:
 
 ```bash
-d=$(mktemp -d) && cp {page.html} "$d/" && awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md" | sed '1d;$d' > "$d/page_check.py" && python3 -I "$d/page_check.py" "$d/{page file name}"
+d=$(mktemp -d) && cp {page.html} "${CLAUDE_PLUGIN_ROOT}/skills/page-standard/glossary.md" "$d/" && awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/page-standard/page-check.md" | sed '1d;$d' > "$d/page_check.py" && python3 -I "$d/page_check.py" "$d/{page file name}"
 ```
 
 It reads only the pages named, writes nothing, and prints one JSON line per check and page:
@@ -288,27 +287,9 @@ when it could not read a page. When Python is not installed, judge the scripted 
 
 ## 6. How each check is judged
 
-What each check asks, when it passes, and how a defect is judged are in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`. Never restate them here or in a
-flow. Every check is pass, fail, or N/A, never a score.
-
-| Check | How |
-| ----- | --- |
-| R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness, R15 Like for like | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", section 9.3), behind-pace notes, and refreshes skipped as recently refreshed. R15 is also judged: a comparison the markup missed, and whether a share's group size is the right whole (`comparisons.md`, **What is judged**) |
-| R3, R4, R8, R10, R12 | Judgment |
-| R5 Clear next steps | Script for each recommendation's cost line and each trend to watch (`recommendations.md`); judgment for who, by when, what it should change, the arithmetic, and a recommendation or two-sided finding the markup missed |
-| R7 Real evidence | Script for the links (every cited post, every explanation's evidence, every saved capture); judgment for each figure, checked against what the run read |
-| R9 Names what's missing | Judgment on a team page; N/A on a page shared outside the team |
-
-When the reader standard changes, this table and the script change in the same commit.
-
-- **Sample pages** follow `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`:
-  no self-check and no page check.
-- **A review page** (a quality review) runs the check with the words of the work under review
-  marked as quoted.
-- The scripted checks look only at the markup in section 5 and the `data-own` mark (section 8). A page can pass the script and still
-  fail the check in substance (a scope that names "the team" as the reader, an approval worded as
-  a next step); judge that too.
+What each check asks is in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`.
+`rubric.md` in this folder says which checks the script runs and which are judged, what each
+scripted check fails on and how to fix it, and how sample pages and review pages are checked.
 
 ## 7. The page check in the result
 
@@ -327,6 +308,7 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 - `checks`: `pass` (passed the first time), `fixed` (failed, fixed before publishing), `fail`
   (still failing at publish), or `n/a` (does not apply to this page, section 1).
 - `draftNext`: part 9, judged the same way.
+- `held`: `true` when a failing check held the page from publishing (section 4, step 5); left out otherwise.
 - `stillFailing`: one entry per `fail`, as "R5 Clear next steps: {why it could not be fixed}".
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to

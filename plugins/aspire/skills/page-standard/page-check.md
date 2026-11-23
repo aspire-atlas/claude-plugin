@@ -1,13 +1,19 @@
 # Page check script
 
-The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R5's
-cost lines and trends to watch (`recommendations.md`), R6, R7's linked evidence (`explanations.md`), R11, R13, R14 and R15 from the reader standard. Extract it with the command there; never retype it. It reads only the
-pages named and writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
+The script `SKILL.md`, section 5, runs on every page before it is published: R1, R2, R3's
+headline, R4's insights and comparisons, R5's cost lines, owners and trends to watch
+(`recommendations.md`), R6, R7's linked evidence (`explanations.md`) and source labels, R10's length
+budget, R11 (with the banned phrases in `glossary.md`), R13, R14 and R15 from the reader standard.
+`rubric.md` says what each fails on and how to fix it. Extract it with the command there; never
+retype it. It reads only the pages named and `glossary.md`, which the command copies beside it, and
+writes nothing. With `--text` anywhere among its arguments it runs no check and prints the
 words a reader sees instead, one block per line, which is all the English read (`SKILL.md`,
 section 4, step 4b) is given. It lives in this file so `SKILL.md` stays short; when the reader
-standard changes, `SKILL.md`'s section 6 table and this script change in the same commit, and when
+standard changes, `rubric.md`'s table and this script change in the same commit, and when
 the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here changes with it.
 `DIRECTIONAL_MAX` and `IN_LINE_POINTS` are the two numbers `comparisons.md` sets.
+`BUDGETS` holds `page-templates.json`'s length budgets, and `scripts/check-page-templates.sh` keeps
+them equal.
 
 ## Contents
 
@@ -17,8 +23,9 @@ the required-metrics table (`SKILL.md`, section 8) changes, `REQUIRED_ROWS` here
 
 <!-- page-check -->
 ```python
-# Page standard self-check: R1, R2, R5 (its cost lines and trends to watch), R6, R7 (its linked evidence), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named; writes nothing.
-import datetime, json, re, sys
+# Page standard self-check: R1, R2, R3 (the headline), R4 (insights and their comparisons), R5 (its cost lines, owners and trends to watch), R6, R7 (its linked evidence and source labels), R10 (the length budget), R11, R13, R14 and R15 from reader-standard.md. Reads the HTML files named and glossary.md beside this script; writes nothing.
+import datetime, json, math, re, sys
+from pathlib import Path
 from html.parser import HTMLParser
 
 NETWORKS = ("instagram", "tiktok", "youtube")
@@ -102,6 +109,23 @@ I13 P8 P9:
 """
 REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().splitlines()
             for codes, metrics in [line.split(":")] for code in codes.split()}
+# The page standard's structure rules (rubric.md). A page built from a template (data-template,
+# page-fill.md) carries every mark below; a hand-written page carries them where its blocks do.
+# A headline states the finding. A short one that ends in a topic word and holds no figure is a
+# label ("Creator performance overview", "Weekly social report"), as is one under three words.
+HEADLINE_WORDS = 3
+LABEL_WORDS = 4
+TOPIC = re.compile(r"(?i)\b(?:overview|summary|report|update|recap|review|analysis|dashboard|readout|results|performance"
+                   r"|snapshot|insights|highlights|breakdown|roundup|digest|findings|status)$")
+INSIGHTS_MAX = 3
+FIXED_SOURCES = ("Atlas", "Brand memory", "Web", "You", "Our read")
+NO_OWNER = {"tbd", "tba", "tbc", "someone", "anyone", "unassigned", "owner", "n/a", "na", "none", "-"}
+NO_COMPARISON = re.compile(r"(?i)^\W*(?:none|n/?a|not compared|no comparison|nothing to compare)?\W*$")
+# Each template's length budget in screens, kept equal to page-templates.json by
+# scripts/check-page-templates.sh. A template that grows with its items has no number and is not measured.
+TEMPLATES = ("readout", "shortlist", "verdict", "profile", "plan", "dashboard")
+BUDGETS = {"readout daily": 2, "readout weekly": 2, "verdict": 2, "profile": 2}
+SCREEN = (1280, 800)
 
 class Node:
     def __init__(self, tag, attrs, parent):
@@ -296,6 +320,55 @@ def r2(nodes, regions, out):
             problems.append("the method section's platform counts %s differ from the scope's %s" % (again, top))
     return problems
 
+def classes(node):
+    return (node.attrs.get("class") or "").split()
+
+def blocks_named(nodes, name):
+    return [n for n in nodes if n.attrs.get("data-block") == name]
+
+def template_of(nodes):
+    # The main element of a page the fill script printed, or None for a hand-written page.
+    return next((n for n in nodes if "data-template" in n.attrs), None)
+
+def shown_label(node):
+    # A short name for a block in a problem line: its claim, else its label, else its first words.
+    for cls in ("pb-claim", "pb-label"):
+        for n in walk(node):
+            if cls in classes(n):
+                return text(n, gap=" ")[:50]
+    return text(node, gap=" ")[:50]
+
+def r3(nodes, regions, out):
+    heads = [n for n in nodes if n.tag == "h1" and not any(a.tag in SKIP for a in ancestors(n))]
+    if len(heads) != 1:
+        return ["the page needs exactly one h1, the headline that answers its question (found %d)" % len(heads)]
+    shown, problems = text(heads[0], gap=" "), []
+    words = re.findall(r"[A-Za-z0-9]+", shown)
+    if len(words) < HEADLINE_WORDS or (len(words) <= LABEL_WORDS and TOPIC.search(shown.rstrip(" .")) and not re.search(r"\d", shown)):
+        problems.append("the headline \"%s\" is a label, not a finding; write the answer as one sentence" % shown)
+    if shown.endswith("?"):
+        problems.append("the headline \"%s\" asks a question; the question is the title, the headline answers it" % shown[:60])
+    if template_of(nodes) is not None and not any(a.attrs.get("data-block") == "answer" for a in ancestors(heads[0])):
+        problems.append("the headline sits outside the answer block, so it is not the first thing read")
+    return problems
+
+def r4(nodes, regions, out):
+    # Returns None (unmarked) on a hand-written page with no insight or KPI block: read it for
+    # numbers with nothing beside them, and count its insights.
+    insights, tiles = blocks_named(nodes, "insight"), blocks_named(nodes, "kpi")
+    if not (insights or tiles or template_of(nodes) is not None):
+        return None
+    problems = []
+    if len(insights) > INSIGHTS_MAX:
+        problems.append("the page has %d insights; keep the %d that matter most and move the rest to the evidence" % (len(insights), INSIGHTS_MAX))
+    for kind, found in (("insight", insights), ("figure", tiles)):
+        for index, node in enumerate(found, 1):
+            said = [text(n, gap=" ") for n in walk(node) if "data-vs" in n.attrs]
+            if not any(said) or all(NO_COMPARISON.match(v) for v in said):
+                problems.append("%s %d (\"%s\") has no comparison: say what its number is against (the last period, the usual, peers, or a goal) in its data-vs line"
+                                % (kind, index, shown_label(node)))
+    return problems
+
 def r6(nodes, regions, out):
     sections = regions.get("decisions", [])
     if len(sections) != 1:
@@ -474,6 +547,22 @@ def r5(nodes, regions, out):
         problems += cost_problems(node, "recommendation %d (\"%s\")" % (index, text(node, gap=" ")[:50]), outside)
     for index, node in enumerate(trends, 1):
         problems += trend_problems(node, "trend %d (\"%s\")" % (index, text(node, gap=" ")[:50]))
+    return problems + owner_problems(nodes, steps)
+
+def owner_problems(nodes, steps):
+    # Every next step names who does it: each step on a page built from a template, and any step a
+    # hand-written page marks with data-owner. The owner is shown on the step.
+    built, problems = template_of(nodes) is not None, []
+    for index, node in enumerate(steps, 1):
+        marks = [n for n in walk(node) if "data-owner" in n.attrs]
+        if not marks and not built:
+            continue
+        owner = (marks[0].attrs.get("data-owner") if marks else "").strip()
+        label = "next step %d (\"%s\")" % (index, text(node, gap=" ")[:50])
+        if not owner or owner.lower() in NO_OWNER:
+            problems.append("%s has no owner: name the person or role who does it in data-owner and on the step" % label)
+        elif not has(text(node, gap=" "), owner):
+            problems.append("%s names its owner (%s) in data-owner but not on the step" % (label, owner))
     return problems
 
 # R7's scripted part (explanations.md): every cited post links to itself, every explanation rests on
@@ -590,12 +679,38 @@ def saved_problems(nodes):
             problems.append("%s is marked data-gone but does not say \"no longer visible\"" % label)
     return problems
 
+def source_problems(nodes, regions):
+    # Every claim names where it came from: each insight, each next step on a page built from a
+    # template, and anything else marked data-source. The label is one of FIXED_SOURCES or a connected
+    # tool the scope lists in data-tools ("Shopify; Meta Ads"), and the reader sees it on the claim.
+    scope = (regions.get("scope") or [None])[0]
+    tools = [t.strip() for t in ((scope.attrs.get("data-tools") or "") if scope is not None else "").split(";") if t.strip()]
+    allowed = {label.lower() for label in FIXED_SOURCES + tuple(tools)}
+    steps = [item for region in regions.get("next-steps", []) for item in step_items(region)] if template_of(nodes) is not None else []
+    claims = [("insight %d" % i, n) for i, n in enumerate(blocks_named(nodes, "insight"), 1)]
+    claims += [("next step %d" % i, n) for i, n in enumerate(steps, 1)]
+    seen = {id(n) for _, n in claims}
+    claims += [("the claim", n) for n in nodes if "data-source" in n.attrs and id(n) not in seen]
+    problems = []
+    for name, node in claims:
+        label = "%s (\"%s\")" % (name, shown_label(node))
+        mark = node if "data-source" in node.attrs else next((n for n in walk(node) if "data-source" in n.attrs), None)
+        source = (mark.attrs.get("data-source") or "").strip() if mark is not None else ""
+        if not source:
+            problems.append("%s has no source label: say where it came from (%s, or the connected tool) in data-source and on the claim" % (label, ", ".join(FIXED_SOURCES)))
+        elif source.lower() not in allowed:
+            problems.append("%s's source \"%s\" is not a source label: use %s, or a connected tool the scope lists in data-tools" % (label, source, ", ".join(FIXED_SOURCES)))
+        elif not has(text(node, gap=" "), source):
+            problems.append("%s names its source (%s) in data-source but does not show it" % (label, source))
+    return problems if claims else None
+
 def r7(nodes, regions, out):
-    # Returns None (unmarked) on a page that cites no post and marks no explanation or capture:
-    # read it for an explanation the markup missed.
-    if not any(a in n.attrs for n in nodes for a in ("data-post", "data-explain", "data-saved") + EXPLAIN_PARTS):
+    # Returns None (unmarked) on a page that cites no post, marks no explanation or capture, and has
+    # no claim to label: read it for an explanation or a source the markup missed.
+    sources = source_problems(nodes, regions)
+    if sources is None and not any(a in n.attrs for n in nodes for a in ("data-post", "data-explain", "data-saved") + EXPLAIN_PARTS):
         return None
-    return post_link_problems(nodes) + explain_problems(nodes, out) + saved_problems(nodes)
+    return (sources or []) + post_link_problems(nodes) + explain_problems(nodes, out) + saved_problems(nodes)
 
 def question_code(regions):
     scope = (regions.get("scope") or [None])[0]
@@ -653,6 +768,181 @@ def paid_label(nodes, regions):
     return ["says \"%s\" %s: say \"paid label\" or \"no paid label\", or mark the brand's own posts or records with data-own"
             % (word, where) for word, where in sorted({(w, where) for (w, _), where in hits.items()})[:5]]
 
+# R10's length budget: the height of the argument, from the top of the page to the end of the
+# decisions, estimated at the default theme on a 1280 by 800 screen from the fill script's layout
+# (page-fill.md, blocks.md's block style). The evidence and everything after it sit below and are not
+# counted. The estimate is within a few percent of a rendered page; scripts/check-page-length.ts
+# holds it to that against Chromium.
+CHAR_EM = 0.5
+
+def elements(node, tag=None):
+    return [k for k in node.kids if isinstance(k, Node) and k.tag not in SKIP and (tag is None or k.tag == tag)]
+
+def wrap(words, width, font):
+    # The lines a text takes at a width, filling words greedily, at CHAR_EM ems a character.
+    if not words:
+        return 0
+    em, lines, used = CHAR_EM * font, 1, 0.0
+    for word in words.split():
+        need = len(word) * em
+        if used and used + em + need > width:
+            lines, used = lines + 1, need
+        else:
+            used += (em if used else 0) + need
+        while used > width:
+            lines, used = lines + 1, used - width
+    return lines
+
+def grid_height(node, width, column, cell):
+    items = elements(node)
+    cols = max(1, int((width + 14) // (column + 14)))
+    size = (width - 14 * (cols - 1)) / cols
+    rows = [items[i:i + cols] for i in range(0, len(items), cols)]
+    return sum(max(cell(k, size) for k in row) for row in rows) + 14 * max(0, len(rows) - 1)
+
+def kpi_height(node, width):
+    inner, height = width - 38, 34 + 29
+    for p in elements(node, "p"):
+        if "pb-label" in classes(p):
+            height += wrap(text(p), inner, 12.7) * 15
+        elif "pb-kpi-vs" in classes(p):
+            height += wrap("xx " + text(p), inner, 13.76) * 21.3
+        elif "pb-kpi-src" in classes(p):
+            height += 23
+    return height
+
+def insight_height(node, width):
+    inner, height, parts = width - 38, 34, 0
+    for k in elements(node):
+        if "pb-label" in classes(k):
+            height += 19
+        elif "pb-claim" in classes(k):
+            height += wrap(text(k), inner, 17.28) * 22.5
+        elif k.tag == "dl":
+            terms, said = elements(k, "dt"), elements(k, "dd")
+            term = max([len(text(t)) * CHAR_EM * 14.72 for t in terms] or [0])
+            height += sum(max(wrap(text(d), inner - term - 12, 14.72), wrap(text(t), term, 14.72)) * 22.8
+                          for t, d in zip(terms, said)) + 4 * max(0, len(said) - 1)
+        elif k.tag == "svg":
+            box = (k.attrs.get("viewbox") or "0 0 440 100").split()
+            height += min(inner, 440) * float(box[3]) / float(box[2]) if len(box) == 4 and float(box[2]) else 100
+        elif "pb-legend" in classes(k):
+            height += 20
+        elif "pb-so" in classes(k):
+            height += 16 + wrap(text(k), inner - 27, 15) * 23.25
+        else:
+            height += wrap(text(k), inner, 15) * 23.25
+        parts += 1
+    return height + 10 * max(0, parts - 1)
+
+def table_height(node, width):
+    # Columns share the width as a browser's automatic table layout does: each gets its longest word,
+    # then the room left in proportion to how much more its longest cell needs.
+    body = [elements(r, "td") for r in walk(node) if r.tag == "tr" and elements(r, "td")]
+    heads = [text(t) for t in walk(node) if t.tag == "th"]
+    if not body:
+        return 0
+    count, font = max(len(r) for r in body), 13.8
+    head = lambda i, f: f(heads[i]) * 0.62 * 11.52 if i < len(heads) else 0
+    most = [max([len(text(r[i])) * CHAR_EM * font for r in body if len(r) > i] + [head(i, len)]) for i in range(count)]
+    least = [max([max([len(w) for w in text(r[i]).split()] or [0]) * CHAR_EM * font for r in body if len(r) > i]
+                 + [head(i, lambda t: max([len(w) for w in t.split()] or [0]))]) for i in range(count)]
+    room = width - 20 * count
+    if sum(most) <= room:
+        sizes = most
+    elif sum(least) >= room:
+        sizes = least
+    else:
+        spare, extra = room - sum(least), sum(most) - sum(least)
+        sizes = [a + (b - a) * spare / extra for a, b in zip(least, most)]
+    height = 16 + max(wrap(t, sizes[i], 13.8) for i, t in enumerate(heads[:count])) * 15 if heads else 0
+    return height + sum(21 + max(wrap(text(td), sizes[i], font) for i, td in enumerate(r)) * 21.4 for r in body)
+
+def section_height(node, width):
+    card = "pb-card" in classes(node)
+    inner, height = width - (38 if card else 0), (34 if card else 0)
+    for k in elements(node):
+        if "pb-h" in classes(k):
+            height += 38
+        elif "pb-grid" in classes(k):
+            height += grid_height(k, inner, 260, insight_height) + (0 if card else 2)
+        elif k.tag == "table":
+            height += table_height(k, inner)
+        elif k.tag == "ol" and "pb-timeline" in classes(k):
+            height += 2 + sum(16 + wrap(text(li), inner - 130, 15) * 23.25 for li in elements(k, "li"))
+        elif k.tag == "ol":
+            items = elements(k, "li")
+            height += sum(22 + sum(wrap(text(part), inner - 130, 15) * 23.25 if "pb-meta" not in classes(part)
+                                   else wrap(text(part), inner - 24, 12.9) * 20 for part in elements(li) if text(part))
+                          for li in items) + 8 * max(0, len(items) - 1)
+        elif k.tag == "p":
+            height += 53.25
+        else:
+            height += wrap(text(k), inner, 15) * 23.25
+    return height
+
+def argument_height(main, width=1080):
+    height, count = 20, 0
+    for k in elements(main):
+        if "pf-head" in classes(k):
+            part = 46
+        elif k.attrs.get("data-block") == "scope":
+            part = 85
+        elif k.attrs.get("data-block") == "answer":
+            part = sum(wrap(text(h), width, 38.4) * 44.2 for h in elements(k, "h1"))
+            part += sum(8 + wrap(text(p), min(width, 780), 16.96) * 26.3 for p in elements(k, "p"))
+            part += 55 if any("pb-tally" in classes(n) for n in walk(k)) else 0
+        elif k.attrs.get("data-block") == "verdict-badge":
+            part = 48
+        elif "pb-checks" in classes(k):
+            part = 8 + 30 * len(elements(k, "li"))
+        elif "pb-kpis" in classes(k):
+            part = grid_height(k, width, 200, kpi_height)
+        else:
+            part = section_height(k, width)
+        height, count = height + part + (20 if count else 0), count + 1
+        if page_name(k) == "decisions":
+            break
+    return height
+
+def r10(nodes, regions, out):
+    # Returns None (unmarked) on a hand-written page: judge its length and its first screen by reading.
+    main = template_of(nodes)
+    if main is None:
+        return None
+    name, length = main.attrs.get("data-template", "").strip(), main.attrs.get("data-length", "").strip()
+    if name not in TEMPLATES:
+        return ["data-template names no template: %s" % (name or "(empty)")]
+    if name == "readout" and length not in ("daily", "weekly"):
+        return ["a Readout says whether it is daily or weekly in data-length"]
+    budget = BUDGETS.get(("%s %s" % (name, length)).strip())
+    height = argument_height(main)
+    screens = math.ceil(height / SCREEN[1] * 10) / 10
+    out["length"] = {"template": name, "height": round(height), "screens": screens, "budget": budget}
+    if budget is None or screens <= budget:
+        return []
+    return ["the page runs about %.1f screens to the end of its decisions, over the %s budget of %d: cut words from the answer, the insights, the next steps and the decisions, or move detail into the evidence"
+            % (screens, (name + " " + length).strip(), budget)]
+
+# R11's banned phrases come from glossary.md beside this script: each form, as whole words, in any case.
+PHRASES = []
+
+# The glossary fences its list; the fence is built so this script holds none of its own.
+FENCE = "`" * 3
+
+def load_phrases(folder):
+    source = (Path(folder) / "glossary.md").read_text(encoding="utf-8")
+    block = re.search(r"^<!-- banned-phrases -->\n%stext\n(.*?)\n%s\n<!-- /banned-phrases -->$" % (FENCE, FENCE), source, re.S | re.M)
+    if not block:
+        raise ValueError("glossary.md has no banned-phrases block")
+    found = []
+    for line in block.group(1).splitlines():
+        forms, _, instead = line.partition("|")
+        for form in (f.strip() for f in forms.split(",") if f.strip()):
+            words = r"\s+".join(re.escape(w).replace("'", "['\u2019]") for w in form.split())
+            found.append((re.compile(r"(?i)(?<![\w-])%s(?![\w-])" % words), form, instead.strip()))
+    return found
+
 def r11(nodes, regions, out):
     kept = list(walk(nodes[0], keep=lambda n: n.tag not in SKIP and not exempt(n)))
     shown = " ".join([text(nodes[0], gap=" ", skip=exempt)] +
@@ -666,6 +956,9 @@ def r11(nodes, regions, out):
     for pattern, kind in BANNED:
         for hit in sorted(set(pattern.findall(shown)))[:5]:
             problems.append("names %s: \"%s\"" % (kind, hit))
+    for pattern, form, instead in PHRASES:
+        if pattern.search(shown):
+            problems.append("uses the banned phrase \"%s\": %s (glossary.md)" % (form, instead))
     return problems + paid_label(nodes, regions)
 
 def post_label(post, index):
@@ -1111,13 +1404,16 @@ def r15(nodes, regions, out):
 CAN_BE_NA = {"R2", "R6", "R15"}
 NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
 # What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
-NO_RESULT = {"R5": ("unmarked", "the page has no decision, no next steps section, and no marked recommendation or trend to watch; read it for one"),
+NO_RESULT = {"R4": ("unmarked", "the page has no insight or KPI block; read it for a number with nothing beside it, and count its insights"),
+             "R10": ("unmarked", "the page is not built from a template; judge its length and its first screen by reading"),
+             "R5": ("unmarked", "the page has no decision, no next steps section, and no marked recommendation or trend to watch; read it for one"),
              "R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
              "R13": ("n/a", "the page names no question code and cites no post"),
              "R14": ("n/a", "the page cites no account and no post, its scope reports on no account, and it has no freshness entry"),
              "R15": ("unmarked", "the page marks no comparison; read it for one, and put R15 in data-na only when it compares nothing")}
-CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2),
-          ("R5", "Clear next steps, priced", r5), ("R6", "Decisions kept separate", r6), ("R7", "Real evidence, linked", r7), ("R11", "Plain language", r11),
+CHECKS = (("R1", "Reader and scope", r1), ("R2", "Platforms covered", r2), ("R3", "Answer first", r3),
+          ("R4", "Numbers have context", r4), ("R5", "Clear next steps, priced", r5), ("R6", "Decisions kept separate", r6),
+          ("R7", "Real evidence, linked", r7), ("R10", "Fits the reader", r10), ("R11", "Plain language", r11),
           ("R13", "Required metrics", r13), ("R14", "Data freshness", r14), ("R15", "Like for like", r15))
 
 def check(path):
@@ -1152,10 +1448,16 @@ def check(path):
     return results, out
 
 # What a check lists beside its result line, for the page check block (SKILL.md, section 7).
-LISTED = {"R7": ("explanations",), "R15": ("comparisons",)}
+LISTED = {"R7": ("explanations",), "R10": ("length",), "R15": ("comparisons",)}
 
 def main(paths):
     status = 0
+    try:
+        PHRASES[:] = load_phrases(Path(__file__).resolve().parent)
+    except (OSError, ValueError) as error:
+        print(json.dumps({"page": None, "check": "error", "result": "error",
+                          "problems": ["copy glossary.md from the page-standard folder beside page_check.py: %r" % error]}))
+        return 2
     for path in paths:
         try:
             results, listed = check(path)

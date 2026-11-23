@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "template": "profile",
+  "example": true,
+  "title": "Is @buildwithmaya right for the spring launch?",
+  "answer": "Book @buildwithmaya for two build videos: her audience is the parents the launch needs. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period.",
+  "takeaway": "Her build videos get 2.8 times the views of creators her size, and no post was flagged.",
+  "scope": {
+    "reader": "the influencer manager",
+    "brand": "Brightside Toys",
+    "range": "Aug 24 to Nov 22, 2026",
+    "question": "I2",
+    "accounts": [
+      "instagram:buildwithmaya"
+    ],
+    "platforms": [
+      {
+        "network": "instagram",
+        "posts": 36
+      }
+    ],
+    "na": [
+      "R2"
+    ]
+  },
+  "figures": [
+    {
+      "label": "Median views",
+      "value": 52100,
+      "comparison": "18,600 for creators her size",
+      "status": "ok",
+      "source": "Atlas"
+    },
+    {
+      "label": "Engagement per 1,000 views",
+      "value": 61,
+      "comparison": "44 for creators her size. The figures held steady across both platforms over the period. The figures held steady across",
+      "status": "ok",
+      "source": "Atlas"
+    },
+    {
+      "label": "Comments that are positive",
+      "value": "87%",
+      "comparison": "from 2,140 comments read. The figures held steady across both platforms over the period.",
+      "status": "ok",
+      "source": "Atlas"
+    }
+  ],
+  "insights": [
+    {
+      "text": "Her build videos do best when her twins finish the build on camera.",
+      "evidence": "The 9 videos that end on a finished build averaged 71,000 views.",
+      "comparison": "38,000 for her other 27 posts",
+      "so": "Ask for a finished build in both videos.",
+      "source": "Atlas"
+    },
+    {
+      "text": "Most of her audience is parents of children under 10. The figures held steady across both platforms over the period.",
+      "evidence": "64% of her engaged accounts are women aged 25 to 44.",
+      "comparison": "the brand's own audience is 58% women aged 25 to 44",
+      "so": "She reaches the same buyers as the brand's own posts. The figures held steady across both platforms over the period.",
+      "source": "Atlas"
+    }
+  ],
+  "actions": [
+    {
+      "rank": 1,
+      "verb": "Send",
+      "object": "an offer for two build videos",
+      "owner": "Influencer manager",
+      "due": "2026-12-02",
+      "effect": "A yes before the brief goes out on Dec 9",
+      "job": "creator-outreach",
+      "cost": {
+        "kind": "none",
+        "line": "No spend until she agrees"
+      },
+      "source": "Our read"
+    }
+  ],
+  "decisions": [
+    {
+      "text": "Approve a fee of USD 1,800 for the two videos",
+      "approver": "the influencer manager",
+      "by": "2026-12-01",
+      "then": "Atlas drafts the offer.",
+      "cost": {
+        "kind": "money",
+        "line": "Cost: USD 1,800 once, 2 videos at USD 900 each from the fee calculator."
+      }
+    }
+  ],
+  "evidence": [],
+  "gaps": [
+    "TikTok: she has no TikTok account in Atlas, so only Instagram is read."
+  ],
+  "confidence": {
+    "level": "high",
+    "why": "36 posts from the last 13 weeks, read this week."
+  },
+  "sources": [
+    "Posts and audience Atlas holds for @buildwithmaya, Aug 24 to Nov 22, 2026",
+    "The brand's fee calculator"
+  ],
+  "drafts": [
+    {
+      "draft": "The offer for two build videos",
+      "waitsOn": "After you approve the fee"
+    }
+  ],
+  "sections": {
+    "creators": [
+      {
+        "account": "instagram:buildwithmaya",
+        "href": "https://www.instagram.com/buildwithmaya/",
+        "name": "Maya Ortiz",
+        "verdict": "yes",
+        "reason": "Her audience matches the brand's buyers, and her build videos beat creators her size.",
+        "checks": "fit, audience, brand safety, competitor deals",
+        "stats": [
+          {
+            "label": "Followers",
+            "value": "48,200",
+            "source": "Atlas"
+          },
+          {
+            "label": "Fee",
+            "value": "USD 900 a video",
+            "source": "Our read"
+          }
+        ]
+      }
+    ],
+    "posts": [
+      {
+        "href": "https://www.instagram.com/reel/EXAMPLE3/",
+        "account": "instagram:buildwithmaya",
+        "postedAt": "Nov 14, 2026, 6:30 PM ET",
+        "metrics": {
+          "views": 61200,
+          "likes": 3880,
+          "comments": 204,
+          "engagement": 66.7
+        },
+        "usual": "1.2x her usual",
+        "why": "Her best recent post: the twins finish a castle set."
+      },
+      {
+        "href": "https://www.instagram.com/p/EXAMPLE5/",
+        "account": "instagram:buildwithmaya",
+        "postedAt": "Oct 30, 2026, 8:05 AM ET",
+        "metrics": {
+          "likes": 1210,
+          "comments": 46
+        },
+        "missing": {
+          "views": "image posts have no view count",
+          "engagement": "image posts have no view count"
+        },
+        "why": "Her lowest recent post: a photo with no build."
+      }
+    ]
+  },
+  "footer": {
+    "updated": "2026-11-23T14:05Z",
+    "freshness": [
+      {
+        "account": "instagram:buildwithmaya",
+        "newest": "2026-11-20",
+        "fetched": "2026-11-22"
+      }
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas. Not for any decision. Internal use only. Not for public publishing."
+  }
+}

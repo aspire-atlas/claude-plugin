@@ -80,6 +80,9 @@ is in **Quality review**, **3**.
   or counts ("Atlas reads public posts", "3 picks and 2 passes") pass, and the English read judges
   them. Say what the thing is: "the creators we recommend", "this week's results", "Atlas compared",
   "this review", "the spot for reach", "the people who do the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
+- **R11, banned phrases.** It also fails on a phrase on the banned-phrase list (**Page standard**,
+  `glossary.md`, section 2), outside quoted words: filler, sales talk and vague verbs such as
+  "leverage", "deep dive" or "going forward". The list gives what to say instead.
 - **R11, paid label or none.** A post by someone other than the brand has a "paid label" or "no
   paid label", never "organic" or "unpaid". The rule, the pages and places the script reads, and
   what is left to judgment are in **Page standard**, section 8 (`post-kinds.md`).

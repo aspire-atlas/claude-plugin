@@ -206,6 +206,8 @@ async function scripted(page: string, dir: string): Promise<{ results: Record<st
   mkdirSync(scriptDir, { recursive: true })
   const script = join(scriptDir, 'page_check.py')
   writeFileSync(script, extractPageCheckScript(readFileSync(join(PLUGIN, 'skills/page-standard/page-check.md'), 'utf8')))
+  // The script reads the banned phrases from glossary.md beside it, as the skill's command copies it.
+  copyFileSync(join(PLUGIN, 'skills/page-standard/glossary.md'), join(scriptDir, 'glossary.md'))
   const run = Bun.spawnSync(['python3', '-I', script, page])
   const parsed = parsePageCheck(run.stdout.toString())
   const note = run.exitCode === 2 || !Object.keys(parsed.results).length ? `the page-check script could not read the page (exit ${run.exitCode})` : null
