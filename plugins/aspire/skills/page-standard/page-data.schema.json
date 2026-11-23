@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "page-data.schema.json",
+  "title": "Page data",
+  "description": "The data an agent hands the fill step (page-fill.md) instead of writing a page. templates.md explains each field. The fill step reads this file and checks a data file against it, then checks the rules it cannot state (templates.md, section 3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "template", "title", "answer", "scope", "figures", "insights", "actions", "decisions", "gaps", "confidence", "sources", "footer"],
+  "properties": {
+    "version": {"const": 1},
+    "template": {"enum": ["readout", "shortlist", "verdict", "profile", "plan", "dashboard"]},
+    "length": {"enum": ["daily", "weekly"], "description": "Which length budget a Readout keeps. Only a Readout sets it."},
+    "example": {"type": "boolean", "description": "True on a page of invented brands and numbers. The page then carries an Example label."},
+    "title": {"$ref": "#/$defs/text90", "description": "The question the page answers."},
+    "answer": {"$ref": "#/$defs/text280", "description": "The answer in one sentence. It is the page's h1."},
+    "takeaway": {"$ref": "#/$defs/text280", "description": "The one number or reason that backs the answer, against a comparison."},
+    "scope": {"$ref": "#/$defs/scope"},
+    "figures": {"type": "array", "maxItems": 3, "items": {"$ref": "#/$defs/figure"}},
+    "insights": {"type": "array", "maxItems": 3, "items": {"$ref": "#/$defs/insight"}},
+    "actions": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"$ref": "#/$defs/action"}},
+    "decisions": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/decision"}},
+    "evidence": {"type": "array", "maxItems": 10, "items": {"$ref": "#/$defs/evidence"}},
+    "gaps": {"type": "array", "maxItems": 3, "items": {"$ref": "#/$defs/text200"}},
+    "confidence": {"$ref": "#/$defs/confidence"},
+    "sources": {"type": "array", "minItems": 1, "maxItems": 8, "items": {"$ref": "#/$defs/text200"}},
+    "method": {"$ref": "#/$defs/method"},
+    "drafts": {"type": "array", "maxItems": 5, "items": {"$ref": "#/$defs/draft"}},
+    "sections": {"$ref": "#/$defs/sections"},
+    "theme": {"$ref": "#/$defs/theme"},
+    "footer": {"$ref": "#/$defs/footer"}
+  },
+  "$defs": {
+    "text40": {"type": "string", "minLength": 1, "maxLength": 40},
+    "text60": {"type": "string", "minLength": 1, "maxLength": 60},
+    "text80": {"type": "string", "minLength": 1, "maxLength": 80},
+    "text90": {"type": "string", "minLength": 1, "maxLength": 90},
+    "text120": {"type": "string", "minLength": 1, "maxLength": 120},
+    "text140": {"type": "string", "minLength": 1, "maxLength": 140},
+    "text200": {"type": "string", "minLength": 1, "maxLength": 200},
+    "text280": {"type": "string", "minLength": 1, "maxLength": 280},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "network": {"enum": ["instagram", "tiktok", "youtube"]},
+    "account": {"type": "string", "pattern": "^(instagram|tiktok|youtube):[A-Za-z0-9_.]{1,64}$", "description": "{network}:{handle}, with no @."},
+    "link": {"type": "string", "maxLength": 512, "pattern": "^https://[^\\s\"<>]+$"},
+    "source": {"type": "string", "minLength": 1, "maxLength": 80, "description": "Atlas, Brand memory, Web, You, Our read, or a connected tool named in scope.tools."},
+    "status": {"enum": ["ok", "warn", "bad", "flat"]},
+    "cost": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "line"],
+      "properties": {
+        "kind": {"enum": ["money", "none", "unpriced", "team", "reader"]},
+        "line": {"$ref": "#/$defs/text200", "description": "The cost line recommendations.md sets, as the page shows it."},
+        "period": {"enum": ["month"], "description": "A cost that recurs each month."},
+        "missing": {"$ref": "#/$defs/text80", "description": "On a cost that cannot be priced: the figure that is missing, as the line shows it."},
+        "holder": {"$ref": "#/$defs/text60", "description": "On a cost that cannot be priced: who has that figure, as the line shows it."}
+      }
+    },
+    "scope": {
+      "type": "object", "additionalProperties": false, "required": ["reader", "brand", "range", "accounts", "platforms"],
+      "properties": {
+        "reader": {"$ref": "#/$defs/text80"},
+        "brand": {"$ref": "#/$defs/text80"},
+        "range": {"$ref": "#/$defs/text60"},
+        "question": {"type": "string", "pattern": "^[A-Z][0-9]{1,2}$", "description": "The question code (page standard, section 8). Leave it out on a page that answers no code."},
+        "preparedBy": {"$ref": "#/$defs/text80"},
+        "accounts": {"type": "array", "maxItems": 40, "items": {"$ref": "#/$defs/account"}},
+        "platforms": {
+          "type": "array", "minItems": 1, "maxItems": 3,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["network", "posts"],
+            "properties": {
+              "network": {"$ref": "#/$defs/network"},
+              "posts": {"type": "integer", "minimum": 0},
+              "note": {"$ref": "#/$defs/text120", "description": "On a platform with no posts: what connecting it would add."}
+            }
+          }
+        },
+        "na": {"type": "array", "maxItems": 3, "items": {"enum": ["R2", "R6", "R15"]}},
+        "tools": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/text40"}, "description": "Connected tools the page's figures came from, by the name the reader knows."}
+      }
+    },
+    "figure": {
+      "type": "object", "additionalProperties": false, "required": ["label", "value", "comparison"],
+      "properties": {
+        "label": {"$ref": "#/$defs/text60"},
+        "value": {"type": ["string", "number"], "maxLength": 60},
+        "comparison": {"$ref": "#/$defs/text140"},
+        "status": {"$ref": "#/$defs/status"},
+        "source": {"$ref": "#/$defs/source"}
+      }
+    },
+    "bar": {
+      "type": "object", "additionalProperties": false, "required": ["label", "segments"],
+      "properties": {
+        "label": {"$ref": "#/$defs/text40"},
+        "segments": {
+          "type": "array", "minItems": 1, "maxItems": 6,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "value"],
+            "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"type": "number", "minimum": 0}}
+          }
+        }
+      }
+    },
+    "chart": {
+      "type": "object", "additionalProperties": false, "required": ["title", "bars"],
+      "description": "A stacked bar chart. Pages never draw pies.",
+      "properties": {
+        "title": {"$ref": "#/$defs/text80"},
+        "unit": {"$ref": "#/$defs/text40"},
+        "bars": {"type": "array", "minItems": 1, "maxItems": 6, "items": {"$ref": "#/$defs/bar"}}
+      }
+    },
+    "insight": {
+      "type": "object", "additionalProperties": false, "required": ["text", "evidence", "comparison", "so", "source"],
+      "properties": {
+        "text": {"$ref": "#/$defs/text280", "description": "The claim, with no hedge."},
+        "evidence": {"$ref": "#/$defs/text280"},
+        "comparison": {"$ref": "#/$defs/text140"},
+        "so": {"$ref": "#/$defs/text280", "description": "The action the insight points to. Hedges go here."},
+        "source": {"$ref": "#/$defs/source"},
+        "chart": {"$ref": "#/$defs/chart"}
+      }
+    },
+    "action": {
+      "type": "object", "additionalProperties": false, "required": ["rank", "verb", "object", "owner", "due", "effect", "job", "cost", "source"],
+      "properties": {
+        "rank": {"type": "integer", "minimum": 1},
+        "verb": {"type": "string", "minLength": 1, "maxLength": 30, "pattern": "^[A-Z][a-z-]*$"},
+        "object": {"$ref": "#/$defs/text140"},
+        "owner": {"$ref": "#/$defs/text60"},
+        "due": {"$ref": "#/$defs/date"},
+        "effect": {"$ref": "#/$defs/text140"},
+        "job": {
+          "description": "The /aspire job that does the step: a brand snapshot report job, or an agent by its name without the atlas- prefix.",
+          "enum": ["connect-channels", "account-review", "creator-discovery", "creator-vetting", "creator-brief", "creator-outreach",
+                   "content-sourcing", "ad-reuse", "brand-safety", "weekly-report",
+                   "affiliate-manager", "campaign-orchestrator", "content-library", "content-review", "creator-negotiation",
+                   "creator-profile", "daily-insights-report", "deliverable-tracker", "market-signal", "post-analysis",
+                   "ppa-pitch", "product-fulfillment", "profile-analyst", "program-dashboard", "program-ledger",
+                   "quality-review", "quarterly-signal", "roster-manager", "shops", "weekly-insights-report"]
+        },
+        "cost": {"$ref": "#/$defs/cost"},
+        "source": {"$ref": "#/$defs/source"},
+        "first": {"type": "boolean", "description": "The one step the reader does first."}
+      }
+    },
+    "decision": {
+      "type": "object", "additionalProperties": false, "required": ["text", "approver", "then", "cost"],
+      "properties": {
+        "text": {"$ref": "#/$defs/text140"},
+        "approver": {"$ref": "#/$defs/text60"},
+        "by": {"$ref": "#/$defs/date"},
+        "then": {"$ref": "#/$defs/text140", "description": "What happens once it is approved."},
+        "cost": {"$ref": "#/$defs/cost"}
+      }
+    },
+    "evidence": {
+      "type": "object", "additionalProperties": false, "required": ["text", "source"],
+      "properties": {
+        "text": {"$ref": "#/$defs/text200"},
+        "href": {"$ref": "#/$defs/link"},
+        "source": {"$ref": "#/$defs/source"}
+      }
+    },
+    "confidence": {
+      "type": "object", "additionalProperties": false, "required": ["level", "why"],
+      "properties": {
+        "level": {"enum": ["high", "medium", "low"]},
+        "why": {"$ref": "#/$defs/text200"}
+      }
+    },
+    "method": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "weights": {
+          "type": "array", "minItems": 1, "maxItems": 8,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "percent"],
+            "properties": {"label": {"$ref": "#/$defs/text120"}, "percent": {"type": "integer", "minimum": 1, "maximum": 100}}
+          }
+        },
+        "notes": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/text280"}}
+      }
+    },
+    "draft": {
+      "type": "object", "additionalProperties": false, "required": ["draft", "waitsOn"],
+      "properties": {"draft": {"$ref": "#/$defs/text120"}, "waitsOn": {"$ref": "#/$defs/text80"}}
+    },
+    "kpi": {
+      "type": "object", "additionalProperties": false, "required": ["label", "value", "comparison"],
+      "properties": {
+        "label": {"$ref": "#/$defs/text60"},
+        "value": {"type": ["string", "number"], "maxLength": 60},
+        "comparison": {"$ref": "#/$defs/text140"},
+        "status": {"$ref": "#/$defs/status"},
+        "source": {"$ref": "#/$defs/source"}
+      }
+    },
+    "creator": {
+      "type": "object", "additionalProperties": false, "required": ["account", "href", "verdict", "reason"],
+      "properties": {
+        "account": {"$ref": "#/$defs/account"},
+        "href": {"$ref": "#/$defs/link"},
+        "name": {"$ref": "#/$defs/text60"},
+        "group": {"$ref": "#/$defs/text40"},
+        "verdict": {"enum": ["yes", "maybe", "no"]},
+        "reason": {"$ref": "#/$defs/text280"},
+        "checks": {"$ref": "#/$defs/text200"},
+        "stats": {
+          "type": "array", "maxItems": 3,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "value"],
+            "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"$ref": "#/$defs/text40"}, "source": {"$ref": "#/$defs/source"}}
+          }
+        },
+        "settle": {"$ref": "#/$defs/text200", "description": "The one question that would settle a Maybe."}
+      }
+    },
+    "post": {
+      "type": "object", "additionalProperties": false, "required": ["href", "account", "postedAt", "metrics"],
+      "properties": {
+        "href": {"$ref": "#/$defs/link"},
+        "account": {"$ref": "#/$defs/account"},
+        "postedAt": {"$ref": "#/$defs/text60", "description": "The post's own time with its time zone, as the page shows it."},
+        "image": {"type": "string", "maxLength": 400000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"},
+        "alt": {"$ref": "#/$defs/text140"},
+        "metrics": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "views": {"type": "number", "minimum": 0}, "likes": {"type": "number", "minimum": 0},
+            "comments": {"type": "number", "minimum": 0}, "shares": {"type": "number", "minimum": 0},
+            "saves": {"type": "number", "minimum": 0}, "engagement": {"type": "number", "minimum": 0}
+          }
+        },
+        "missing": {
+          "type": "object", "additionalProperties": false, "description": "Each metric the post cannot show, with the reason.",
+          "properties": {
+            "views": {"$ref": "#/$defs/text120"}, "likes": {"$ref": "#/$defs/text120"}, "comments": {"$ref": "#/$defs/text120"},
+            "shares": {"$ref": "#/$defs/text120"}, "saves": {"$ref": "#/$defs/text120"}, "engagement": {"$ref": "#/$defs/text120"}
+          }
+        },
+        "usual": {"$ref": "#/$defs/text40", "description": "The views against the creator's usual, as \"3.1x her usual\"."},
+        "why": {"$ref": "#/$defs/text200"},
+        "quote": {"$ref": "#/$defs/text280", "description": "Words from the post, quoted exactly."}
+      }
+    },
+    "verdict": {
+      "type": "object", "additionalProperties": false, "required": ["call", "status", "reason"],
+      "properties": {
+        "call": {"$ref": "#/$defs/text40", "description": "The verdict in a few words, such as Go, No go, or Fix first."},
+        "status": {"$ref": "#/$defs/status"},
+        "reason": {"$ref": "#/$defs/text280"},
+        "checks": {
+          "type": "array", "maxItems": 12,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "status", "note"],
+            "properties": {"label": {"$ref": "#/$defs/text60"}, "status": {"$ref": "#/$defs/status"}, "note": {"$ref": "#/$defs/text200"}}
+          }
+        }
+      }
+    },
+    "step": {
+      "type": "object", "additionalProperties": false, "required": ["when", "what"],
+      "properties": {"when": {"$ref": "#/$defs/text40"}, "what": {"$ref": "#/$defs/text200"}, "who": {"$ref": "#/$defs/text60"}}
+    },
+    "sections": {
+      "type": "object", "additionalProperties": false,
+      "description": "The typed sections a template may add. page-templates.json says which each template needs and allows.",
+      "properties": {
+        "kpis": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"$ref": "#/$defs/kpi"}},
+        "creators": {"type": "array", "minItems": 1, "maxItems": 60, "items": {"$ref": "#/$defs/creator"}},
+        "posts": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/post"}},
+        "verdict": {"$ref": "#/$defs/verdict"},
+        "steps": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/step"}}
+      }
+    },
+    "theme": {
+      "type": "object", "additionalProperties": false,
+      "description": "A saved brand theme (theme.md, Page tokens): its token rules and its fonts link.",
+      "properties": {
+        "css": {"type": "string", "maxLength": 8000},
+        "fontsHref": {"type": "string", "maxLength": 512, "pattern": "^https://fonts\\.googleapis\\.com/[^\\s\"<>]+$"}
+      }
+    },
+    "freshness": {
+      "type": "object", "additionalProperties": false, "required": ["account", "newest"],
+      "properties": {
+        "account": {"$ref": "#/$defs/account"},
+        "newest": {"type": "string", "pattern": "^([0-9]{4}-[0-9]{2}-[0-9]{2}|none)$"},
+        "fetched": {"type": "string", "pattern": "^([0-9]{4}-[0-9]{2}-[0-9]{2}|none|unknown)$"},
+        "changed": {"$ref": "#/$defs/date"},
+        "note": {"$ref": "#/$defs/text120", "description": "Behind its pace, refreshed in this run, or skipped. Team pages only."}
+      }
+    },
+    "footer": {
+      "type": "object", "additionalProperties": false, "required": ["updated", "freshness", "source"],
+      "properties": {
+        "updated": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z$"},
+        "freshness": {"type": "array", "maxItems": 40, "items": {"$ref": "#/$defs/freshness"}},
+        "notes": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/text200"}},
+        "source": {"type": "string", "minLength": 1, "maxLength": 600, "description": "The source line, word for word as artifact-standard.md, section 2 or 3, sets it for this page."}
+      }
+    }
+  }
+}

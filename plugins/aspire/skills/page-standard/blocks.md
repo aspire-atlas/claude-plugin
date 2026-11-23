@@ -18,6 +18,7 @@ build it.
 - [4. Building a page from the blocks](#4-building-a-page-from-the-blocks)
 - [5. The validated examples, block by block](#5-the-validated-examples-block-by-block)
 - [6. Sections the flow builds itself](#6-sections-the-flow-builds-itself)
+- [7. The template components](#7-the-template-components)
 
 ## 1. Rules for every block
 
@@ -90,6 +91,8 @@ build it.
 | Explanation | 3 | `explanation` | 3.21 |
 | Saved evidence | 6 | `saved-evidence` | 3.22 |
 | Trend to watch | 3 | `trend` | 3.23 |
+| KPI tile | 2 | `kpi` | 3.24 |
+| Verdict badge | 2 | `verdict-badge` | 3.25 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -251,6 +254,23 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-quote blockquote{margin:0;font-size:.98rem}
 .pb-quote figcaption{font-size:.82rem;color:var(--muted)}
 .pb-quote a{color:inherit}
+/* 3.24 KPI tile, 3.25 verdict badge, and the stacked bar chart in 3.4 */
+.pb-kpis{grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}
+.pb-kpi{display:grid;gap:4px;align-content:start}
+.pb-kpi p{margin:0}
+.pb-kpi-value{font:600 1.6rem/1.15 var(--font-display);color:var(--text)}
+.pb-kpi-vs{display:flex;gap:6px;align-items:baseline;font-size:.86rem;color:var(--muted)}
+.pb-kpi-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--pb-flat)}
+.pb-kpi-dot.pb-ok{background:var(--pb-ok)}.pb-kpi-dot.pb-warn{background:var(--pb-warn)}.pb-kpi-dot.pb-bad{background:var(--pb-bad)}
+.pb-badge{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;padding:12px 16px;border-radius:var(--radius,10px);font-size:.98rem}
+.pb-badge-call{font:700 1.15rem/1.2 var(--font-display);text-transform:uppercase;letter-spacing:.04em}
+.pb-checks{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:.9rem}
+.pb-src{font-size:.7rem;padding:0 7px;color:var(--muted)}
+.pb-stack{display:block;width:100%;max-width:440px;height:auto}
+.pb-stack text{font:12px var(--font-body);fill:var(--text)}
+.pb-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0;padding:0;list-style:none;font-size:.82rem;color:var(--muted)}
+.pb-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.pb-confidence{margin:4px 0 0;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;font-size:.9rem}
 @media print{.pb-beats{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
 </style>
 ```
@@ -352,7 +372,8 @@ one, unless the flow's reference gives each insight its own chart.
 - The comparison names what the number is compared with: last period, peers, a goal, or the
   account's own usual.
 - The chart is inline SVG on the `--chart-*` tokens, with a `<title>` and an `aria-label`.
-  A chart that shows above or below baseline uses the status tokens.
+  A chart that shows above or below baseline uses the status tokens. A chart of parts is a
+  stacked bar, one bar per group, with a legend under it. Never a pie.
 - Put several cards in `<div class="pb-grid">`, headline insight first.
 - A big number that backs the evidence goes in a `pb-stat` line: the figure, then one sentence.
 - **Summary variant.** On a long readout, the top of the page can carry one short card per
@@ -917,6 +938,49 @@ in the decisions.
 ```
 <!-- /block:trend -->
 
+### 3.24 KPI tile
+
+**Holds:** one headline figure: its label, its value, and what it is compared with. A page shows
+its figures as a row of tiles under the answer; a tracker may show up to twelve.
+
+- The comparison is always there: last period, a goal, the account's usual, or peers.
+- `data-status` is `ok`, `warn`, `bad`, or `flat`, and the dot beside the comparison takes that
+  status token. Use `flat` when the figure is neither good nor bad.
+- The source chip names where the figure came from: Atlas, Brand memory, Web, You, Our read, or
+  the connected tool by name.
+- Tiles sit in `<div class="pb-grid pb-kpis">`.
+
+<!-- block:kpi -->
+```html
+<article class="pb-card pb-kpi" data-block="kpi" data-status="ok">
+  <p class="pb-label">Views last week</p>
+  <p class="pb-kpi-value pb-num">412,800</p>
+  <p class="pb-kpi-vs"><span class="pb-kpi-dot pb-ok"></span>1.4 times the 8-week median of 291,000</p>
+  <p><span class="pb-chip pb-src" title="Source">Atlas</span></p>
+</article>
+```
+<!-- /block:kpi -->
+
+### 3.25 Verdict badge
+
+**Holds:** the call on one piece of work or one post, such as Go, No go, or Fix first, with the one
+reason that decided it. It sits right under the answer. The checks behind it follow as a list,
+each with a status chip and one line.
+
+- The badge takes its status token: `pb-ok` for a go, `pb-warn` for a fix, `pb-bad` for a no go,
+  `pb-flat` for no call yet.
+- Each check says what was checked and what was found. A check that fails names the fix.
+
+<!-- block:verdict-badge -->
+```html
+<div class="pb-badge pb-warn" data-block="verdict-badge" data-verdict="warn"><b class="pb-badge-call">Fix first</b><span>The post follows the brief, but the paid label is missing.</span></div>
+<ul class="pb-checks">
+  <li><span class="pb-chip pb-ok">Pass</span> <b>Brief</b> <span class="pb-muted">Shows the playset in the first 3 seconds, as the brief asks.</span></li>
+  <li><span class="pb-chip pb-warn">Fix</span> <b>Paid label</b> <span class="pb-muted">Add the paid partnership label before it goes live.</span></li>
+</ul>
+```
+<!-- /block:verdict-badge -->
+
 ## 4. Building a page from the blocks
 
 1. **Pick the blocks for this question and reader.** Every page has the scope header with its
@@ -1080,3 +1144,19 @@ calculator needs script; the blocks never do, so the page states the calculator'
 in plain text where the blocks show it, and the page still reads correctly without script.
 
 When the same section turns up on a second question's validated page, it becomes a block here.
+
+## 7. The template components
+
+The page templates (`templates.md` in this folder) draw every page from these blocks. Each
+component the templates name is one block:
+
+| Component | Block |
+| --------- | ----- |
+| KPI tile | 3.24 |
+| Insight block | 3.4, with its chart as a stacked bar |
+| Action list | 3.6, each row with its source chip and the job Atlas can do it with |
+| Creator card | 3.7, the verdict and its reason, under the creator's handle line. A page that needs the full creator card (`creator-card.md`) still draws it as 3.7 says |
+| Post card | 3.8 |
+| Verdict badge | 3.25 |
+| Gaps block | 3.12, with the confidence line |
+| Plan steps | 3.17 |

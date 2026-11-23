@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "template": "readout",
+  "length": "weekly",
+  "example": true,
+  "title": "Why did last week's posts do well?",
+  "answer": "Short how-to videos carried the week: post three more before Friday.",
+  "takeaway": "The 4 how-to videos drew 58% of the week's views, against 31% in the 8 weeks before.",
+  "scope": {
+    "reader": "the social team",
+    "brand": "Brightside Toys",
+    "range": "Nov 16 to 22, 2026",
+    "question": "O1",
+    "accounts": [
+      "instagram:brightsidetoys",
+      "tiktok:brightsidetoys"
+    ],
+    "platforms": [
+      {
+        "network": "instagram",
+        "posts": 9
+      },
+      {
+        "network": "tiktok",
+        "posts": 6
+      },
+      {
+        "network": "youtube",
+        "posts": 0,
+        "note": "Connecting it would add long-form reviews."
+      }
+    ]
+  },
+  "figures": [
+    {
+      "label": "Views last week",
+      "value": 412800,
+      "comparison": "1.4 times the 8-week median of 291,000",
+      "status": "ok",
+      "source": "Atlas"
+    },
+    {
+      "label": "Shares per 1,000 views",
+      "value": 6.2,
+      "comparison": "4.1 in the 8 weeks before",
+      "status": "ok",
+      "source": "Atlas"
+    },
+    {
+      "label": "Posts",
+      "value": 15,
+      "comparison": "the same as the week before",
+      "status": "flat",
+      "source": "Atlas"
+    },
+    {
+      "label": "Saves",
+      "value": 4100,
+      "comparison": "3,200 the week before"
+    }
+  ],
+  "insights": [
+    {
+      "text": "Short how-to videos drew most of the week's views.",
+      "evidence": "4 how-to videos had 58% of the views from 15 posts.",
+      "comparison": "31% in the 8 weeks before",
+      "so": "Post three more how-to videos this week. The lift may fade once the holiday buying ends.",
+      "source": "Atlas",
+      "chart": {
+        "title": "Share of views by kind of post",
+        "unit": "%",
+        "bars": [
+          {
+            "label": "8 weeks before",
+            "segments": [
+              {
+                "label": "How-to",
+                "value": 31
+              },
+              {
+                "label": "Product shots",
+                "value": 44
+              },
+              {
+                "label": "Other",
+                "value": 25
+              }
+            ]
+          },
+          {
+            "label": "Last week",
+            "segments": [
+              {
+                "label": "How-to",
+                "value": 58
+              },
+              {
+                "label": "Product shots",
+                "value": 27
+              },
+              {
+                "label": "Other",
+                "value": 15
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "text": "Posts that asked a question in the first line drew twice the comments.",
+      "evidence": "5 posts with a question opener averaged 96 comments.",
+      "comparison": "48 on the other 10 posts",
+      "so": "Open the next three captions with a question about the build.",
+      "source": "Our read"
+    },
+    {
+      "text": "TikTok posts went out at the wrong hour for this audience.",
+      "evidence": "4 of 6 TikTok posts went live before 9 AM ET.",
+      "comparison": "the 2 evening posts drew 2.3 times the views",
+      "so": "Move TikTok posts to 6 to 8 PM ET for two weeks, then compare.",
+      "source": "Atlas"
+    }
+  ],
+  "actions": [
+    {
+      "rank": 1,
+      "verb": "Post",
+      "object": "three short how-to videos on Instagram and TikTok",
+      "owner": "Social lead",
+      "due": "2026-11-27",
+      "effect": "Keep views at 1.3 times the median or more",
+      "job": "creator-brief",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Atlas",
+      "first": true
+    },
+    {
+      "rank": 2,
+      "verb": "Move",
+      "object": "TikTok posts to 6 to 8 PM ET",
+      "owner": "Social lead",
+      "due": "2026-11-24",
+      "effect": "2 times the views per TikTok post in two weeks",
+      "job": "weekly-insights-report",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Atlas"
+    }
+  ],
+  "decisions": [],
+  "evidence": [],
+  "gaps": [
+    "Paid results: connecting the Meta ad account would show which posts were boosted."
+  ],
+  "confidence": {
+    "level": "medium",
+    "why": "15 posts is a small week, so the how-to lift needs a second week to hold."
+  },
+  "sources": [
+    "Posts Atlas holds for @brightsidetoys on Instagram and TikTok, Sep 21 to Nov 22, 2026"
+  ],
+  "drafts": [
+    {
+      "draft": "Briefs for the three how-to videos",
+      "waitsOn": "When you ask"
+    }
+  ],
+  "sections": {
+    "posts": [
+      {
+        "href": "https://www.instagram.com/reel/EXAMPLE1/",
+        "account": "instagram:brightsidetoys",
+        "postedAt": "Nov 18, 2026, 7:10 PM ET",
+        "metrics": {
+          "views": 96400,
+          "likes": 4210,
+          "comments": 188,
+          "shares": 702,
+          "saves": 1350,
+          "engagement": 67.6
+        },
+        "usual": "2.6x the usual",
+        "why": "Builds the playset in 40 seconds with the steps on screen."
+      },
+      {
+        "href": "https://www.tiktok.com/@brightsidetoys/video/EXAMPLE2",
+        "account": "tiktok:brightsidetoys",
+        "postedAt": "Nov 20, 2026, 7:45 PM ET",
+        "metrics": {
+          "views": 71800,
+          "likes": 3920,
+          "comments": 141,
+          "shares": 515,
+          "engagement": 63.7
+        },
+        "missing": {
+          "saves": "TikTok gives save counts only for connected accounts"
+        },
+        "usual": "2.1x the usual",
+        "why": "An evening how-to that opens with a question."
+      }
+    ]
+  },
+  "footer": {
+    "updated": "2026-11-23T14:05Z",
+    "freshness": [
+      {
+        "account": "instagram:brightsidetoys",
+        "newest": "2026-11-22",
+        "fetched": "2026-11-23"
+      },
+      {
+        "account": "tiktok:brightsidetoys",
+        "newest": "2026-11-21",
+        "fetched": "2026-11-23"
+      }
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas. Not for any decision. Internal use only. Not for public publishing."
+  }
+}
