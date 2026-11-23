@@ -154,7 +154,7 @@ brand's own history is the stronger signal.
 
 | Tier | Who | How to find them |
 | ---- | --- | ---------------- |
-| 1 | Creators the brand has worked with | `search_posts` for posts whose text or `instagram.hashtags` mention the brand's handles, plus the brand's own posts that tag another account, keeping only those carrying the partnership marker (Atlas holds no paid-partnership field: a gap). Union with every `partner` calibration. |
+| 1 | Creators the brand has worked with | The brand's partnership content: `search_posts` with the `partnership` filter and the explicit `asProfileId` (**Partnership content**), plus the brand's own posts that tag another account. Union with every `partner` calibration. Without the Profile's Meta Business and Instagram links, tier 1 is the `partner` records and the brand's own posts that tag another account, and the summary says so. |
 | 2 | Creators who have posted about the brand | The same mention query, minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
 | 3 | Lookalikes of what's working | Creators who resemble the brand's best-performing creators, per **Lookalike seeds** below. |
 | 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |

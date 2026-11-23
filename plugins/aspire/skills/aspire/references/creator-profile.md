@@ -98,8 +98,8 @@ profile needs these as well:
   **without** excluding the demographics blobs this time.
 - On each post: the fields of the "Creator picks or vetting" row of the required metrics
   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), the permalink, the product type,
-  `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any paid-partnership or
-  brand-tag field the post field census lists.
+  `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, and any brand-tag field the post
+  field census lists.
 
 Take field paths from **Atlas search**, or the live census for a path it does not list. A field neither
 lists leaves its part out.

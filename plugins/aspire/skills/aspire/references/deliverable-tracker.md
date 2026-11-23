@@ -65,7 +65,6 @@ It reuses the checks of other flows rather than defining its own:
 | Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | **Content review**, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
 | The paid partnership label is not held in Atlas: a gap, never "absent"; trackers treat it as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
 | Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | **Content review**, **Media**, Atlas analysis fields |
-| The partnership marker (Atlas holds no paid-partnership field: a gap) | **Creator vetting** (Disclosure habits) and **Creator outreach** (Pick the post) |
 | Templates, channels, voice, and what never goes in a draft | **Creator outreach**, **Channels** and **Templates**; **Influencer program** **5** |
 | The deal for each creator | **Influencer program**, **Who owns a deal**; **Creator negotiation**, **Records written** |
 | The posting date after product arrives | **Product fulfillment**, **Tracking**, On delivery (`postDueAt`) |

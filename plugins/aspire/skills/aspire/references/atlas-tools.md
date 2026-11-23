@@ -418,7 +418,7 @@ answers the user just gave). `report_checkpoint` changes no Atlas data and needs
 The fields a page's post and creator cards need are in **Atlas search**, Fields. Project them only
 when a page will show posts or creators; a chat reply leaves them out. `media.mediaUrl` is the
 full-size image, or the video file on a video post; `media.thumbnailUrl` is a video's poster frame
-and is often missing on an image post; `instagram.mediaProductType` is the FEED or REELS chip, null
+and is often a dead link (404) on an image post; `instagram.mediaProductType` is the FEED or REELS chip, null
 on older posts. A creator's picture comes back with every `search_creators` hit.
 
 CDN URLs expire. Render with `onerror` placeholders and note the expiry on the page.

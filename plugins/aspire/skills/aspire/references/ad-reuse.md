@@ -73,8 +73,8 @@ the Meta Ads connector, so it also follows **Meta Ads**.
 - **Sources**, per the `reuse_scope` input:
   - `own`: the brand's linked handles.
   - `creators`: posts by other accounts that mention or tag the brand's handles, or carry a
-    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. The partnership
-    marker (Atlas holds no paid-partnership field: a gap) is read for the path (**Two paths**), never as a rank boost.
+    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. Atlas holds no
+    paid-partnership field, so neither the path (**Two paths**) nor the rank rests on one.
   - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
     the brand's own and regional accounts (excluded), retailers and resellers, deal and news
     pages, team or sponsorship accounts (a sports team, league, event or venue account posting

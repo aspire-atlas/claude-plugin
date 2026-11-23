@@ -23,8 +23,8 @@ median views, interaction or engagement rate, badges, past partners, category, p
 
 - Card or list: `fields: ["username"]`.
 - More: `externalId`, `instagram.biography`, `instagram.email`, `instagram.reelsHookRate`,
-  `instagram.creatorEngagedAccounts`, `instagram.creatorMarketplaceReach`, `tiktok.bioDescription`, `youtube.bioDescription`,
-  `youtube.youtubeTopicCategories`, `snapshotAt`.
+  `instagram.creatorEngagedAccounts`, `instagram.creatorMarketplaceReach`, `tiktok.bioDescription`,
+  `youtube.bioDescription`, `youtube.youtubeTopicCategories`, `snapshotAt`.
 - Audience (project only, never filter): `instagram.creatorEngagedAccountsBreakdowns`,
   `instagram.audienceDemographics`, `instagram.followerDemographics`, `tiktok.audienceGenders`,
   `tiktok.audienceAges`.
@@ -55,8 +55,9 @@ median views, interaction or engagement rate, badges, past partners, category, p
   (`tiktok.mentions` the same way).
 - Insights: `role`, `entityKind`, `entityId`, `createdAt`; a run's findings with `prefix` on
   `detail.account_review.runKey`.
-- Atlas holds no paid-partnership field: never project or filter on one. With an explicit `asProfileId`, the `partnership` filter
-  (**Partnership content**) finds the brand's own; otherwise the flow names it a gap.
+- Atlas holds no paid-partnership field: never project or filter on one. With an explicit
+  `asProfileId`, the `partnership` filter (**Partnership content**) finds the brand's own;
+  otherwise the flow names it a gap.
 
 ## Names that do not exist
 

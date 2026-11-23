@@ -104,8 +104,8 @@ the category read of paid partners belongs to vetting.
    against it and current data before sourcing new ones — a candidate who went dormant or dropped
    engagement should fall before a new one is added. Creator-ads mode builds no map.
 6. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
-   not list. No post field marks a paid partnership, so say so in the summary and treat
-   `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
+   not list. Tier 1 reads the brand's partnership content with the `partnership` filter per the
+   reference; without the Profile's Meta links, say so in the summary.
 7. Fill the quota in tier order per the reference, stopping the moment the quota is met or the
    pool is at target, whichever comes first; with a quota of 0, source nothing and look up no handle.
    Count the handles you resolve with `lookup_creators` for the headline (**Output format**).

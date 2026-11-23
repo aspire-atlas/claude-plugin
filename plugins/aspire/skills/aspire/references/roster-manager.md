@@ -130,7 +130,7 @@ Work in batches of ten creators.
 
 **Program posts** are the posts named by `postId` or `postUrl` on the creator's posted
 `deliverable` findings. With no deliverable tracker records yet, add posts in the window that
-carry the partnership marker with the brand, or tag or mention the brand's handles, and label
+tag or mention the brand's handles, and label
 them "matched by mention". **Own posts** are the creator's other posts in the 90 days before
 the window's end.
 

@@ -155,10 +155,9 @@ Filter path unless noted, `context` on every call, field paths from **Atlas sear
    capped. `totalHits` gives the post count; `aggs` `cardinality` on `author.username` gives
    distinct creators. Engagement sums come from the paged hits (the `aggs` allowlist has no
    sums).
-4. **Paid label or none.** Split each set on the partnership marker (Atlas holds no paid-partnership field: a gap). A post
-   without the marker has no paid label: it may still be paid, so never call it organic or
-   unpaid. Share of voice is reported for posts with no paid label first, the paid-labelled posts
-   beside it, never blended without saying so.
+4. **Paid label or none.** Atlas holds no paid-partnership field, so every set is posts with no
+   paid label, and the method says so. A post with no paid label may still be paid, so never call
+   it organic or unpaid.
 5. **Comparison set.** Posts in the brand's set that also match at least one competitor, plus
    one semantic `search_posts` per competitor with `queryText` "{brand} vs {competitor}"
    filtered to the window, limit 25. Dedupe on the post id.
