@@ -8,14 +8,14 @@ import { dirname, join, resolve } from 'node:path'
 import {
   ATLAS_READS, ATLAS_WRITES, HARNESS_VERSION, barChecks, compareRuns, extractPageCheckScript, fill, findJsonWithKey, configuredQuestions,
   findPage, forBaseline, normalizeResult, readerResult, checkNames as namesFrom, stripTitlePrefix, parsePageCheck, parseStream, renderQuestion, renderRun, rIds, stripDataUris,
-  parseConnectorList, summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
+  summarizeTurn, toolPrefix, visibleTextLength, checkChat, chatCodes, chatFailures, noChat, normalizeRun,
   assertionRefs, cell, fixtureProblems, hasLandedAssertion, passesWhen, placeholderKeys, planInputFiles, regressions, resolveQuestion,
   type Assertion, type InputFile, type ChatChecks, type ChatRules, type CheckDef, type PageChecks, type QuestionResult, type Result, type RunResults, type Turn,
 } from './lib'
 import { renderPage } from '../render-page'
 import { askRecords, wasAnswered, type AnswerRule } from './answers'
 import { checkApprovals, noApprovals, type ApprovalChecks } from './approvals'
-import { runTurn, type TurnOptions } from './session'
+import { runTurn, startingSession, type TurnOptions } from './session'
 
 const HERE = import.meta.dir
 const ROOT = resolve(HERE, '../..')
@@ -443,32 +443,6 @@ async function approvedPage(code: string, local: Local, emptyMcp: string, option
 
 // ---------------------------------------------------------------- one question
 
-/**
- * Every connector and tool a rerun would start with, by name. `claude mcp list` covers the ones added to Claude Code;
- * the ones that come with the signed-in account only show when a session starts, so a session is started and
- * stopped at its first line, before it asks the model anything.
- */
-async function startingSession(cwd: string): Promise<{ connectors: string[]; tools: string[] }> {
-  const names = new Set(parseConnectorList(Bun.spawnSync(['claude', 'mcp', 'list'], { cwd }).stdout.toString()))
-  const child = Bun.spawn(['claude', '-p', '--output-format', 'stream-json', '--verbose', '--plugin-dir', PLUGIN], {
-    cwd, stdin: new Blob(['ok']), stdout: 'pipe', stderr: 'ignore',
-  })
-  const timer = setTimeout(() => child.kill(), 60_000)
-  let seen = ''
-  let tools: string[] = []
-  for await (const chunk of child.stdout) {
-    seen += new TextDecoder().decode(chunk)
-    const init = parseStream(seen).find(event => event.type === 'system' && event.subtype === 'init')
-    if (!init) continue
-    for (const server of init.mcp_servers ?? []) names.add(server.name)
-    tools = init.tools ?? []
-    break
-  }
-  clearTimeout(timer)
-  child.kill()
-  return { connectors: [...names], tools }
-}
-
 type Rerun = {
   link: string | null; rounds: number; transcriptTokens: number; billedTokens: number; compactions: number
   costUsd: number; problems: string[]; model: string | null; chat: ChatChecks; approvals: ApprovalChecks
@@ -487,7 +461,7 @@ async function rerun(question: Question, config: any, local: Local, chatRules: C
   // reach the test connector even on a machine that is signed in to them.
   // The same goes for every other connector this machine has (other Atlas servers, mail, chat): a rerun reads
   // the test connector and nothing else.
-  const starting = await startingSession(work)
+  const starting = await startingSession(work, PLUGIN)
   // Without the Artifact tool the flow saves its page as a file (page standard, build loop, step 5).
   const publishes = starting.tools.includes('Artifact')
   if (!publishes) console.error('  this Claude Code cannot publish pages: the page will be a file, with no link')

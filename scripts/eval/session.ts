@@ -7,7 +7,7 @@
 import { appendFileSync, writeFileSync } from 'node:fs'
 import { query, type Options, type PermissionResult } from '@anthropic-ai/claude-agent-sdk'
 import { answersFor, type AnswerRule } from './answers'
-import { ANSWER_EVENT, ASK_TOOL, findPage, summarizeTurn, type Declined, type Event, type Turn } from './lib'
+import { ANSWER_EVENT, ASK_TOOL, TURN_START_EVENT, findPage, parseConnectorList, parseStream, summarizeTurn, type Declined, type Event, type Turn } from './lib'
 
 /** What the session is told when the harness leaves a picker unanswered. */
 const WHY: Record<Declined, string> = { finished: 'the run had finished', limit: 'the harness had answered its limit of pickers' }
@@ -28,23 +28,34 @@ export type TurnOptions = {
   answers: AnswerRule[]
   /** Pickers this turn may still answer before the harness stops it. */
   maxAsks: number
+  /**
+   * When the run has what it came for, from the transcript so far. The next picker after that is left
+   * unanswered and ends the turn. Without it, the run is done once it has published its page.
+   */
+  isDone?: (events: Event[]) => boolean
+  /** Adds the time each line arrived (`_t`, milliseconds) and a first line marking when the turn started. */
+  stamp?: boolean
 }
 
 /**
  * Runs one turn and returns it as the transcript reader sees it. The handler answers a picker while the run
- * is still working toward its page. Once a page is published, or an agent has returned its result with a page
- * file, the next picker is the flow's offer of more work: the handler leaves it unanswered and ends the turn there.
+ * is still working toward what it came for: `isDone` when given, else its page. Once it has that (for a page, a
+ * published one, or an agent's result with a page file), the next picker is the flow's offer of more work: the
+ * handler leaves it unanswered and ends the turn there.
  */
 export async function runTurn(options: TurnOptions): Promise<Turn> {
   const events: Event[] = []
   const record = (event: Event) => {
+    if (options.stamp) event = { ...event, _t: Date.now() }
     events.push(event)
     appendFileSync(options.out, JSON.stringify(event) + '\n')
   }
   writeFileSync(options.out, '')
   writeFileSync(`${options.out}.err`, '')
+  if (options.stamp) record({ type: TURN_START_EVENT })
   let asks = 0
-  // Whether the run has its page. It is worked out from the transcript at a picker, and it stays true once it is.
+  // Whether the run has what it came for (its page, or `isDone` when given). It is worked out from the transcript at
+  // a picker, and it stays true once it is.
   let done = false
 
   const canUseTool = async (name: string, input: Record<string, unknown>, context: { toolUseID: string }): Promise<PermissionResult> => {
@@ -52,7 +63,8 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
     // lists did not allow, which `claude -p` refuses without asking.
     if (name !== ASK_TOOL) return { behavior: 'deny', message: 'This tool is not allowed in an eval rerun.' }
     // A packet with no page is not the end: its proposals and questions still stand between the run and its page.
-    if (!done) {
+    if (!done && options.isDone) done = options.isDone(events)
+    else if (!done) {
       const page = findPage(summarizeTurn(events))
       done = Boolean(page.link) || (page.finished && Boolean(page.file))
     }
@@ -99,4 +111,30 @@ export async function runTurn(options: TurnOptions): Promise<Turn> {
     clearTimeout(timer)
   }
   return summarizeTurn(events)
+}
+
+/**
+ * Every connector and tool a rerun would start with, by name. `claude mcp list` covers the ones added to Claude Code;
+ * the ones that come with the signed-in account only show when a session starts, so a session is started and
+ * stopped at its first line, before it asks the model anything.
+ */
+export async function startingSession(cwd: string, plugin: string): Promise<{ connectors: string[]; tools: string[] }> {
+  const names = new Set(parseConnectorList(Bun.spawnSync(['claude', 'mcp', 'list'], { cwd }).stdout.toString()))
+  const child = Bun.spawn(['claude', '-p', '--output-format', 'stream-json', '--verbose', '--plugin-dir', plugin], {
+    cwd, stdin: new Blob(['ok']), stdout: 'pipe', stderr: 'ignore',
+  })
+  const timer = setTimeout(() => child.kill(), 60_000)
+  let seen = ''
+  let tools: string[] = []
+  for await (const chunk of child.stdout) {
+    seen += new TextDecoder().decode(chunk)
+    const init = parseStream(seen).find(event => event.type === 'system' && event.subtype === 'init')
+    if (!init) continue
+    for (const server of init.mcp_servers ?? []) names.add(server.name)
+    tools = init.tools ?? []
+    break
+  }
+  clearTimeout(timer)
+  child.kill()
+  return { connectors: [...names], tools }
 }

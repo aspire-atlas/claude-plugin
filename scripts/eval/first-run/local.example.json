@@ -1,0 +1,15 @@
+{
+  "mcp": {
+    "url": "https://{the dev Atlas host}/mcp",
+    "name": "Aspire_Atlas_Dev"
+  },
+  "scenarios": {
+    "FR1": {"organization": "{test organization}", "brand": "{brand}", "website": "{brand website}", "handle": "{instagram handle, linked to this scenario's organization only}", "competitor": "{competitor handle}"},
+    "FR2": {"organization": "{test organization}", "brand": "{brand}", "website": "{brand website}", "handle": "{instagram handle, linked to this scenario's organization only}", "competitor": "{competitor handle}"},
+    "FR3": {"organization": "{test organization}", "brand": "{brand}", "website": "{brand website}", "handle": "{instagram handle, linked to this scenario's organization only}", "competitor": "{competitor handle}"},
+    "FR4": {"organization": "{test organization}", "brand": "{brand}", "website": "{brand website}", "handle": "{instagram handle, linked to this scenario's organization only}", "competitor": "{competitor handle}"},
+    "FR5": {"organization": "{test organization with no brand Profile}", "brand": "{brand}", "website": "{brand website}", "competitor": "{competitor handle}"},
+    "FR6": {"organization": "{invited test organization, Instagram connected}", "brand": "{brand}", "website": "{brand website}", "handle": "{instagram handle, linked to this scenario's organization only}"},
+    "FR7": {"organization": "{invited test organization, no social connected}", "brand": "{brand}", "website": "{brand website}"}
+  }
+}
