@@ -57,6 +57,8 @@ NOT_READER = frozenset(("version", "template", "length", "account", "accounts", 
                         "due", "by", "newest", "fetched", "changed", "updated", "status", "verdict", "level",
                         "kind", "period", "network", "question", "tools", "theme"))
 CHART_SERIES = 6
+# No figure reaches a quadrillion; the bound keeps every number a float can hold exactly.
+NUMBER_BOUND = 10 ** 15
 FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
@@ -65,11 +67,12 @@ def e(value):
 
 # ---- The shape: the part of JSON Schema page-data.schema.json uses.
 def is_type(value, name):
-    if name == "integer":
-        return isinstance(value, int) and not isinstance(value, bool)
-    if name == "number":
-        # JSON from Python can carry Infinity and NaN, which no figure means.
-        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+    if name in ("integer", "number"):
+        # JSON can carry Infinity, NaN and integers of any length, which no figure means. Ints are
+        # compared as ints, since a long one overflows a float.
+        if isinstance(value, bool) or not isinstance(value, int if name == "integer" else (int, float)):
+            return False
+        return abs(value) < NUMBER_BOUND and (isinstance(value, int) or math.isfinite(value))
     return isinstance(value, {"string": str, "boolean": bool, "object": dict, "array": list}[name])
 
 def shape(value, schema, path, root, errs):
@@ -247,9 +250,10 @@ def css_plain(css):
             i = end + 2
         elif css[i] in "\"'":
             end = i + 1
-            while end < n and css[end] not in (css[i], "\n"):
+            # CSS ends a string at any newline (LF, CR or form feed) as a bad string, so those end it here too.
+            while end < n and css[end] not in (css[i], "\n", "\r", "\f"):
                 end += 1
-            if end >= n or css[end] == "\n":
+            if end >= n or css[end] != css[i]:
                 return None
             out.append('""')
             i = end + 1
@@ -314,11 +318,17 @@ def tool_names(page_check):
 def num(value):
     if isinstance(value, str):
         return value
-    if float(value).is_integer():
+    if isinstance(value, float) and not math.isfinite(value):
+        # Validation keeps these out of the data; a sum computed after it (a chart total) still could.
+        return "not available"
+    if isinstance(value, int) or value.is_integer():
         return "{:,}".format(int(value))
-    # Twelve significant digits drop float noise from sums and differences (0.1 + 0.2, 2.3 - 2.2); a
-    # figure with a longer whole part keeps every whole digit and one decimal, up to a double's fifteen.
-    # Formatting the rounded digits as a Decimal keeps fixed point: 0.00004, never 4e-05.
+    # Six decimals drop the noise a difference of larger figures carries (100000.1 - 100000); a value
+    # smaller than that keeps its own digits (0.00000004).
+    value = round(value, 6) or value
+    # Twelve significant digits drop the noise of sums and small differences (0.1 + 0.2, 2.3 - 2.2).
+    # A whole part of 12 to 14 digits keeps every whole digit and one decimal; 15 or more rounds to
+    # fifteen significant digits, a double's exact range. A Decimal keeps fixed point: 0.00004, not 4e-05.
     whole = len(str(int(abs(value))))
     rounded = Decimal("%.*g" % (min(15, max(12, whole + 1)), value))
     if rounded == rounded.to_integral_value():

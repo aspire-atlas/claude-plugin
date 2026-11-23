@@ -48,7 +48,7 @@ brand snapshot report where the two overlap: `title`, `answer`, `figures` with a
 | `answer` | The answer in one sentence, up to 280 characters. It is the page's only `h1` |
 | `takeaway` | Optional. The one number or reason behind the answer, against a comparison |
 | `scope` | The reader, the brand, the date range, the question code, every subject account, each platform with its post count, `preparedBy` for a VP or budget owner, the checks that are N/A (`na`), and the connected `tools` the figures came from |
-| `figures` | Up to three headline figures, each a `label`, a `value`, a `comparison`, and optionally a `status` and a `source`. They show as KPI tiles under the answer |
+| `figures` | Up to three headline figures, each a `label`, a `value`, a `comparison`, and optionally a `status` and a `source`. They show as KPI tiles under the answer. Every number in the data is finite and under 10<sup>15</sup> |
 | `insights` | Up to three, each a claim (`text`), its `evidence`, its `comparison`, the `so` line, and its `source`. Only the first may carry a `chart`, which is a stacked bar with bar labels of up to 16 characters and up to six segment labels |
 | `actions` | The ranked next steps. Each has a `rank`, a `verb` and an `object` ("Send" "first messages to the 3"), an `owner`, a `due` date, the `effect` it should have, the `job` that does it, its `cost`, and its `source` |
 | `decisions` | What the reader must approve, kept apart from the actions. Each has its `text`, the `approver`, a `by` date when there is a deadline, what happens `then`, and its `cost`. Empty when nothing needs approval |
