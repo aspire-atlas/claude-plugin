@@ -405,8 +405,8 @@ export function forBaseline(results: FirstRunResults): FirstRunResults {
   }
 }
 
-const delta = (before: number | null | undefined, after: number | null | undefined, unit = '') =>
-  before == null || after == null ? `${num(before, unit)} → ${num(after, unit)}` : `${num(before, unit)} → ${num(after, unit)} (${after - before >= 0 ? '+' : ''}${round(after - before)}${unit})`
+const delta = (before: number | null | undefined, after: number | null | undefined, unit = '', places = 1) =>
+  before == null || after == null ? `${num(before, unit)} → ${num(after, unit)}` : `${num(before, unit)} → ${num(after, unit)} (${after - before >= 0 ? '+' : ''}${round(after - before, places)}${unit})`
 
 /** Before and after, scenario by scenario, for the ticket. Runs on different models compare, but the table says so. */
 export function compareRuns(before: FirstRunResults, after: FirstRunResults): string {
@@ -418,15 +418,16 @@ export function compareRuns(before: FirstRunResults, after: FirstRunResults): st
     const mins = (m: Metrics | null) => (m?.secondsToValue == null ? null : round(m.secondsToValue / 60))
     return [
       code, `${a ? (a.reachedValue ? 'yes' : 'no') : '–'} → ${b ? (b.reachedValue ? 'yes' : 'no') : '–'}`,
-      delta(mins(a), mins(b), ' min'), delta(a?.questionsToValue, b?.questionsToValue), delta(a?.atlasCallsToValue, b?.atlasCallsToValue),
-      delta(a?.tokensToValue, b?.tokensToValue),
-      delta(before.scenarios.find(s => s.code === code)?.credits, after.scenarios.find(s => s.code === code)?.credits),
+      delta(mins(a), mins(b), ' min'), delta(a?.questionsToValue, b?.questionsToValue), delta(a?.nudgesToValue, b?.nudgesToValue),
+      delta(a?.atlasCallsToValue, b?.atlasCallsToValue), delta(a?.toolCallsToValue, b?.toolCallsToValue), delta(a?.tokensToValue, b?.tokensToValue),
+      // Credits are priced in hundredths.
+      delta(before.scenarios.find(s => s.code === code)?.credits, after.scenarios.find(s => s.code === code)?.credits, '', 2),
     ]
   })
   const models = before.model === after.model ? before.model : `${before.model} → ${after.model} (different models)`
   return [
     `## First run: ${before.label} (${before.date}) → ${after.label} (${after.date}), ${models}`, '',
-    table(['Scenario', 'Value', 'Time to value', 'Questions', 'Atlas calls', 'Tokens to value', 'Credits'], rows), '',
+    table(['Scenario', 'Value', 'Time to value', 'Questions', 'Nudges', 'Atlas calls', 'Tool calls', 'Tokens to value', 'Credits'], rows), '',
     `Before: ${summaryLine(before)}`, `After: ${summaryLine(after)}`,
   ].join('\n') + '\n'
 }

@@ -192,7 +192,10 @@ test('the table shows each scenario and the medians of those that reached value'
 test('before and after compare scenario by scenario', () => {
   const text = compareRuns(run('before', [scenario('FR1', 9, 6)]), run('after', [scenario('FR1', 2, 2)]))
   expect(renderRun(run('x', [scenario('FR1', 9, 6)]))).toContain('| 9 min | 6 | 1 |')
-  expect(text).toContain('| FR1 | yes → yes | 9 min → 2 min (-7 min) | 6 → 2 (-4) |')
+  expect(text).toContain('| FR1 | yes → yes | 9 min → 2 min (-7 min) | 6 → 2 (-4) | 1 → 1 (+0) | 4 → 4 (+0) | 7 → 7 (+0) |')
+  // Credits keep their hundredths.
+  const credits = compareRuns(run('before', [{ ...scenario('FR1', 9, 6), credits: 0.35 }]), run('after', [{ ...scenario('FR1', 2, 2), credits: 0.5 }]))
+  expect(credits).toContain('0.35 → 0.5 (+0.15) |')
   expect(compareRuns(run('before', []), { ...run('after', []), model: 'opus' })).toContain('different models')
 })
 
