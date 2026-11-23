@@ -24,7 +24,7 @@ person (the run id prefix does not count toward them). Pass
 `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take
 no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with
 `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md`
-before any other call.
+before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program-dashboard.md` before starting. The first
@@ -73,8 +73,8 @@ come from `content-library.md` (**Rights**, **Expiring rights**) and the statuse
 2. `search_calibrations` per the reference's **Setup records**. Parse every `program:` body with
    a JSON parser. Resolve today as the shell date in the cadence timezone (`TZ=<tz> date +%F`),
    or the user's when there is no cadence, then the term's elapsed share.
-3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`
-   once each; use only paths they return.
+3. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list.
 4. **Read the program state** per **Working state**: `search_insights` on the prefix
    `program-{profile}-{slug}`, newest first, paged to the end. Keep the newest finding per
    identity per record type, every `roster` finding per creator for the funnel history, every

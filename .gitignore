@@ -36,3 +36,5 @@ node_modules/
 scripts/eval/local.json
 scripts/eval/.runs/
 scripts/eval/.cache/
+scripts/eval/first-run/local.json
+scripts/eval/first-run/.runs/

@@ -500,9 +500,9 @@ detail, change what moved, and write it whole.
 | Status | kind |
 | ------ | ---- |
 | `accrued`, `invoiced`, `approved` (cash) | `action_item` `medium` |
-| `paid` | `went_well` `medium` |
+| `paid` | `went_well` |
 | `void` | `action_item` `low` |
-| Any product line | `went_well` `low` |
+| Any product line | `went_well` |
 
 **Fields this agent adds to `ledger`** (beyond **Influencer program**'s list): `network`, `name`,
 `basis`, `revises`, `revisedFrom`, `period` (`YYYY-MM`, for months and commission),
@@ -515,7 +515,7 @@ already on the line plus one, set in the packet.
 
 **The `page` finding.** When no `page` finding with key `ledger` exists, the first `record`
 write adds one: `key` `ledger`, `url`, `title`, anchored to the brand's own account on its first
-linked network, `went_well` `low`, idempotencyKey `ldg-{slug}-page`. "Page only" writes nothing,
+linked network, `went_well`, idempotencyKey `ldg-{slug}-page`. "Page only" writes nothing,
 so the link is saved with the next approved write.
 
 **Freshness in `record`.** Before writing, read the newest `ledger` finding for each `lineId`

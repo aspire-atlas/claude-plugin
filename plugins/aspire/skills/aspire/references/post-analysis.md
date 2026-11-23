@@ -91,8 +91,8 @@ the post and **Ad reuse** when they want hooks across many posts.
    `lookup_creators` for that one author only.
 
 Project the `media`, `author`, `analysis`, and network containers (`instagram` or `tiktok`),
-never leaf URLs alone. The fields this flow reads, as the live census names them (call
-`list_post_search_fields` first and use only paths it returns):
+never leaf URLs alone. The fields this flow reads (call `list_post_search_fields` only for a path neither this table nor
+**Atlas search** lists):
 
 | Area | Fields |
 | ---- | ------ |

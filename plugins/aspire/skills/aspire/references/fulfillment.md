@@ -92,7 +92,7 @@ Gifting creators at Approved, Contacted, or Replied belong to outreach until the
    candidate. Drop a product with nothing in stock. With the options known, check that variant;
    without them, say "in stock in {n} of {m} sizes".
 4. **Fit to the creator.** Read the creator's posts in Atlas from the last 90 days with
-   `search_posts` (the creator's account, the fields `list_post_search_fields` returns, caption,
+   `search_posts` (the creator's account, the fields in **Atlas search**, caption,
    transcript, and themes when present), and the audience fields `search_creators` holds. Pick
    the product whose use shows up most in what they make ("cooks weeknight pasta in 6 of 20
    Reels" picks the pan, not the knife set). Use the audience only to catch a mismatch with a

@@ -20,13 +20,13 @@ question requires (section 8), says how fresh its data is (section 9), and is ch
 to R15 before it goes out. The checks are defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`; the quality review runs the
 same ones on a finished page. Read that file with this one. The parts are fixed. The look is not:
-a creator profile, a competitor brief, and a rights log should still look different. Decide what
+a creator profile and a rights log should look different. Decide what
 this question and this reader need first, then fit the nine parts to it.
 
 This skill sets what a page says. `skills/aspire/references/artifact-standard.md` sets the mark
 and the source line, `skills/aspire/references/recipient-lens.md` sets the reader, and
 `skills/aspire/references/theme.md` sets the colors and type, `blocks.md` in this folder holds
-the parts each page is built from, with their markup, `page-check.md` holds the self-check
+the parts pages are built from, `templates.md` the six page templates a flow may fill from, `page-check.md` the self-check
 script, `comparisons.md` the four checks on every comparison, `recommendations.md` what every recommendation costs and the trend to watch, `explanations.md` the evidence behind every explanation and how outside evidence is saved, `page-file.md` the page saved as a file, `english-read.md` and `ux-review.md` the two reviews before publishing, `follow-up.md` what a repeat run's page leads with, `packet.md` what each field of the result packet holds, and `examples.md` lists the evidence each
 approved example sets, by question code. **The flow's own reference wins**
 wherever it sets a rule: its layout, what its page leaves out, who sees money, and the form its
@@ -362,11 +362,10 @@ for a lens**); a page that cannot rank by it says in one line which metric it us
 | Campaign start | P9 | None | Set with the campaign intake and kickoff flow | Set with the campaign intake and kickoff flow |
 <!-- /required-metrics -->
 
-Call `list_post_search_fields` once per run before the first `search_posts`, and
-`list_creator_search_fields` or `list_insight_search_fields` before the first `search_creators` or
-`search_insights`, and request only the paths they return. A field above that the census no longer
-returns is a gap, named on the page like any other missing metric. Add the flow's own fields
-(captions, analysis, partnership markers) to the same call.
+Take field paths from `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md`, and call a
+`list_*_search_fields` census only for a path it does not list; request only the fields the page
+shows. A field above that neither Atlas search nor the census lists is a gap, named on the page like any other
+missing metric. Add the flow's own fields (captions, analysis) to the same call.
 
 **How each figure is worked out:**
 

@@ -64,6 +64,9 @@ jobs:
       - name: Every agent and page reference links the artifact standard
         run: bash scripts/check-artifact-standard.sh
 
+      - name: The six page templates render from their examples and pass the page check
+        run: bash scripts/check-page-templates.sh
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.4

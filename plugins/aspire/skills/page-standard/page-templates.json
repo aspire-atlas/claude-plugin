@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "description": "The six page templates. Each keeps one page order and adds the typed sections it needs. templates.md explains them; page-fill.md renders them. The length budgets are data for a check of page length.",
+  "order": ["title", "answer", "insights", "actions", "decisions", "evidence", "method", "gaps", "drafts", "footer"],
+  "screen": {"width": 1280, "height": 800},
+  "slots": {"kpis": "answer", "verdict": "answer", "steps": "actions", "creators": "evidence", "posts": "evidence"},
+  "templates": {
+    "readout": {
+      "name": "Readout",
+      "for": "What happened in a period and what to do about it.",
+      "needs": [],
+      "allows": ["kpis", "posts"],
+      "length": {"daily": {"screens": 1}, "weekly": {"screens": 2}},
+      "agents": ["daily-insights-report", "weekly-insights-report", "market-signal", "quarterly-signal", "profile-analyst"]
+    },
+    "shortlist": {
+      "name": "Shortlist",
+      "for": "Ranked creators or posts, each with a verdict and its reason.",
+      "needsOne": ["creators", "posts"],
+      "needs": [],
+      "allows": ["kpis", "creators", "posts"],
+      "length": {"default": {"screens": null, "growsWith": ["sections.creators", "sections.posts"]}},
+      "agents": ["creator-discovery", "creator-vetting", "ad-reuse"]
+    },
+    "verdict": {
+      "name": "Verdict",
+      "for": "One piece of work or one post, judged: a call, its reason, and the checks behind it.",
+      "needs": ["verdict"],
+      "allows": ["verdict", "posts"],
+      "length": {"default": {"screens": 2}},
+      "agents": ["content-review", "post-analysis", "quality-review"]
+    },
+    "profile": {
+      "name": "Profile",
+      "for": "One creator in full.",
+      "needs": ["creators"],
+      "exactlyOne": ["creators"],
+      "allows": ["kpis", "creators", "posts"],
+      "length": {"default": {"screens": 2}},
+      "agents": ["creator-profile"]
+    },
+    "plan": {
+      "name": "Plan",
+      "for": "Dated steps toward one goal, with who does each.",
+      "needs": ["steps"],
+      "allows": ["steps", "creators", "kpis"],
+      "length": {"default": {"screens": null, "growsWith": ["actions", "sections.steps"]}},
+      "agents": ["creator-brief", "shops", "creator-outreach", "creator-negotiation"]
+    },
+    "dashboard": {
+      "name": "Dashboard",
+      "for": "A standing page that tracks a program, its money, or its content against goals.",
+      "needs": ["kpis"],
+      "allows": ["kpis", "creators", "posts", "steps"],
+      "length": {"default": {"screens": null, "growsWith": ["sections.kpis", "sections.creators", "sections.posts", "sections.steps"]}},
+      "agents": ["program-dashboard", "program-ledger", "deliverable-tracker", "roster-manager", "affiliate-manager",
+                 "campaign-orchestrator", "content-library", "content-sourcing", "product-fulfillment"]
+    }
+  },
+  "notTemplated": {
+    "ppa-pitch": "Its page is a deck with a fixed set of eleven slides (ppa-pitch.md), not a page."
+  }
+}

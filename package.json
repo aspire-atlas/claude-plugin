@@ -4,6 +4,7 @@
   "description": "Developer scripts for this repository. Nothing here ships in a plugin.",
   "scripts": {
     "eval:pages": "bun scripts/eval/run.ts",
+    "eval:first-run": "bun scripts/eval/first-run/run.ts",
     "eval:test": "bun test scripts/eval"
   },
   "devDependencies": {

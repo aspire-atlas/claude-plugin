@@ -20,7 +20,7 @@ absent) with the lane to fill when one is named, and `recipient` (one or more le
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
 leads the summary and page with the lookalike tier and each seed's results; `campaign` leads
 with how far the pool is from the lineup the launch needs. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words,
-third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
 holds the campaign calibration keys, the tier model, how scoring applies the vetting map, the pool state
@@ -103,10 +103,9 @@ the category read of paid partners belongs to vetting.
    the criteria record is at its version, else build it now. Then re-score every undecided candidate
    against it and current data before sourcing new ones — a candidate who went dormant or dropped
    engagement should fall before a new one is added. Creator-ads mode builds no map.
-6. Call `list_post_search_fields` and `list_creator_search_fields` once each; use only paths
-   they return. Find the partnership marker tier 1 needs in the post census rather than
-   assuming a field name; if the census exposes none, say so in the summary and treat
-   `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
+6. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list. Tier 1 reads the brand's partnership content with the `partnership` filter per the
+   reference (branded, collab, affiliate and product posts; tagged and reposted ones are tier 2); without the Profile's Meta links, say so in the summary.
 7. Fill the quota in tier order per the reference, stopping the moment the quota is met or the
    pool is at target, whichever comes first; with a quota of 0, source nothing and look up no handle.
    Count the handles you resolve with `lookup_creators` for the headline (**Output format**).

@@ -364,6 +364,7 @@ when the run ends, so the comment's link stops opening after the job finishes.
 | `post-comment.sh` | CI: posts the comment, or edits the one already on the PR |
 | `lib.ts`, `lib.test.ts` | Reading a transcript, the table, baselines, compare, and their tests |
 | `baselines/` | One folder per stored run |
+| `first-run/` | The first-run eval: seven new-person scenarios and the time, questions, calls, tokens and credits to a first result (its own README) |
 | `../fixtures/eval-cases/` | Each client case's two fixture pages |
 
 ## Limits
