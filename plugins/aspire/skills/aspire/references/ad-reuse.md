@@ -73,8 +73,8 @@ the Meta Ads connector, so it also follows **Meta Ads**.
 - **Sources**, per the `reuse_scope` input:
   - `own`: the brand's linked handles.
   - `creators`: posts by other accounts that mention or tag the brand's handles, or carry a
-    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. The partnership
-    marker the census exposes is read for the path (**Two paths**), never as a rank boost.
+    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. Atlas holds no
+    paid-partnership field, so neither the path (**Two paths**) nor the rank rests on one.
   - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
     the brand's own and regional accounts (excluded), retailers and resellers, deal and news
     pages, team or sponsorship accounts (a sports team, league, event or venue account posting
@@ -128,9 +128,9 @@ the Meta Ads connector, so it also follows **Meta Ads**.
 ## What to read per candidate
 
 Project `postedAt`, `text`, `url`, `author.username`, `author.followersCount`, the metrics,
-`mediaKind`, `media` (container), `instagram.mediaProductType`, the partnership marker, and
-`analysis.transcript`, `analysis.overlayText`, `analysis.brandSafety` when the census lists
-them. Duration comes from the census when it exposes one; otherwise from the downloaded file.
+`mediaKind`, `media` (container), `instagram.mediaProductType`, and
+`analysis.transcript`, `analysis.overlayText`, `analysis.brandSafety`.
+Duration comes from the census when it exposes one; otherwise from the downloaded file.
 
 Also project the retention fields below, each only when the census lists it. This list is what
 to look for, not a licence to skip the census.

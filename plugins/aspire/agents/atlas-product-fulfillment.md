@@ -40,7 +40,7 @@ id prefix does not count toward them). Pass `asProfileId`
 (the profile id, never the slug) to every tool whose schema takes it; `list_*_search_fields` and
 `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load
 `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fulfillment.md` before starting. The first is the
@@ -115,8 +115,8 @@ addresses) and never write its `page` finding; name "Publish the order form" as 
 2. Load tools with `ToolSearch` `select:` under the given prefix: `get_brand_context`, `search_calibrations`,
    `search_insights`, `list_insight_search_fields`, `list_post_search_fields`,
    `list_creator_search_fields`, `search_posts`, `search_creators`, `report_checkpoint`, and
-   `append_insights` (with F2 `save`, or for a status run's `page` finding). Call the three `list_*_search_fields` tools
-   once each before the first search and use only paths they return. Load `ArtifactData` for the
+   `append_insights` (with F2 `save`, or for a status run's `page` finding). Take field paths from
+   `atlas-search.md`; call a `list_*_search_fields` census only for a path it does not list. Load `ArtifactData` for the
    order form's page data. Load the mail and store tools only for what `connections` lists and
    this run uses.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,

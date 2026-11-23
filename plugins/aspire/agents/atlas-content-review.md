@@ -18,7 +18,7 @@ silent), the brief source, and the post: for `published`, the network and the UR
 files, and any transcript, and `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), and `run`
 (`interactive` or `unattended`; default `interactive`). Every Atlas
-tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/content-review.md` before starting. It
 holds the checks, the verdict rule, the precedence order, the lesson rules, the state
@@ -74,10 +74,9 @@ check.
    through every result and keep the `edit` and `close` findings: an edit stays open until a
    `close` names it, however old it is.
 5. **Get the post.**
-   - `published`: `list_post_search_fields` once, then `search_posts` filtered on the URL or
-     permalink field the census exposes, projecting `postedAt`, `text`, `url`, `mediaKind`,
-     `media` (container), `instagram` or `tiktok` containers, the metrics, and any
-     transcript or analysis fields the census lists. Nothing found: `lookup_posts` with one
+   - `published`: field paths from `atlas-search.md`, then `search_posts` filtered on `url`, projecting
+     `postedAt`, `text`, `url`, `mediaKind`, `media` (container), the metrics, and the analysis
+     fields `atlas-search.md` lists, with `analysis.transcript` and `analysis.overlayText`. Nothing found: `lookup_posts` with one
      item (`schema` = network, `entityKind` = `post`, `identifier` = the URL). On `fetching`,
      wait 30 seconds and re-call with the same item, up to 4 times; still fetching, return
      one line saying Atlas is still fetching the post, and stop. `unresolvable` on a TikTok

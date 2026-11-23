@@ -125,7 +125,7 @@ setup is incomplete (**Scheduled (unattended) runs**).
 
 ## Data method
 
-Filter path unless noted, `context` on every call, only field paths from the census.
+Filter path unless noted, `context` on every call, field paths from **Atlas search**.
 
 1. **Window.** Default the most recent completed Monday to Sunday in the M5 timezone, from
    the shell clock (**Readouts**, **Resolving "today"**), whatever day the run starts on. That
@@ -148,16 +148,16 @@ Filter path unless noted, `context` on every call, only field paths from the cen
    A block that gives the brand's own organic results from a connected account carries `data-own`
    (**Page standard**, section 8, **Paid label or none**).
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
-   variant (`match_phrase`), or `instagram.mentions.username` names a handle, or a hashtag
+   variant (`match_phrase`), or a handle is tagged or mentioned (the `nested` clause on `instagram.mentions` or
+   `tiktok.mentions` in **Atlas search**), or a hashtag
    matches; `must_not` the entity's own handles and the brand's handles; `exists mediaKind`;
    window on `postedAt`. Page with the cursor, up to 500 hits per entity; say when a set is
    capped. `totalHits` gives the post count; `aggs` `cardinality` on `author.username` gives
    distinct creators. Engagement sums come from the paged hits (the `aggs` allowlist has no
    sums).
-4. **Paid label or none.** Split each set on the partnership marker the census exposes. A post
-   without the marker has no paid label: it may still be paid, so never call it organic or
-   unpaid. Share of voice is reported for posts with no paid label first, the paid-labelled posts
-   beside it, never blended without saying so.
+4. **Paid label or none.** Atlas holds no paid-partnership field, so every set is posts with no
+   paid label, and the method says so. A post with no paid label may still be paid, so never call
+   it organic or unpaid.
 5. **Comparison set.** Posts in the brand's set that also match at least one competitor, plus
    one semantic `search_posts` per competitor with `queryText` "{brand} vs {competitor}"
    filtered to the window, limit 25. Dedupe on the post id.
@@ -194,9 +194,8 @@ Filter path unless noted, `context` on every call, only field paths from the cen
      each topic, two calls: one for posts and creators (`totalHits`, and `aggs` `cardinality` on
      `author.username`), and one with `viewCount` at or above the threshold (a `range` filter) for
      posts and creators at the threshold, plus `aggs` `terms` on `author.username` (size 2) for
-     how many of them the topic's top two creators made. Posts with and without a paid label count together, and the
-     method says so;
-     count each topic's paid-marked and program-tagged posts beside them.
+     how many of them the topic's top two creators made. The method says no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts;
+     count each topic's program-tagged posts beside them.
    - **Gap.** List the other tools the posts read in step 6 name for the step after the brand's
      product (the build, the edit, the launch: whatever those posts say comes next), saved
      competitors or not. Those posts cover the window only. Count the brand's posts that also
@@ -205,9 +204,8 @@ Filter path unless noted, `context` on every call, only field paths from the cen
 
 9. **Message test reads**, for each positioning move and the positioning line (team page and
    leadership page), made once the moves are drafted. Two `search_posts` reads per message, both
-   on the brand's mention-set query (step 3) over step 8's period, with `exists viewCount` and
-   `must_not` the partnership marker, so each side holds posts with no paid label only: one with
-   a `match_phrase` on the message's words, one with `must_not` those words. Project the metric
+   on the brand's mention-set query (step 3) over step 8's period, with `exists viewCount` (no paid-label filter: Atlas holds no paid-partnership field). One
+   read has a `match_phrase` on the message's words, the other `must_not` those words. Project the metric
    fields of the competitive read's row. Page each up to 500 hits and say when a side is capped.
    `totalHits` is the side's post count; the median engagement per 1,000 views comes from the
    paged hits.
@@ -257,9 +255,9 @@ message; no other reads.
   Every other topic is shown, ordered by rate, with the brand's rate as its own bar between the
   topics above it and those below.
 - **Like for like.** Every comparison of posts and every share on the page follows **Page
-  standard**, `comparisons.md`. The reach chart counts posts with and without a paid label
-  together, so each of its sides is mixed: the caption's sentence saying so is the chart's line
-  for the same-kind check.
+  standard**, `comparisons.md`. No post on the reach chart carries a paid label, yet any of them may
+  still be paid, so each side may include paid posts: the caption's sentence saying so is the
+  chart's line for the same-kind check.
 - **Concentrated.** A topic with fewer than 5 creators, or whose top two creators made over half
   its posts at the threshold, is concentrated. It gets one line under the chart that calls it
   those creators' reach, not the topic's ("all 48 come from two creators, @a and @b, so that is
@@ -268,12 +266,12 @@ message; no other reads.
   least 1.5 times the brand's rate. Each card holds what it is, the
   label "Wins reach", one line on what the posts have in common (from the posts read), the
   evidence (the multiple, both rates, and the number of creators), and one or two sample posts
-  as post cards (3.8) with their metrics. A paid-marked post keeps its paid tag. When over a
-  quarter of the topic's posts carry a paid marker or a program tag, the card is a trend to
+  as post cards (3.8) with their metrics. When over a quarter of the topic's posts carry a program
+  tag, the card is a trend to
   watch (**Page standard**, `recommendations.md`) instead of a win, and no move rests on it. Its
   two readings: the content works; or part of the reach was paid for or comes from who was
   picked, so part of the gap is who posts, not what. Its signal is the topic's reach rate on
-  posts with no paid marker and no program tag, in the next run's reach chart, by that run's
+  posts with no program tag, in the next run's reach chart, by that run's
   date.
 - **Below average.** Topics under the brand's rate are named in one line with their rates (often
   price lists and head-to-head comparisons). They feed the moves and get no card.
@@ -293,7 +291,7 @@ message; no other reads.
   positioning line as a whole, take the words creators use for the message (the topic's saved
   words, or the phrases from **Framing**) and read the brand's mention-set posts over step 8's
   period that carry them and those that do not (**Data method**, step 9). Both sides hold posts
-  with no paid label only, so they are one kind. Give each side's median engagement per 1,000 views (likes and
+  with no paid label, yet either may include paid posts; the method says so. Give each side's median engagement per 1,000 views (likes and
   comments, as this page counts it everywhere) and its post count, then one strength word:
 
   | Strength word | When | What the move becomes |
@@ -362,7 +360,7 @@ Ranking (**Recipient lens**, Headline and rank by the reader's result), as it ap
 
 Title "<Brand> Market Signal", republished to the same path each run. Sections: header with the
 window, the "Prepared for" chip, and the animated mark at the top right; since last run; share of voice (a bar chart of posts and
-creators per entity, split by paid label or none); the primary lens section; the other lens
+creators per entity, with the no-paid-label method note); the primary lens section; the other lens
 sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
 quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
 footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
@@ -383,7 +381,7 @@ when the page has no insights), built per **Where the brand wins, and how to sta
    gets one sentence of it, pointing here.
 2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
    ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
-   the network, the period, and that posts with and without a paid label count together. The
+   the network, the period, and that no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts. The
    concentrated-topic line goes under it.
 3. The win cards, then the gap card.
 4. How to stand apart: the moves, then the "So:" line.
@@ -392,7 +390,7 @@ The positioning decision goes in the page's decisions (3.5), the briefing and ga
 its next steps (3.6), each with its cost line, and a move that became a test in a test plan
 block (3.15) under the moves. The method gives each message test's two figures, its post counts,
 and the words that were matched. The method states the period, the threshold and why it was picked, the
-brand's rate, that posts with and without a paid label count together, the topics with too few
+brand's rate, that no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts, the topics with too few
 posts, and the
 posts left out for having no view count. The leadership
 page (**Leadership page (O3)**) leaves this section out.
@@ -432,7 +430,7 @@ Below the split, in the order the claims use them:
    readings and its signals, and no decision rests on it.
 6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
    (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
-   share and growth by entity), the split by paid label or none, and "What this means for you" as the
+   share and growth by entity), the no-paid-label method note, and "What this means for you" as the
    "So:" line.
 7. **Competitor comparison**: a table of each competitor with its share of voice, the features
    it wins and loses on, and the friction creators raise about it, then a message ownership table
@@ -486,7 +484,8 @@ findings anchor to the post (`entityKind` `post`, the network's own media id). A
 `verbatims[]` (quote, permalink, timestamp), `changedSinceLastRun`, and `evidence[]`.
 `idempotencyKey` per finding.
 `sov.organic` holds the posts with no paid label; the key keeps its name so older findings still
-read. A flow that shows it labels it "no paid label", never "organic".
+read. `sov.paid` stays empty. A flow that shows `sov.organic` labels it "no paid label", never
+"organic".
 
 ## Delivery
 

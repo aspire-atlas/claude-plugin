@@ -438,9 +438,10 @@ is retyped.
 
 **Pulls.**
 
-- Accounts: `search_creators`, `terms` on `username`, `fields: ["username","followersCount",
-  "country","instagram","tiktok"]`, `exclude: ["instagram.audienceDemographics",
-  "instagram.followerDemographics"]`.
+- Accounts: `search_creators`, `terms` on `username`, `fields: ["username","instagram.email",
+  "instagram.reelsHookRate","instagram.creatorEngagedAccounts","instagram.creatorMarketplaceReach",
+  "instagram.creatorEngagedAccountsBreakdowns","tiktok.audienceAges"]`;
+  the card fields come back without being listed.
 - Posts for metrics: `search_posts`, `terms` on `author.username` for up to four creators, `exists
   mediaKind`, sort `postedAt` desc, limit 100 (no paging); a creator with fewer than 25 posts in
   the batch is fetched alone with `term` and limit 25. `fields: ["author.username","postedAt","mediaKind","viewCount","likeCount",
@@ -968,8 +969,8 @@ findings share its `runKey`.
 
 - `search_posts` returns `media` and `instagram.account` even when `fields` leaves them out, and
   a 25-post page with media runs 30 to 300KB per creator. Exclude both for metric pulls.
-- On `search_creators`, project the `instagram` container, not leaf paths; leaf paths come back
-  null (**Creator brief**, **Atlas quirks**).
+- On `search_creators`, project leaf paths only; the card fields come back on every hit
+  (**Creator brief**, **Atlas quirks**).
 - `instagram.creatorEngagedAccountsBreakdowns` is often empty, even for Meta-connected creators.
   `instagram.ageBucket` is the creator's own age, never the audience's.
 - `reelsHookRate` and `reelsInteractionRate` are often empty for accounts not connected to Meta

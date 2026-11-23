@@ -182,8 +182,8 @@ the alert. Prompt:
 ## Collecting assets
 
 Read only what Atlas holds. Never call `lookup_posts`, `lookup_creators`,
-`search_creator_marketplace`, `start_business_discovery`, or `add_hashtags`. Call
-`list_post_search_fields` once and use only the paths it returns.
+`search_creator_marketplace`, `start_business_discovery`, or `add_hashtags`.
+Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 
 **Window.** Default the last 180 days, from the shell clock. On the first build for a scope (no
 `asset` finding saved for it), read everything Atlas holds. A window the user typed wins. Cap a
@@ -205,7 +205,7 @@ per run.
 
 Project `postedAt`, `text`, `url`, `author.username`, `author.followersCount`, the metrics,
 `mediaKind`, `media` (container), `instagram.mediaProductType`, `instagram.mediaAudioType`,
-the mentions and hashtags, the partnership marker, and, when the census lists them,
+the mentions and hashtags, and
 `analysis.transcript`, `analysis.overlayText`, `analysis.brandSafety`,
 `analysis.commercialAnalysis.featuredProducts` and `featuredBrands`.
 
@@ -392,7 +392,7 @@ Written only in `build` with L2 "Save", or in an unattended run when the cadence
 `query`, `expiring`, or `sample`.
 
 `append_insights` per **Influencer program**, **Working state**: role `account_review`, runKey
-`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well` `low`, anchored to the creator's
+`program-{profile}-{slug}-{YYYY-MM-DD}`, kind `went_well`, anchored to the creator's
 account (`entityKind` `account`, `entityId` the network's own account id, `schema` the network),
 in batches of 50. Without a program the runKey is `content-library-{profile}-{YYYY-MM-DD}`
 (**Influencer program**, **Brand-wide library**) and `detail.program` is left out. The Program manager's

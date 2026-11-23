@@ -30,8 +30,7 @@ brand, the account that moved). The flow's window and networks do not limit this
    `postedAt` filter, newest first. An older post that still carries the code or the link counts.
 3. **The words, not just the posts.** Search the captions, transcripts, and descriptions for what
    ties the post to the result: the code, the product, the brand's name, the link. Use
-   `queryText` with those words, and project the caption, transcript, and description paths that
-   `list_post_search_fields` returns. A YouTube description that carries the code is evidence even
+   `queryText` with those words, and project the caption (`text`), `analysis.transcript`, and `youtube.description`. A YouTube description that carries the code is evidence even
    when the video never says it.
 4. **The brand's own site,** where the run can read it (a browsing or fetch tool, or a connected
    store's pages): a product page, a creator page, or a banner that names the creator or the code.

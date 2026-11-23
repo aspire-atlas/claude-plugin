@@ -20,7 +20,7 @@ from the main thread (scope and window or horizon, whether to save the catalog, 
 the alert), the user's question in their words for `query`, `connections` (`program.md`,
 **4**; the library uses no mail or store connection), and `recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25
-words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/content-library.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` before starting. The library
@@ -77,7 +77,7 @@ lens. Follow them exactly.
    for rights. Without a program, also read the saved `asset` findings on
    `content-library-{profile}`.
 6. **By mode:**
-   - `build`: `list_post_search_fields` once, then collect per **Collecting
+   - `build`: field paths from `atlas-search.md`, then collect per **Collecting
      assets**, tag per **Tagging each asset**, score per **Scoring at library scale** (frames
      for the top 12 new or changed videos only), join rights, and compute the expiring and
      worth requesting lists.
