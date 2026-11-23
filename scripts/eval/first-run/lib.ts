@@ -34,6 +34,8 @@ export type StatusRead = {
   organizationName: string | null
   /** Credits counted this period, or null when the reading has none. */
   creditsConsumed: number | null
+  /** When the credits' billing period started, so two readings can be told apart across a period change. */
+  creditsPeriod: string | null
   /** The organization's usage is paid by Aspire, so `creditsConsumed` leaves this work out. */
   coveredByAspire: boolean
   profiles: number
@@ -56,18 +58,25 @@ export type StatusRead = {
 export const BRAND_CONTEXT_KINDS = ['brand_fact', 'user_fact', 'competitor', 'red_line', 'partner', 'decline']
 const STATE_KEYS = /^(lastrun:|theme:|fees:)/
 
-/** The status reading with what `search_calibrations` returned for the organization added. */
-export function withCalibrations(status: StatusRead, text: string | null): StatusRead {
+/**
+ * The status reading with what `search_calibrations` returned for the organization added, from every page in order.
+ * A page that cannot be read, or a last page that says more records follow, leaves the records unknown.
+ */
+export function withCalibrations(status: StatusRead, pages: string[] | null): StatusRead {
   // Calibrations belong to the organization, but they are read through a brand Profile: with none, an earlier
   // run's records cannot be seen, and a scenario that starts with no Profile relies on a fresh organization.
-  if (text === null) return status.profiles === 0 ? { ...status, brandRecords: 0, lastRuns: 0 } : status
-  let records: any[]
-  try {
-    const parsed = JSON.parse(text)
+  if (!pages?.length) return status.profiles === 0 ? { ...status, brandRecords: 0, lastRuns: 0 } : status
+  const records: any[] = []
+  for (const [i, text] of pages.entries()) {
+    let parsed: any
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      return status
+    }
     if (!Array.isArray(parsed?.records)) return status
-    records = parsed.records
-  } catch {
-    return status
+    if (i === pages.length - 1 && typeof parsed.nextCursor === 'string' && parsed.nextCursor) return status
+    records.push(...parsed.records)
   }
   const key = (record: any) => String(record?.key ?? '')
   return {
@@ -271,6 +280,7 @@ export function readStatus(text: string): StatusRead | null {
     organizationId: status.organizations?.selected?.id ?? status.credits?.organizationId ?? null,
     organizationName: status.organizations?.selected?.name ?? status.firstRun?.organization?.name ?? null,
     creditsConsumed: typeof consumed === 'number' ? consumed : null,
+    creditsPeriod: typeof status.credits?.period?.start === 'string' ? status.credits.period.start : null,
     coveredByAspire: status.credits?.coveredByAspire === true,
     invited: status.firstRun?.organization?.invited === true,
     setupDone: typeof status.setup?.done === 'number' ? status.setup.done : 0,
@@ -323,7 +333,9 @@ export function startProblems(start: Start, status: StatusRead | null, organizat
 export function creditsUsed(before: StatusRead | null, after: StatusRead | null): number | null {
   if (before?.coveredByAspire || after?.coveredByAspire) return null
   if (before?.creditsConsumed == null || after?.creditsConsumed == null) return null
-  // A new billing period between the two readings resets the count; that run's credits are unknown.
+  // Both readings must be of the same organization in the same billing period: a new period resets the count.
+  if (!before.organizationId || before.organizationId !== after.organizationId) return null
+  if (!before.creditsPeriod || before.creditsPeriod !== after.creditsPeriod) return null
   const used = after.creditsConsumed - before.creditsConsumed
   return used >= 0 ? round(used, 2) : null
 }

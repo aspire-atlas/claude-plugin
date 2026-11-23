@@ -119,8 +119,8 @@ async function probe(session: Session, atlas: string, organization: string | und
   const prompt = [
     `Call the ${atlas}get_status tool.`,
     ...(organization ? [`If the organization it selected is not the one named "${organization}", call it again with that organization's id as asOrganizationId.`] : []),
-    `Then, if that organization has a brand profile, call ${atlas}search_calibrations once with that organization's id as`,
-    'asOrganizationId and limit 100, and nothing else.',
+    `Then, if that organization has a brand profile, call ${atlas}search_calibrations with that organization's id as`,
+    'asOrganizationId and limit 100, and again with each nextCursor it returns as cursor until a page has none.',
     'Then reply with only the word DONE. Do not call any other tool.',
   ].join(' ')
   const turn = await runTurn({
@@ -128,7 +128,7 @@ async function probe(session: Session, atlas: string, organization: string | und
   })
   const results = (tool: string) => turn.toolUses.filter(use => use.name === atlas + tool).map(use => turn.toolResults[use.id]?.text ?? '')
   const status = results('get_status').map(readStatus).filter((read): read is StatusRead => read !== null).at(-1) ?? null
-  return status ? withCalibrations(status, results('search_calibrations').at(-1) ?? null) : null
+  return status ? withCalibrations(status, results('search_calibrations')) : null
 }
 
 async function runScenario(scenario: Scenario, config: Config, local: Local, session: Session, atlas: string, dir: string, options: Options): Promise<{ result: ScenarioResult; model: string | null }> {
@@ -212,7 +212,11 @@ async function main() {
       console.log(`  typed reply: ${fill(scenario.reply, valuesOf(values))}`)
     }
     console.log(`plugin: ${PLUGIN} at ${commit()}`)
-    console.log(`Atlas: ${local.mcp?.url ?? 'not set in local.json'} as "${connector}"; value is the first result of ${config.valueTools.join(', ')}`)
+    // Without a token the runs use the connector of that name Claude Code already holds, wherever it points.
+    const target = local.mcp?.tokenEnv
+      ? `${local.mcp.url ?? 'not set in local.json'} as "${connector}", token from ${local.mcp.tokenEnv}`
+      : `the "${connector}" connector added to Claude Code (its own address; mcp.url is used only with mcp.tokenEnv)`
+    console.log(`Atlas: ${target}; value is the first result of ${config.valueTools.join(', ')}`)
     console.log(`${ATLAS_READS.length} reads and ${FIRST_RUN_WRITES.length} onboarding writes allowed; refused: ${FIRST_RUN_REFUSED.join(', ')}`)
     return
   }
@@ -231,31 +235,31 @@ async function main() {
   mkdirSync(runDir, { recursive: true })
   // The connector file sits outside the checkout and is removed when the run ends: it holds the token.
   const secrets = join(tmpdir(), `eval-first-run-${process.pid}`)
-  mkdirSync(secrets, { recursive: true, mode: 0o700 })
-  const atlasMcp = join(secrets, 'atlas.json')
-  writeFileSync(atlasMcp, JSON.stringify({ mcpServers: { [connector]: { type: 'http', url: local.mcp.url, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) } } }), { mode: 0o600 })
-
-  // As in the page eval, the plugin's bundled connectors and every other connector on this machine are refused
-  // whole, so a scenario reaches the test connector and nothing else.
-  const work = join(runDir, 'work')
-  mkdirSync(work, { recursive: true })
-  const starting = await startingSession(work, PLUGIN)
-  const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
-    'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...starting.connectors])]
-    .filter(name => name !== connector && name !== 'aspire-mod')
-  const session: Session = {
-    cwd: work, timeoutMin: options.timeoutMin, plugin: PLUGIN, mcpConfig: local.mcp.tokenEnv ? atlasMcp : null,
-    allowedTools: ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
-      'WebSearch', 'WebFetch', ...[...ATLAS_READS, ...FIRST_RUN_WRITES].map(tool => atlas + tool)],
-    disallowedTools: [...FIRST_RUN_REFUSED.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2))],
-    model: options.model, answers: [],
-  }
-
   const results: FirstRunResults = {
     harness: FIRST_RUN_HARNESS_VERSION, date: today(), label: options.label!, commit: commit(), model: options.model ?? 'default',
     scenariosVersion: config.version, scenarios: [],
   }
   try {
+    mkdirSync(secrets, { recursive: true, mode: 0o700 })
+    const atlasMcp = join(secrets, 'atlas.json')
+    writeFileSync(atlasMcp, JSON.stringify({ mcpServers: { [connector]: { type: 'http', url: local.mcp.url, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) } } }), { mode: 0o600 })
+
+    // As in the page eval, the plugin's bundled connectors and every other connector on this machine are refused
+    // whole, so a scenario reaches the test connector and nothing else.
+    const work = join(runDir, 'work')
+    mkdirSync(work, { recursive: true })
+    const starting = await startingSession(work, PLUGIN)
+    const refused = [...new Set(['plugin:aspire:Aspire Atlas', 'plugin:aspire:Aspire Atlas Organization Admin', 'plugin:aspire:Meta Ads',
+      'Aspire Atlas', 'Aspire Atlas Organization Admin', 'claude.ai Aspire Atlas', ...starting.connectors])]
+      .filter(name => name !== connector && name !== 'aspire-mod')
+    const session: Session = {
+      cwd: work, timeoutMin: options.timeoutMin, plugin: PLUGIN, mcpConfig: local.mcp.tokenEnv ? atlasMcp : null,
+      allowedTools: ['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Skill', 'Task', 'Agent', 'Artifact', 'ToolSearch',
+        'WebSearch', 'WebFetch', ...[...ATLAS_READS, ...FIRST_RUN_WRITES].map(tool => atlas + tool)],
+      disallowedTools: [...FIRST_RUN_REFUSED.map(tool => atlas + tool), ...refused.map(name => toolPrefix(name).slice(0, -2))],
+      model: options.model, answers: [],
+    }
+
     for (const scenario of chosen) {
       console.error(`${scenario.code} · ${scenario.persona}`)
       const { result, model } = await runScenario(scenario, config, local, session, atlas, join(runDir, scenario.code), options)

@@ -112,18 +112,19 @@ test('a turn that ends on a question in text counts it as a question, not a nudg
 
 const status = (profiles: unknown[], consumed = 12, extra: Record<string, unknown> = {}) => JSON.stringify({
   organizations: { selected: { id: 'org_test', name: 'Eval One' } }, profiles,
-  credits: { organizationId: 'org_test', coveredByAspire: false, thisPeriod: { consumed } }, setup: { done: 0, total: 7 },
+  credits: { organizationId: 'org_test', coveredByAspire: false, period: { start: '2026-11-01T00:00:00Z' }, thisPeriod: { consumed } },
+  setup: { done: 0, total: 7 },
   work: { programs: [], campaigns: [] }, firstRun: { organization: { invited: false } }, ...extra,
 })
 const LINKED = { profile: true, instagram: true, invited: false }
 const NO_RECORDS = JSON.stringify({ records: [] })
 /** A status reading with its calibrations read, as the probe makes it. */
-const read = (text: string, calibrations: string | null = NO_RECORDS) => withCalibrations(readStatus(text)!, calibrations)
+const read = (text: string, calibrations: string | null = NO_RECORDS) => withCalibrations(readStatus(text)!, calibrations === null ? null : [calibrations])
 
 test('get_status gives the starting state and the credits consumed', () => {
   const linked = readStatus(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }]))
   expect(linked).toEqual({
-    organizationId: 'org_test', organizationName: 'Eval One', creditsConsumed: 12, coveredByAspire: false, profiles: 1, instagram: true,
+    organizationId: 'org_test', organizationName: 'Eval One', creditsConsumed: 12, creditsPeriod: '2026-11-01T00:00:00Z', coveredByAspire: false, profiles: 1, instagram: true,
     invited: false, setupDone: 0, savedWork: 0, brandRecords: null, lastRuns: null,
   })
   expect(readStatus(status([{ channels: [{ network: 'instagram', authorization: 'expired' }] }]))?.instagram).toBe(false)
@@ -153,19 +154,31 @@ test('get_status gives the starting state and the credits consumed', () => {
   expect(startProblems(LINKED, used)[0]).toContain('fresh organization')
   expect(startProblems(LINKED, read(status(ig), records(['insight', 'post:1'])))).toEqual([])
   // An invited organization holds the site's answers; only a last-run record stops it.
-  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, records(['brand_fact', 'brand:summary'])))).toEqual([])
-  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, records(['insight', 'lastrun:readout'])))[0]).toContain('repeat run')
+  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, [records(['brand_fact', 'brand:summary'])]))).toEqual([])
+  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, [records(['insight', 'lastrun:readout'])]))[0]).toContain('repeat run')
   // Calibrations that were not read leave the state unknown. With no Profile they cannot be read at all, so they
   // count as none and that scenario relies on a fresh organization.
   expect(startProblems(LINKED, read(status(ig), null))[0]).toContain('could not be read')
   expect(startProblems(LINKED, read(status(ig), 'not json'))[0]).toContain('could not be read')
   expect(read(status([]), null).brandRecords).toBe(0)
+  // Every page counts, and a last page that says more follow leaves the records unknown.
+  const page = (key: string, next?: string) => JSON.stringify({ records: [{ kind: 'insight', key }], ...(next ? { nextCursor: next } : {}) })
+  const paged = withCalibrations(readStatus(status(ig))!, [page('post:1', 'c1'), page('lastrun:readout')])
+  expect(paged.lastRuns).toBe(1)
+  expect(withCalibrations(readStatus(status(ig))!, [page('post:1', 'c1')]).brandRecords).toBeNull()
+  expect(withCalibrations(readStatus(status(ig))!, [page('post:1', 'c1'), 'not json']).brandRecords).toBeNull()
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 13.456)))).toBe(3.46)
   // A new billing period between the readings: the run's credits are unknown, never negative.
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 2)))).toBeNull()
+  // A new period can also end higher than the reading before it: the periods must match.
+  const nextPeriod = { credits: { organizationId: 'org_test', period: { start: '2026-12-01T00:00:00Z' }, thisPeriod: { consumed: 12 } } }
+  expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 12, nextPeriod)))).toBeNull()
+  // Readings of two organizations never subtract.
+  const other = { organizations: { selected: { id: 'org_other', name: 'Eval Two' } } }
+  expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 13, other)))).toBeNull()
   expect(creditsUsed(null, readStatus(status([], 2)))).toBeNull()
   // Aspire pays for a covered organization, and its count leaves that work out: unknown, not zero.
-  const covered = { credits: { coveredByAspire: true, thisPeriod: { consumed: 5 } } }
+  const covered = { credits: { coveredByAspire: true, period: { start: '2026-11-01T00:00:00Z' }, thisPeriod: { consumed: 5 } } }
   expect(creditsUsed(readStatus(status([], 5, covered)), readStatus(status([], 5, covered)))).toBeNull()
 })
 

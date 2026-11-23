@@ -113,8 +113,8 @@ before and after, scenario by scenario, ready for the ticket. Other options: `--
 ## What one scenario does
 
 1. **Reads the starting state.** A separate session on the probe model calls `get_status` for the scenario's
-   organization, and `search_calibrations` when it has a brand Profile, and nothing else. Its time and tokens are not
-   counted.
+   organization, and every page of `search_calibrations` when it has a brand Profile, and nothing else. Its time and
+   tokens are not counted.
 2. **Sends the first message**, a bare `/aspire:aspire`, as a new session with the plugin from this checkout.
 3. **Answers what the flow asks.** Pickers are answered from the answer list: the organization picker with the
    scenario's organization (picked by name, or typed when the picker does not list it), then the scenario's own
