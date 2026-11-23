@@ -155,7 +155,7 @@ Filter path unless noted, `context` on every call, field paths from **Atlas sear
    capped. `totalHits` gives the post count; `aggs` `cardinality` on `author.username` gives
    distinct creators. Engagement sums come from the paged hits (the `aggs` allowlist has no
    sums).
-4. **Paid label or none.** Split each set on the partnership marker, when **Atlas search** lists one (today none: a gap). A post
+4. **Paid label or none.** Split each set on the partnership marker (Atlas holds no paid-partnership field: a gap). A post
    without the marker has no paid label: it may still be paid, so never call it organic or
    unpaid. Share of voice is reported for posts with no paid label first, the paid-labelled posts
    beside it, never blended without saying so.
@@ -207,7 +207,7 @@ Filter path unless noted, `context` on every call, field paths from **Atlas sear
 9. **Message test reads**, for each positioning move and the positioning line (team page and
    leadership page), made once the moves are drafted. Two `search_posts` reads per message, both
    on the brand's mention-set query (step 3) over step 8's period, with `exists viewCount` and
-   `must_not` the partnership marker, so each side holds posts with no paid label only: one with
+   no paid-label filter, since Atlas holds no paid-partnership field: one with
    a `match_phrase` on the message's words, one with `must_not` those words. Project the metric
    fields of the competitive read's row. Page each up to 500 hits and say when a side is capped.
    `totalHits` is the side's post count; the median engagement per 1,000 views comes from the

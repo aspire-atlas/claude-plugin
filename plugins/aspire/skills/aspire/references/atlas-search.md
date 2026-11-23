@@ -15,7 +15,7 @@ here; never guess one.
 
 ## Fields to ask for
 
-Ask only for what the answer or page shows.
+Ask only for what the answer shows.
 
 **Creators.** Every hit carries the card fields (handle, name, verified, followers, country,
 median views, interaction or engagement rate, badges, past partners, category, picture) and
@@ -23,7 +23,7 @@ median views, interaction or engagement rate, badges, past partners, category, p
 
 - Card or list: `fields: ["username"]`.
 - More: `externalId`, `instagram.biography`, `instagram.email`, `instagram.reelsHookRate`,
-  `instagram.creatorMarketplaceReach`, `tiktok.bioDescription`, `youtube.bioDescription`,
+  `instagram.creatorEngagedAccounts`, `instagram.creatorMarketplaceReach`, `tiktok.bioDescription`, `youtube.bioDescription`,
   `youtube.youtubeTopicCategories`, `snapshotAt`.
 - Audience (project only, never filter): `instagram.creatorEngagedAccountsBreakdowns`,
   `instagram.audienceDemographics`, `instagram.followerDemographics`, `tiktok.audienceGenders`,
@@ -32,16 +32,17 @@ median views, interaction or engagement rate, badges, past partners, category, p
 **Posts.**
 
 - List: `["externalId", "url", "postedAt", "mediaKind", "text", "likeCount", "commentCount",
-  "viewCount", "author.username"]`.
-- Page cards add `media` (the container), `instagram.mediaProductType`,
-  `instagram.account.profilePictureUrl`, `tiktok.account.profileImage`.
-- Analysis: `analysis.brandSafety`, `analysis.commentSentimentBreakdown`,
-  `analysis.aestheticTags`, `analysis.subjectAnalysis`, `analysis.commercialAnalysis.featuredBrands`.
-  `analysis.transcript` and `analysis.overlayText` only to quote them.
+  "viewCount", "author.username"]`. `media` and the author's picture come back on every hit;
+  with no card on show, `exclude: ["media", "instagram.account", "tiktok.account"]`.
+- Cards add `instagram.mediaProductType`.
+- Analysis: `analysis.brandSafety`, `analysis.commentSentimentBreakdown`, `analysis.aestheticTags`,
+  `analysis.subjectAnalysis`, `analysis.emotionalAnalysis.tone`,
+  `analysis.commercialAnalysis.featuredBrands`; `analysis.transcript` and `analysis.overlayText`
+  only to quote them.
 - Also: `saveCount`, `shareCount`, `author.followersCount`, `instagram.permalink`.
 
 **Insights.** `role`, `summary`, `entityKind`, `entityId`, `schema`, `createdAt`,
-`detail` (or one role's part, such as `detail.account_review`).
+`detail` (or `detail.account_review`).
 
 ## Fields to filter on
 
@@ -54,7 +55,7 @@ median views, interaction or engagement rate, badges, past partners, category, p
   (`tiktok.mentions` the same way).
 - Insights: `role`, `entityKind`, `entityId`, `createdAt`; a run's findings with `prefix` on
   `detail.account_review.runKey`.
-- No post field marks a paid partnership. With an explicit `asProfileId`, the `partnership` filter
+- Atlas holds no paid-partnership field: never project or filter on one. With an explicit `asProfileId`, the `partnership` filter
   (**Partnership content**) finds the brand's own; otherwise the flow names it a gap.
 
 ## Names that do not exist

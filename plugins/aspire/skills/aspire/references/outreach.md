@@ -192,7 +192,7 @@ line**. Both come from Atlas. Never invent a post, a quote, a number, or a claim
 **Pick the post.** `search_posts` filtered on the creator's author username on their roster
 network, the last 60 days (widen to 90 once when empty), newest first, limit 30, projecting
 `postedAt`, `url`, `instagram.permalink`, `text`, `mediaKind`, `instagram.mediaProductType`,
-the metrics, the partnership marker, `analysis.transcript`, `analysis.overlayText`, and
+the metrics, `analysis.transcript`, `analysis.overlayText`, and
 `analysis.brandSafety`. In this order, take the first that
 exists:
 

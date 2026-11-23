@@ -168,7 +168,7 @@ Read with the agent's own calls, every pass:
   hold is listed under "Needs the main thread" ("Atlas doesn't hold this post: run the content
   library or a post analysis on it first"). Sourcing never fetches a post.
 - **Creators**: `search_creators` once per creator for the account id, followers, profile
-  picture, and a business email when the field census lists one.
+  picture, and a business email (`instagram.email`).
 
 ## Who gets a request
 

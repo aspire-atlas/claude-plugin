@@ -205,7 +205,7 @@ per run.
 
 Project `postedAt`, `text`, `url`, `author.username`, `author.followersCount`, the metrics,
 `mediaKind`, `media` (container), `instagram.mediaProductType`, `instagram.mediaAudioType`,
-the mentions and hashtags, the partnership marker, and, when the census lists them,
+the mentions and hashtags, and
 `analysis.transcript`, `analysis.overlayText`, `analysis.brandSafety`,
 `analysis.commercialAnalysis.featuredProducts` and `featuredBrands`.
 

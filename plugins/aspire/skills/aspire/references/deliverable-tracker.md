@@ -65,7 +65,7 @@ It reuses the checks of other flows rather than defining its own:
 | Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | **Content review**, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
 | The paid partnership label is not held in Atlas: a gap, never "absent"; trackers treat it as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
 | Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | **Content review**, **Media**, Atlas analysis fields |
-| The partnership marker, when **Atlas search** lists one (today none: a gap) | **Creator vetting** (Disclosure habits) and **Creator outreach** (Pick the post) |
+| The partnership marker (Atlas holds no paid-partnership field: a gap) | **Creator vetting** (Disclosure habits) and **Creator outreach** (Pick the post) |
 | Templates, channels, voice, and what never goes in a draft | **Creator outreach**, **Channels** and **Templates**; **Influencer program** **5** |
 | The deal for each creator | **Influencer program**, **Who owns a deal**; **Creator negotiation**, **Records written** |
 | The posting date after product arrives | **Product fulfillment**, **Tracking**, On delivery (`postDueAt`) |
@@ -209,9 +209,9 @@ Read only what Atlas holds. Take field paths from **Atlas search**; call `list_p
 on the creator's author username on their roster network, from the window start to today,
 newest first, limit 50, projecting `postedAt`, `url`, `instagram.permalink`, `text`,
 `mediaKind`, `instagram.mediaProductType`, `instagram.hashtags`, `instagram.mentions` (the
-container), the partnership marker, `analysis.transcript`, `analysis.overlayText`,
+container), `analysis.transcript`, `analysis.overlayText`,
 `analysis.commercialAnalysis.featuredBrands`, `analysis.commercialAnalysis.promoCodes`, and the
-`media` container, when the census lists them.
+`media` container.
 
 **Brand signals** a post can carry, strongest first:
 
@@ -290,9 +290,8 @@ type). It names one or more parts:
 
 Check each part:
 
-- **Label.** Use the partnership marker when **Atlas search** lists one: true is found. When it
-  lists none (today), or it is empty, the label is "not held in Atlas": unclear, never
-  missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
+- **Label.** Atlas holds no paid-partnership field, so the label is "not held in Atlas":
+  unclear, never missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
   post `missing` or `needs fix`.
 - **Words.** Look in the caption and `instagram.hashtags`. Found when they sit before the
   "more" cut (about the first 125 characters, or the first line); words only in a hashtag block

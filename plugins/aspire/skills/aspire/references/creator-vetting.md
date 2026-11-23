@@ -434,12 +434,10 @@ theme, not a keyword: count the posts that are about it, whatever words they use
 posts that contain its name.
 
 **What to read per creator.** `search_creators` for the account (followers, bio, country,
-verification, contact fields, `analysis` fields the creator census lists). `search_posts` filtered
+verification, contact fields, the fields **Atlas search** lists). `search_posts` filtered
 on the author username field, the last 90 days, sorted by posted date desc, limit 50, projecting
-`postedAt`, `text`, `url`, `mediaKind`, `instagram.mediaProductType`, the metrics, the partnership
-marker, `media` (container), the network's `account` container, and `analysis.brandSafety`,
-`analysis.commentSentimentBreakdown`, `analysis.transcript`, `analysis.overlayText` when the census
-lists them, and `analysis.narration` too when a visual check runs. Fewer than 5 indexed posts in 90
+`postedAt`, `text`, `url`, `mediaKind`, `instagram.mediaProductType`, the metrics, `media` (container), the network's `account` container, and `analysis.brandSafety`,
+`analysis.commentSentimentBreakdown`, `analysis.transcript`, `analysis.overlayText`, and `analysis.narration` too when a visual check runs. Fewer than 5 indexed posts in 90
 days: widen to 180 days once.
 
 **The creator's usual views.** The median `viewCount` of the 90-day posts read above that carry

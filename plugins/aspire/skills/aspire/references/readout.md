@@ -322,8 +322,7 @@ target date. A caller may also pass a campaign slug for an on-demand pulse. For 
 2. **Mentions.** A semantic `search_posts` with `queryText` = the pulse topics, filtered to the
    target date, excluding the brand's handles, limit 50; plus `list_hashtag_posts` for each
    pulse hashtag. Posts and distinct creators, against the day before.
-3. **Reception.** From the posts in 1 and 2: tone (`analysis.emotionalAnalysis.tone` when the
-   census lists it) as counts, and up to five verbatims with permalinks: the praise and the
+3. **Reception.** From the posts in 1 and 2: tone (`analysis.emotionalAnalysis.tone`) as counts, and up to five verbatims with permalinks: the praise and the
    friction creators state. For the `product` lens, group the friction by issue.
 4. **Drafts and verdicts.** The campaign creators' content reviews on the target date (step 6b).
 
