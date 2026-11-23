@@ -5,7 +5,7 @@ import { answersFor } from '../answers'
 import { ANSWER_EVENT, ATLAS_READS, ATLAS_WRITES, TURN_START_EVENT, toolPrefix } from '../lib'
 import {
   FIRST_RUN_REFUSED, FIRST_RUN_WRITES, compareRuns, creditsUsed, endsOnQuestion, firstValue, forBaseline, measure, median, reachedValue,
-  readStatus, renderRun, scenarioAnswers, startProblems, type FirstRunResults, type ScenarioResult,
+  readStatus, renderRun, scenarioAnswers, startProblems, unfilled, withCalibrations, type FirstRunResults, type ScenarioResult,
 } from './lib'
 
 const PREFIX = toolPrefix('Aspire_Atlas_Dev')
@@ -104,32 +104,48 @@ const status = (profiles: unknown[], consumed = 12, extra: Record<string, unknow
   work: { programs: [], campaigns: [] }, firstRun: { organization: { invited: false } }, ...extra,
 })
 const LINKED = { profile: true, instagram: true, invited: false }
+const NO_RECORDS = JSON.stringify({ records: [] })
+/** A status reading with its calibrations read, as the probe makes it. */
+const read = (text: string, calibrations: string | null = NO_RECORDS) => withCalibrations(readStatus(text)!, calibrations)
 
 test('get_status gives the starting state and the credits consumed', () => {
   const linked = readStatus(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }]))
   expect(linked).toEqual({
     organizationId: 'org_test', organizationName: 'Eval One', creditsConsumed: 12, coveredByAspire: false, profiles: 1, instagram: true,
-    invited: false, setupDone: 0, savedWork: 0,
+    invited: false, setupDone: 0, savedWork: 0, brandRecords: null, lastRuns: null,
   })
   expect(readStatus(status([{ channels: [{ network: 'instagram', authorization: 'expired' }] }]))?.instagram).toBe(false)
   expect(readStatus('Atlas is connected. You have one profile.')).toBeNull()
 
-  expect(startProblems(LINKED, linked, 'Eval One')).toEqual([])
-  expect(startProblems({ profile: false, instagram: false, invited: false }, linked)).toHaveLength(2)
-  expect(startProblems(LINKED, readStatus(status([])))).toHaveLength(2)
+  expect(startProblems(LINKED, read(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }])), 'Eval One')).toEqual([])
+  expect(startProblems({ profile: false, instagram: false, invited: false }, read(status([{ channels: [{ network: 'instagram' }] }])))).toHaveLength(2)
+  expect(startProblems(LINKED, read(status([])))).toHaveLength(2)
   expect(startProblems(LINKED, null)[0]).toContain('unknown')
   // The reading must be of the scenario's own organization.
-  expect(startProblems(LINKED, linked, 'Eval Two')[0]).toContain('another organization')
+  expect(startProblems(LINKED, read(status([{ channels: [{ network: 'instagram', authorization: 'live' }] }])), 'Eval Two')[0]).toContain('another organization')
   // A run leaves brand context behind; the next run on that organization would skip the first run.
   const ig = [{ channels: [{ network: 'instagram' }] }]
-  expect(startProblems(LINKED, readStatus(status(ig, 0, { setup: { done: 3 } })))[0]).toContain('reset it')
-  expect(startProblems(LINKED, readStatus(status(ig, 0, { work: { programs: [{ name: 'p' }], campaigns: [] } })))[0]).toContain('saved programs')
+  expect(startProblems(LINKED, read(status(ig, 0, { setup: { done: 3 } })))[0]).toContain('reset it')
+  expect(startProblems(LINKED, read(status(ig, 0, { work: { programs: [{ name: 'p' }], campaigns: [] } })))[0]).toContain('saved programs')
   // The invited first turn needs an invited organization, and only the invited scenarios may have one.
-  const invited = readStatus(status(ig, 0, { firstRun: { organization: { invited: true } }, setup: { done: 2 } }))
+  const invited = read(status(ig, 0, { firstRun: { organization: { invited: true } }, setup: { done: 2 } }))
   expect(startProblems({ ...LINKED, invited: true }, invited)).toEqual([])
   expect(startProblems(LINKED, invited)[0]).toContain('invited first turn')
-  expect(startProblems({ ...LINKED, invited: true }, linked)[0]).toContain('invited to')
+  expect(startProblems({ ...LINKED, invited: true }, read(status(ig)))[0]).toContain('invited to')
 
+  // Records an earlier run leaves behind, which the brand questions' count does not show.
+  const records = (...kinds: [string, string][]) => JSON.stringify({ records: kinds.map(([kind, key]) => ({ kind, key })) })
+  const used = read(status(ig), records(['user_fact', 'user:usr-1'], ['insight', 'lastrun:readout']))
+  expect(used.brandRecords).toBe(2)
+  expect(startProblems(LINKED, used)[0]).toContain('fresh organization')
+  expect(startProblems(LINKED, read(status(ig), records(['insight', 'post:1'])))).toEqual([])
+  // An invited organization holds the site's answers; only a last-run record stops it.
+  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, records(['brand_fact', 'brand:summary'])))).toEqual([])
+  expect(startProblems({ ...LINKED, invited: true }, withCalibrations(invited!, records(['insight', 'lastrun:readout'])))[0]).toContain('repeat run')
+  // Calibrations that were not read leave the state unknown; an organization with no Profile has none to read.
+  expect(startProblems(LINKED, read(status(ig), null))[0]).toContain('could not be read')
+  expect(startProblems(LINKED, read(status(ig), 'not json'))[0]).toContain('could not be read')
+  expect(read(status([]), null).brandRecords).toBe(0)
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 13.456)))).toBe(3.46)
   // A new billing period between the readings: the run's credits are unknown, never negative.
   expect(creditsUsed(readStatus(status([], 10)), readStatus(status([], 2)))).toBeNull()
@@ -191,9 +207,14 @@ test('answer rules are filled from local.json, and a rule naming a missing value
     [{ question: 'competitors', text: '{competitor}' }], [{ question: 'competitors', pick: '^Not sure' }, { pick: '^{brand} only' }],
     { brand: 'A+B (Co)' }, 'Eval One',
   )
-  expect(rules[0]).toEqual({ header: 'Organization', pick: '^Eval One' })
-  expect(rules).toHaveLength(3)
-  expect(new RegExp(rules[2].pick!).test('A+B (Co) only')).toBe(true)
+  // The organization is picked by its whole name, or typed when the picker does not show it.
+  expect(new RegExp(rules[0].pick!).test('Eval One (current)')).toBe(true)
+  expect(new RegExp(rules[0].pick!).test('Eval One Invited')).toBe(false)
+  expect(rules[1]).toEqual({ header: 'Organization', text: 'Eval One' })
+  expect(rules).toHaveLength(4)
+  expect(new RegExp(rules[3].pick!).test('A+B (Co) only')).toBe(true)
+  expect(unfilled('against {competitor} and @{handle}')).toEqual(['competitor', 'handle'])
+  expect(unfilled('against rival')).toEqual([])
   expect(rules.some(rule => rule.text === '{competitor}')).toBe(false)
 })
 
@@ -203,6 +224,10 @@ function onboardingPickers(): { question: string; options: string[] }[] {
   // The extended set is asked only after "Yes, continue", which the answer list never picks.
   const pickers: { question: string; options: string[] }[] = [
     { question: 'Continue with 4 optional questions on cadence, voice, KPIs, and team?', options: ['Yes, continue', 'Finish setup now'] },
+    // onboarding.md 4.2, when no account was linked, and the two offers at the end of Phase 5 (offers.md).
+    { question: 'Instagram is not connected yet. What next?', options: ['Try connecting again (Recommended)', 'Connect later'] },
+    { question: "Put Atlas's pages in Brand's colors? It takes about two minutes.", options: ['Set it up now (Recommended)', 'Not now', "Don't ask again"] },
+    { question: "Set Brand's creator rates? Fees on creator profiles will use them.", options: ['Set them up now (Recommended)', 'Later', "Don't ask again"] },
   ]
   for (const line of text.split('## Extended set')[0].split('\n')) {
     const cells = line.split('|').map(cell => cell.trim())
@@ -225,12 +250,13 @@ test('every scenario answers the onboarding pickers without typing nothing, conn
       const input = { questions: [{ header: '', question: picker.question, options: picker.options.map((label: string) => ({ label, description: '' })) }] }
       const answer = answersFor(input, rules)[picker.question]?.answer ?? ''
       // "I'll list them (type them)" with nothing typed brings a follow-up picker; Connect goes to a refused tool.
-      expect(`${scenario.code}: ${picker.question} -> ${answer}`).not.toMatch(/type them|Connect|Yes, continue|^\S+: .* -> Instagram/)
+      expect(`${scenario.code}: ${picker.question} -> ${answer}`).not.toMatch(/type them| -> Try connecting|Yes, continue|Set (it|them) up now|Don't ask again| -> Instagram/)
     }
     // The invited next step, without Instagram, leads with Connect Instagram: the invited scenarios pass it by.
     const next = { questions: [{ header: 'Next step', question: 'What should we do next?', options: [
-      { label: 'Connect Instagram (Recommended)', description: '' }, { label: 'Find creators', description: '' }] }] }
-    if (scenario.flow === 'invited') expect(answersFor(next, rules)['What should we do next?'].answer).toBe('Find creators')
+      { label: 'Connect Instagram (Recommended)', description: '' }, { label: 'Vet a list of creators', description: '' },
+      { label: 'Find creators who fit', description: '' }] }] }
+    if (scenario.flow === 'invited') expect(answersFor(next, rules)['What should we do next?'].answer).toBe('Find creators who fit')
   }
   // Each persona names its own role, so the flow routes it to its own reader.
   const relationship = (code: string) => config.scenarios.find((s: any) => s.code === code).answers.find((r: any) => r.question === 'relationship to')?.text

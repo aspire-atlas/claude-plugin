@@ -11,7 +11,7 @@ import { runTurn, startingSession, type TurnOptions } from '../session'
 import type { AnswerRule } from '../answers'
 import {
   FIRST_RUN_HARNESS_VERSION, FIRST_RUN_REFUSED, FIRST_RUN_WRITES, compareRuns, creditsUsed, forBaseline, measure, reachedValue,
-  readStatus, renderRun, scenarioAnswers, startProblems, type FirstRunResults, type ScenarioResult, type Start, type StatusRead,
+  readStatus, renderRun, scenarioAnswers, startProblems, unfilled, withCalibrations, type FirstRunResults, type ScenarioResult, type Start, type StatusRead,
 } from './lib'
 
 const HERE = import.meta.dir
@@ -111,20 +111,24 @@ function resolveRun(name: string): FirstRunResults {
 type Session = Omit<TurnOptions, 'prompt' | 'out' | 'resume' | 'maxAsks'>
 
 /**
- * One reading of the test organization: `get_status` and nothing else, on a small model. It runs in its own session,
+ * One reading of the test organization: `get_status`, then `search_calibrations` when it has a brand Profile, and
+ * nothing else, on a small model. It runs in its own session,
  * so the scenario's transcript, time and tokens hold none of it.
  */
 async function probe(session: Session, atlas: string, organization: string | undefined, out: string, model: string): Promise<StatusRead | null> {
   const prompt = [
     `Call the ${atlas}get_status tool.`,
     ...(organization ? [`If the organization it selected is not the one named "${organization}", call it again with that organization's id as asOrganizationId.`] : []),
+    `Then, if that organization has a brand profile, call ${atlas}search_calibrations once with that organization's id as`,
+    'asOrganizationId and limit 100, and nothing else.',
     'Then reply with only the word DONE. Do not call any other tool.',
   ].join(' ')
   const turn = await runTurn({
-    ...session, allowedTools: [atlas + 'get_status'], answers: [], model, prompt, out, resume: null, maxAsks: 0,
+    ...session, allowedTools: [atlas + 'get_status', atlas + 'search_calibrations'], answers: [], model, prompt, out, resume: null, maxAsks: 0,
   })
-  const reads = turn.toolUses.filter(use => use.name === atlas + 'get_status').map(use => readStatus(turn.toolResults[use.id]?.text ?? ''))
-  return reads.filter((read): read is StatusRead => read !== null).at(-1) ?? null
+  const results = (tool: string) => turn.toolUses.filter(use => use.name === atlas + tool).map(use => turn.toolResults[use.id]?.text ?? '')
+  const status = results('get_status').map(readStatus).filter((read): read is StatusRead => read !== null).at(-1) ?? null
+  return status ? withCalibrations(status, results('search_calibrations').at(-1) ?? null) : null
 }
 
 async function runScenario(scenario: Scenario, config: Config, local: Local, session: Session, atlas: string, dir: string, options: Options): Promise<ScenarioResult> {
@@ -214,6 +218,11 @@ async function main() {
   if (!local.mcp?.url) fail('local.json needs mcp.url')
   const missing = chosen.filter(scenario => !local.scenarios?.[scenario.code]?.organization).map(scenario => scenario.code)
   if (missing.length) fail(`local.json names no test organization for ${missing.join(', ')}`)
+  // A reply that still names a value would type the placeholder itself to the flow.
+  for (const scenario of chosen) {
+    const gaps = unfilled(fill(scenario.reply, valuesOf(local.scenarios?.[scenario.code] ?? {})))
+    if (gaps.length) fail(`local.json gives no ${gaps.join(', ')} for ${scenario.code}, which its typed reply names`)
+  }
   const token = local.mcp.tokenEnv ? process.env[local.mcp.tokenEnv] ?? fail(`set ${local.mcp.tokenEnv} to a token for the test organizations`) : ''
 
   const runDir = options.out ?? join(RUNS, stamp())

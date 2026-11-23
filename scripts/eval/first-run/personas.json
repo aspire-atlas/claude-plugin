@@ -55,6 +55,21 @@
     {
       "question": "relationship to",
       "pick": "^In-house"
+    },
+    {
+      "pick": "^Connect later"
+    },
+    {
+      "question": "colors\\?",
+      "pick": "^Not now"
+    },
+    {
+      "question": "creator rates",
+      "pick": "^Later"
+    },
+    {
+      "header": "Audit",
+      "pick": "^Not now"
     }
   ],
   "scenarios": [
@@ -182,6 +197,10 @@
       "answers": [
         {
           "header": "Next step",
+          "pick": "^Find creators|discover"
+        },
+        {
+          "header": "Next step",
           "pick": "creator"
         }
       ]
@@ -198,6 +217,10 @@
       "firstMessage": "/aspire:aspire",
       "reply": "I set up {brand} ({website}) on the Atlas site and skipped connecting social for now. Show me what you can and then find creators who fit us. Go with your recommended options.",
       "answers": [
+        {
+          "header": "Next step",
+          "pick": "^Find creators|discover"
+        },
         {
           "header": "Next step",
           "pick": "creator"

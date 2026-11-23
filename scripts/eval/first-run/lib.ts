@@ -39,6 +39,36 @@ export type StatusRead = {
   setupDone: number
   /** Saved influencer programs and campaign briefs. */
   savedWork: number
+  /**
+   * Calibration records that make the flow treat the organization as set up (first-run.md, 3) or start a repeat
+   * run: brand context, a person's own facts, declines, a saved theme or rate card, and `lastrun:` records. Null when
+   * they were not read.
+   */
+  brandRecords: number | null
+  lastRuns: number | null
+}
+
+/** The calibration kinds that count as brand context, and the keys that change what a later run does. */
+export const BRAND_CONTEXT_KINDS = ['brand_fact', 'user_fact', 'competitor', 'red_line', 'partner', 'decline']
+const STATE_KEYS = /^(lastrun:|theme:|fees:)/
+
+/** The status reading with what `search_calibrations` returned for the organization added. */
+export function withCalibrations(status: StatusRead, text: string | null): StatusRead {
+  if (text === null) return status.profiles === 0 ? { ...status, brandRecords: 0, lastRuns: 0 } : status
+  let records: any[]
+  try {
+    const parsed = JSON.parse(text)
+    if (!Array.isArray(parsed?.records)) return status
+    records = parsed.records
+  } catch {
+    return status
+  }
+  const key = (record: any) => String(record?.key ?? '')
+  return {
+    ...status,
+    brandRecords: records.filter(record => BRAND_CONTEXT_KINDS.includes(String(record?.kind)) || STATE_KEYS.test(key(record))).length,
+    lastRuns: records.filter(record => key(record).startsWith('lastrun:')).length,
+  }
 }
 
 export type Metrics = {
@@ -57,7 +87,7 @@ export type Metrics = {
   nudgesToValue: number
   /** Every tool call before the first value result, subagents' included. */
   toolCallsToValue: number
-  /** Atlas tool calls before the first value result: what PostHog counts as calls before value. */
+  /** Atlas tool calls before the first value result, the value call included. */
   atlasCallsToValue: number
   /** Billed tokens of every turn up to and including the one that reached value (a turn is billed whole). */
   tokensToValue: number | null
@@ -197,7 +227,11 @@ const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$
 export function scenarioAnswers(own: AnswerRule[], shared: AnswerRule[], values: Record<string, string>, organization?: string): AnswerRule[] {
   const escaped = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, escapeRegex(value)]))
   const rules = [
-    ...(organization ? [{ header: 'Organization', pick: `^${escapeRegex(organization)}` }] : []),
+    // The picker shows at most four organizations; when the scenario's is not among them, its name is typed.
+    ...(organization ? [
+      { header: 'Organization', pick: `^${escapeRegex(organization)}(\\s*\\(|$)` },
+      { header: 'Organization', text: organization },
+    ] : []),
     ...[...own, ...shared].map(rule => ({
       ...rule,
       ...(rule.text !== undefined ? { text: fill(rule.text, values) } : {}),
@@ -228,12 +262,17 @@ export function readStatus(text: string): StatusRead | null {
     invited: status.firstRun?.organization?.invited === true,
     setupDone: typeof status.setup?.done === 'number' ? status.setup.done : 0,
     savedWork: count(status.work?.programs) + count(status.work?.campaigns),
+    brandRecords: null,
+    lastRuns: null,
     profiles: status.profiles.length,
     instagram: status.profiles.some((profile: any) =>
       (Array.isArray(profile?.channels) ? profile.channels : []).some((channel: any) =>
         String(channel?.network).toLowerCase() === 'instagram' && channel?.authorization !== 'expired')),
   }
 }
+
+/** The `{key}` placeholders a text still holds after filling: values local.json does not give. */
+export const unfilled = (text: string) => [...text.matchAll(/\{([a-z]\w*)\}/g)].map(match => match[1])
 
 /** Why the test organization cannot start this scenario, or an empty list when it can. */
 export function startProblems(start: Start, status: StatusRead | null, organization?: string): string[] {
@@ -248,6 +287,13 @@ export function startProblems(start: Start, status: StatusRead | null, organizat
   // a configured organization and skip the first run.
   if (!start.invited && status.setupDone > 0) problems.push(`it needs an organization with no brand questions answered, and this one has ${status.setupDone}: reset it`)
   if (status.savedWork > 0) problems.push('it needs an organization with no saved programs or campaigns: reset it')
+  if (status.brandRecords === null || status.lastRuns === null) {
+    problems.push('its brand calibrations could not be read, so whether an earlier run left records behind is unknown')
+  } else if (!start.invited && status.brandRecords > 0) {
+    problems.push(`it needs an organization no run has set up, and this one holds ${status.brandRecords} brand context or run records: use a fresh organization`)
+  } else if (start.invited && status.lastRuns > 0) {
+    problems.push('an earlier run on this organization left a last-run record, so the flow would start a repeat run: use a fresh organization')
+  }
   if (start.profile && status.profiles === 0) problems.push('it needs a brand Profile and the organization has none')
   if (!start.profile && status.profiles > 0) problems.push(`it starts with no brand Profile and the organization has ${status.profiles}: delete them first`)
   if (start.instagram && !status.instagram) problems.push('it needs a live Instagram link and the organization has none')
