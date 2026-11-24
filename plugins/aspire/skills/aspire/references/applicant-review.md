@@ -304,8 +304,7 @@ is resent once as it is. Never change a key to get a finding through.
 
 **6. Read back**, after step 5. Page `list_applicants` again as in step 3. The import is done when
 all of this file's ids are there. Any missing is named in the summary as not imported, and the
-Sheet gets no row for it. Applicants already `screened` in this review then leave the run's list
-(**Applicant status**, Screened once).
+Sheet gets no row for it.
 
 **7. Add Sheet rows**, when step 3 read the Sheet, it lacks rows for this file's applicants that
 Atlas holds, and the user picked "Add them". Bring its header up to **The review Sheet**'s order
@@ -320,6 +319,10 @@ holds the applicants, and the next import adds the rows.
 
 **8. Summarize** in one line: "{new} applicants added to the {campaign} review ({existing} were
 already there), {rows} rows added to the review Sheet."
+
+However the import ends (after step 8, with nothing to write at step 4, on "Not now", or on a
+stop), applicants already `screened` in this review then leave the run's list (**Applicant
+status**, Screened once).
 
 ## Applicant status
 
@@ -342,17 +345,22 @@ Every vetting run on a review writes them, under its own `runKey`:
   claims each batch first.
 
 **Screened once.** An applicant whose status is `screened` is never screened again in its review:
-its recommendation stands, and the team's call goes in the Sheet's Team call or in F1. An
-interactive run reads the statuses with `list_applicants` (`reviewId` the review's slug, `statuses`
-`["screened"]`, `limit` 1000, paged to the end) once its list is set: after **Applicant
-screening**, **Reading the review Sheet** finishes a Sheet's list, or after **Importing
-applicants**, step 6, reads back a file's applicants. It keeps off the list every entry whose
-`aspireApplicantId` is among them and says "{n} {campaign} applicants were already screened, so
-they keep their results". When that leaves no one to vet, it skips R2 to R5, the launch, and the
-page (a review Sheet with new calls still asks its Sheet-only F1). An applicant that is `new`,
-`waiting_on_data`, or `cant_vet` stays on the list, since Atlas may hold its posts by now. A
-scheduled run screens only `new` and stale `waiting_on_data` applicants already (**Applicant
-screening**, **Scheduled screening**, step 3).
+its recommendation stands, and the team's call goes in the Sheet's Team call or in F1. Every
+interactive run on a review checks once its list is final, before R2: after **Applicant
+screening**, **Reading the review Sheet** finishes a Sheet's list, and after **Importing
+applicants** ends, whatever it wrote (new applicants, nothing new, "Not now", or a stop), and for
+pasted handles. It reads the statuses with `list_applicants` (`asProfileId` the brand profile,
+`reviewId` the review's slug, `statuses` `["screened"]`, `limit` 1000, paged to the end) and keeps
+off the list every entry that matches a screened applicant: by `aspireApplicantId` when the entry
+has one, otherwise by its Instagram or TikTok handle, normalized per **Creator vetting**, **Getting
+the list**, against the record's `instagramHandle` or `tiktokHandle` (as **Applying the form
+rules**, step 1, matches). It says "{n} {campaign} applicants were already screened, so they keep
+their results". When that leaves no one to vet, it skips R2 to R5, the launch, and the page (a
+review Sheet with new calls still asks its Sheet-only F1). Without `list_applicants` in the
+session, it skips the check and says once that applicants already screened may be screened again.
+An applicant that is `new`, `waiting_on_data`, or `cant_vet` stays on the list, since Atlas may
+hold its posts by now. A scheduled run screens only `new` and stale `waiting_on_data` applicants
+already (**Applicant screening**, **Scheduled screening**, step 3).
 
 One record:
 

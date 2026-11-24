@@ -53,14 +53,18 @@ stays on one id even after Atlas starts holding the row's other account.
   **Rows to fix**.
 - **Already screened**: an undecided row, reopened or not, whose applicant is `screened` in this
   review is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
-  Recommendation stands for the team to call in the Sheet. A reopened one is listed in **Rows to
-  fix** as "Team call cleared: the saved {call} stands until a call is set in the Sheet".
+  Recommendation stands for the team to call in the Sheet. Such a row is not treated as reopened:
+  **Reopened rows** and **`sheet_calls`** leave it out, so it is not vetted, gets no
+  `sheet_calls` entry, and is not asked in F1. When it would otherwise be reopened, it is listed
+  in **Rows to fix** as "Team call cleared: the saved {call} stands until a call is set in the
+  Sheet".
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
 calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet,
-Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that
-conflict with Atlas (below).
+Sheet calls on creators Atlas doesn't hold yet, cleared Team calls on applicants already screened
+(**Already screened**), and, in a run with nobody present, Sheet calls that conflict with Atlas
+(below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
 with the same Team call (as read under **What each row becomes**) count as one row; with different
