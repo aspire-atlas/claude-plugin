@@ -149,8 +149,7 @@ across the brand profile.
   form, `20261119t190512`). `detail` is a `feedback` finding's, plus `applicantReview` (the slug),
   `aspireApplicantId` when there is one, `sourceRunKey` (the `runKey` of the run that saved it), and, when an
   override question kept a brand-wide reject for this review, `brandWideKept` (`{key, version}`:
-  the record's key and the `createdAt` of the version kept), or, when B1 kept a reject to this
-  review, `brandWideDeclined: true`.
+  the record's key and the `createdAt` of the version kept).
 - **Reading them.** `search_insights` with a `term` filter on `detail.account_review.runKey` =
   `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
   first, paged to the end. Group the rows by `{callId}`, the same form the key uses: the row's
@@ -465,15 +464,19 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   `brandSafety.notSaved`): its `recommendation` findings with `listSource` `schedule` and
   `brandSafetyReject` that are still their account's newest call, read as step 8b reads with no
   `scheduleRun` or date filter, leaving out a finding older than this brand's lifted record (the
-  lift settled it) or than a Team call on its `{callId}` that carries `brandWideDeclined` (a person
-  kept it to the review). Each with no record of this brand with stance `reject` (active,
+  lift settled it) or than a **kept-to-review marker** for its account (a person kept it to the
+  review; read with a `term` filter on `runKey` `applicant-brandwide-{slug}`). Each with no record of this brand with stance `reject` (active,
   unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
-  brand safety in every {brand} campaign, and keep them out of creator discovery?", listing each as
+  brand safety in every {brand} campaign, and keep them out of creator discovery? Your answer is saved
+  to Atlas.", listing each as
   `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
-  (type the ones to keep in this review only); 3) Only this review (their Reject stays in this review,
-  and this isn't asked again). It is its own write confirmation. Each creator kept to the review gets
-  a Team call row in it repeating its Team call (Reject when it has none) with `brandWideDeclined:
-  true`, so B1 never offers that finding again. Records are saved with `saved by: person` and `confirmed: yes`, at the key
+  (type the ones to keep in this review only); 3) Only this review (saved, so this isn't asked
+  again). It is its own write confirmation. Each account kept to the review gets a **kept-to-review
+  marker**: one `account_review` finding (`action_item`, `low`) on its `entityId` under `runKey`
+  `applicant-brandwide-{slug}`, `idempotencyKey` `{slug}:{callId}:kept-{entityId}-{run}`, `detail`
+  `{findingType: "brand-wide-kept", applicantReview, aspireApplicantId when there is one, handle,
+  network}`. It is not a Team call: Team call reads never see its `runKey`, so the applicant's call,
+  the Sheet, and **Copy decisions** are unchanged. Records are saved with `saved by: person` and `confirmed: yes`, at the key
   **Which key** gives. A creator whose record for this brand was lifted gets a supersede offer
   instead, with its own Destructive tools confirmation showing both statements. Its gate id is
   `approve-brand-safety`.
@@ -565,5 +568,6 @@ the chat answer. A scheduled run reads the brand's records
 and every review's Team calls on their creators as item 3 of **Overriding one** does, and lists
 every record of the brand in each state, not only the ones it touched, so the team sees them soon; an
 interactive run's chat answer gives the same lists in a line each. A scheduled run's `notSaved` also lists the
-review's scheduled rejects no run saved, read as B1 reads them, as "run stopped before saving", so
-`{o}` counts them.
+review's scheduled rejects no run saved, read as B1 reads them but leaving out this run's own
+(`scheduleRun` its `{run}`, already listed by step 8b), as "run stopped before saving", so `{o}`
+counts them. `notSaved` lists each creator once, with one reason.
