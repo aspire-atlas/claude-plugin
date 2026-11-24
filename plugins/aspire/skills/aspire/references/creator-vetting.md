@@ -903,7 +903,8 @@ comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, `review-sheet`, `cas-lane`, or `schedule`), `campaign` when R2 named one, `applicantReview`
 when the criteria source is an applicant review (**Applicant reviews**), and with it
 `aspireApplicantId`, `formRules[]`, `responsesUsed[]`, and `priorityKeys` (**Applicant review**,
-**Applying the form rules**), `brandSafetyReject` (**Brand-wide brand-safety rejects**),
+**Applying the form rules**), `brandSafetyReject` (**Brand-wide brand-safety rejects**), `scheduleRun` in a scheduled run (its
+`{run}`),
 `reviewPage`, and `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose list came from a review Sheet also adds

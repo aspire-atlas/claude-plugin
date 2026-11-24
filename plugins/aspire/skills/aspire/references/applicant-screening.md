@@ -295,7 +295,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
 
    A `new` applicant claimed less than 12 hours ago is not due: another run is screening it. The
    batch is the first 100 due applicants. With none due, go to step 8b. On the run's first read,
-   when step 2 saved no Sheet call and step 8b then saves and recovers nothing, write nothing more
+   when step 2 saved no Sheet call and step 8b then saves nothing, write nothing more
    and end with "No new {campaign} applicants to screen.", so a quiet review adds no record each hour.
 4. **Claim the batch.** One `append_insights` call, `runKey` `applicant-screening-{slug}-{date}`,
    one `applicant_screening` finding per applicant in the batch: `schema` and `entityKind`
@@ -365,20 +365,18 @@ Each batch's launch gets its own `runId` per **Running agents**.
 8. **Next batch.** Repeat steps 3 to 7 until no applicant is due or this run has launched 5
    batches (500 applicants); the next run carries on from there.
 8b. **Save the brand-wide brand-safety rejects**, once, whenever the run ends its batches (step 3
-   finds none due, or step 8's cap). Read back with `search_insights`, a `prefix` filter on
-   `detail.account_review.runKey` = `creator-vetting-{profile}-`, paged, keeping `recommendation`
-   findings whose `detailBody` has `applicantReview` the review's slug and `brandSafetyReject`, from
-   two sources only, so overlapping runs never save the same reject and none is read twice:
-   - **This run's:** `createdAt` from `{run}`'s time, and `scheduleRun` this run's `{run}`.
-   - **A stopped run's:** `createdAt` from 48 to 12 hours before `{run}`'s time, and a `scheduleRun`
-     that no summary of this review names as its `run` or in its `recovered` list. Each such run is
-     recovered once: this run's summary lists it in `recovered`.
-
-   Keep a finding only while it is the newest recommendation for its applicant on its network
-   (`entityId`), so a newer call on that account wins but the other network's call never hides it.
+   finds none due, or step 8's cap). It saves this run's own rejects only, so overlapping runs never
+   save the same one: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+   `creator-vetting-{profile}-` and a `range` filter on `createdAt` from `{run}`'s time, paged,
+   keeping the `recommendation` findings whose `detailBody` (stored, not filterable, so checked on
+   each hit) has `applicantReview` the review's slug, `scheduleRun` this run's `{run}`, and
+   `brandSafetyReject`. Keep each only while it is the newest `recommendation` or `feedback` for its
+   account (`entityId`) in the review, read with no date range, so a newer call on that account wins
+   but the other network's call never hides it. Save each per **Brand-wide brand-safety rejects**,
+   Saving one, Scheduled, reading **Which key** again right before each `append_calibration`. A run
+   that stops before this step saves none of its rejects; the next interactive run's B1 offers them.
    Interactive runs' rejects are never read here: they are B1's, and a person may have kept them to
-   the review. Save each per **Brand-wide brand-safety rejects**, Saving one, Scheduled, reading
-   **Which key** again right before each `append_calibration`.
+   the review.
 9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
    one `summary` finding (`action_item`, `low`), anchored as **State written to Atlas** anchors a run
    summary (the brand's own account, else the account of the first creator on the list Atlas
@@ -393,8 +391,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
    saved visual checks by name, when it has any), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
    on {date}; scores before and after are on different maps"), and `brandSafety`
-   (**Brand-wide brand-safety rejects**, What every run's summary lists) with `recovered`, the
-   stopped runs step 8b read. With no account to anchor it, the applicant records are the
+   (**Brand-wide brand-safety rejects**, What every run's summary lists). With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
    approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new.{ Visual
    checks not run: {names}.}{ Brand-wide: {b} rejected for brand safety across {brand}, not
@@ -404,7 +401,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
    (not those the team approved first or already rejected brand-wide).
 
    A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
-   no Sheet call saved, no Sheet row written, no brand-wide reject saved, no run recovered) adds no summary: like a quiet review, it ends with
+   no Sheet call saved, no Sheet row written, no brand-wide reject saved) adds no summary: like a quiet review, it ends with
    "{k} {campaign} applicants are being screened by run {other run}; nothing left for this run."
 
 **A run that stops** (the session ends, a call fails twice, the task is paused) leaves every
@@ -441,8 +438,8 @@ vetted on, with stance `reject` and reason `brand-safety`:
   "stance: reject; reason: brand-safety; handle: @{handle}; network: {network}; profile: <brand
   profile id>; review: <slug>; campaign: <campaign name>; aspire applicant: <the Team call's
   {callId}>; check: <check>;
-  evidence: <permalink and quoted line>; runKey: <the run's runKey>; saved: <YYYY-MM-DD>; saved by:
-  person | schedule {run}; confirmed: yes | no"}`;
+  evidence: <permalink and quoted line>; runKey: <the run's runKey>; found: <the reject finding's
+  createdAt>; saved: <YYYY-MM-DD>; saved by: person | schedule {run}; confirmed: yes | no"}`;
 - `provenance: "interview"` (the person's answer, or the schedule's setup).
 
 **Which brand.** Calibrations are organization-wide, but this record belongs to the brand profile
@@ -462,8 +459,10 @@ brand's reject, or an organization-wide note or call): the new record takes the 
 
 - **Interactive (B1).** Asked by the main thread after the last batch's F1 to F4, only
   when R4 was Save, for this run's brand-safety rejects whose call F1 did not turn into Approve or
-  Maybe, plus any of the review's earlier ones a scheduled run could not save (its run summary's
-  `brandSafety.notSaved`), each with no record of this brand with stance `reject` (active,
+  Maybe, plus the review's scheduled ones no run saved (a run that stopped before step 8b, or
+  `brandSafety.notSaved`): its `recommendation` findings with `listSource` `schedule` and
+  `brandSafetyReject` that are still their account's newest call, read as step 8b reads with no
+  `scheduleRun` or date filter. Each with no record of this brand with stance `reject` (active,
   unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
   brand safety in every {brand} campaign, and keep them out of creator discovery?", listing each as
   `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
@@ -478,7 +477,8 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   older than the reject finding (`createdAt`), nothing is written: the team approved before the run
   screened, and a record saved after their call would never count as overturned, so never be
   offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". A Team call
-  newer than the finding does not stop the save: the record is saved and shows as disputed. Otherwise
+  newer than the finding does not stop the save: the record is saved, and its `found` time makes it
+  read as disputed (in its source review) or overturned. Otherwise
   it is saved at the key **Which key** gives, except that a record of this brand a person lifted is
   never replaced unattended: when the reject finding is newer than the lift, that creator is listed
   in `brandSafety.notSaved` as "lifted earlier"; an older finding was already settled by the lift.
@@ -491,7 +491,7 @@ records with `reason: brand-safety`, and work out each one's state; no run write
 | State | When | Another review, or any other vetting run for the brand | Creator discovery |
 | ----- | ---- | ------------------------------------------------------ | ----------------- |
 | Active | Stance `reject`, and `confirmed: yes`, or `confirmed: no` and not disputed | **Reject** under rule 1, its evidence "Rejected for brand safety across {brand} in the {campaign} review: {check}", adding "Saved by a scheduled run, not confirmed yet." when unconfirmed | Never surfaced |
-| Disputed | Stance `reject`, `confirmed: no`, and the source review's Team call on its `aspire applicant` (**Team calls on a review**) is Approve or Maybe and newer than the record's current version (`createdAt`) | **Maybe** under rule 1, its `maybeQuestion` "Rejected for brand safety in the {campaign} review, but the team approved them there. Confirm or lift?" | Never surfaced |
+| Disputed | Stance `reject`, `confirmed: no`, and the source review's Team call on its `aspire applicant` (**Team calls on a review**) is Approve or Maybe and newer than the record's `found` time (the reject finding's, so a Team call saved before the record but after the reject still counts) | **Maybe** under rule 1, its `maybeQuestion` "Rejected for brand safety in the {campaign} review, but the team approved them there. Confirm or lift?" | Never surfaced |
 | Lifted | Superseded by stance `note` with a `lifted:` line | No effect on the call; its evidence notes the lift | Surfaced as any creator, the lift shown under "Notes" |
 
 Each state is worked as **The recommendation**'s rule 1, naming the check and the source review. In
@@ -515,7 +515,8 @@ the review's own Team call wins over the record (**Team calls on a review**, Wha
    in a review, where that review's Team call is newer than the record's current version and carries
    no `brandWideKept` naming that version; and, with no overturn, ones with `confirmed: no`. A record
    both disputed and overturned in its source review is asked as disputed only. "Newer" compares the
-   Team call row's `createdAt` with the record version's `createdAt`, never `vettedAt`. Each is
+   Team call row's `createdAt`, never `vettedAt`, with the `found` time for a version still
+   `confirmed: no`, and with the version's own `createdAt` for any other. Each is
    its own question, at most four per call and eight per run (the rest wait for the next run), and
    each answer that changes the record is then carried out by the main thread with its own
    Destructive tools confirmation, showing the current and the new statement:
