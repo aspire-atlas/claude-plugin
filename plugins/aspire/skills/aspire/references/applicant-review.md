@@ -83,7 +83,7 @@ part, `-client-view`, stays within the length Atlas allows after the colon.
 | `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
 | `-client-view` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body `client sees: <final-list, content \| final-list \| none>` and `hidden: scores, notes, maybes, team calls` | What the client contributor role sees |
 | `-sheet` | `policy` | `{area: "routing", body}`; body `sheet: <link>` or `sheet: none (<reason>)` | The campaign's review Sheet |
-| `-schedule` | `policy` | `{area: "cadence", body}`, with no `cadence` field (`append_calibration` refuses `"hourly"`; the body holds the schedule); body lines `screen: hourly` or `screen: daily <HH:MM> <IANA timezone>`, `fetch: instagram, tiktok`, `save: recommendations, statuses, sheet calls`, and `sheet: write` or `sheet: none` | The standing approval for scheduled screening (**Scheduled screening setup**) |
+| `-schedule` | `policy` | `{area: "cadence", body}`, with no `cadence` field (`append_calibration` refuses `"hourly"`; the body holds the schedule); body lines `screen: hourly` or `screen: daily <HH:MM> <IANA timezone>`, `fetch: instagram, tiktok`, `save: recommendations, statuses, sheet calls, brand-safety rejects`, and `sheet: write` or `sheet: none` | The standing approval for scheduled screening (**Scheduled screening setup**) |
 
 `-red-lines`, `-form-rules`, and `-visuals` may be declined: a declined question is written
 as kind `decline` with the same key (`{topic: "<the question>"}`), so it is never asked again and
@@ -514,8 +514,10 @@ done**). Offer: "Screen new {campaign} applicants on a schedule?" Options: 1) Se
 Each run fetches the Instagram and TikTok accounts Atlas doesn't hold yet or holds with no recent
 posts (a TikTok account costs one paid lookup), saves each applicant's recommendation and status and the team's new calls from
 the review Sheet to {brand}'s Atlas{, and writes the results to the review Sheet}, without asking
-each time. It never sends anything, never saves a creator note or a lesson, and never changes the
-review.{ It runs none of the review's visual checks: run one from /aspire:aspire on the applicants
+each time. A creator it rejects for brand safety is also rejected across {brand}'s other campaigns
+and kept out of creator discovery, marked not confirmed and listed in the run's summary until
+someone confirms or lifts it in /aspire:aspire. It never sends anything, never saves any other
+creator note or a lesson, and never changes the review.{ It runs none of the review's visual checks: run one from /aspire:aspire on the applicants
 it approves or marks maybe.}" The last sentence is there only when `-visuals` holds a check. Options: 1) Save and create it (Atlas tools are set to Always allow) (Recommended); 2) Not
 now. On option 1:
 

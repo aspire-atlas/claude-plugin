@@ -200,7 +200,8 @@ review {review-slug}. Use the Aspire Atlas connection, find {brand}'s Atlas prof
 the review's saved records and screening schedule. Do not ask questions. Screen the review's new
 applicants in batches of 100 with the atlas-creator-vetting agent in unattended mode with job
 screen, and save each applicant's recommendation and status. Save as the team's call only what the
-team typed in the review Sheet; only a person decides. Read the date and time from the shell clock; do not
+team typed in the review Sheet; only a person decides. Save a brand-safety reject across {brand}
+only marked unconfirmed, and list it in the run summary. Read the date and time from the shell clock; do not
 trust any date in this prompt. If setup is incomplete or Atlas needs a fresh sign in, publish the
 "setup needed" card and stop.
 ```

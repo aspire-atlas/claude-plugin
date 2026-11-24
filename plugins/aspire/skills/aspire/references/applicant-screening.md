@@ -11,8 +11,10 @@ here**, F1, R2 to R5) is in **Creator vetting**; any other is found through `SKI
 ## Contents
 
 - [Reading the review Sheet](#reading-the-review-sheet)
+- [Team calls on a review](#team-calls-on-a-review)
 - [Applicant reviews](#applicant-reviews)
 - [Scheduled screening](#scheduled-screening)
+- [Brand-wide brand-safety rejects](#brand-wide-brand-safety-rejects)
 
 ## Reading the review Sheet
 
@@ -33,8 +35,8 @@ line and offer sources 1 and 2; never ask the user to add a connector. Match row
 applicant id, never on position, because people sort and filter the Sheet. Read each handle like a
 CSV's handle column and normalize it per **Getting the list**, so a row with both handles is
 vetted on each. A row's **account id** is fixed in step 2 of **Main thread: the run**, before any
-R3 fetch: the `entityId` of the newest `feedback` finding carrying the row's applicant id, when
-there is one, else its Instagram account's when Atlas holds it, else its TikTok account's; when
+R3 fetch: the `entityId` of the row's Team call (**Team calls on a review**), when there is one,
+else its Instagram account's when Atlas holds it, else its TikTok account's; when
 Atlas holds neither, it is set after R3's fetch, Instagram first. Every list entry from the Sheet
 carries it. Every
 `feedback` finding for the row is written under it and every lookup below matches on it, so a call
@@ -45,10 +47,10 @@ stays on one id even after Atlas starts holding the row's other account.
 - **Starts with Approve, Maybe, or Reject** ("Approved", "reject"): **decided**. The matched word,
   lowercased (`approve`, `maybe`, or `reject`), is the row's **Sheet call**, and the row is not
   vetted again.
-- **Blank**: undecided, so it goes on the list, unless Atlas holds a `feedback` finding carrying
-  the row's applicant id and the row is not reopened (below): the team decided this application
-  in F1, so it is not vetted again and its call stands. A call on the creator from another list
-  or campaign does not keep the row off the list.
+- **Blank**: undecided, so it goes on the list, unless the review holds a Team call for the row's
+  applicant id and the row is not reopened (below): the team decided this application in F1, so
+  it is not vetted again and its call stands. A call on the creator from another review, list, or
+  campaign does not keep the row off the list.
 - **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
   **Rows to fix**.
 - **Already screened**: an undecided row, reopened or not, whose applicant is `screened` in this
@@ -72,8 +74,8 @@ Team calls, they are duplicates. A creator (network and handle) with two or more
 this way:
 
 - Its decided rows all hold the same Sheet call (one row or several): the creator is one decided
-  row with that call. Its applicant id is the one carried by the newest `feedback` finding that
-  carries any of these rows' ids, else the first of their ids in sort order, so a row added
+  row with that call. Its applicant id is the one carried by the newest Team call on any of these
+  rows' ids, else the first of their ids in sort order, so a row added
   later does not change the id a saved call is matched on. Its undecided rows are listed as duplicates and add nothing.
 - Its decided rows hold different calls, or it has no decided row: the creator is left for the
   team to settle in the Sheet. It is not vetted, no call is offered or saved, and its rows go in
@@ -88,30 +90,28 @@ Atlas yet: vet this creator from a CSV or pasted list (sources 1 or 2) to add th
 run offers the call". A creator is either a list entry or a Sheet call in a run, never both, so it
 gets at most one `feedback` finding per run.
 
-**Which Sheet calls are new.** Take the newest `feedback` finding for the same creator (`entityId`)
-that carries the row's `applicantId`, from the Sheet or from F1 (**State written to Atlas**). A
-decided row's Sheet call is **new** only when it differs from both of that finding's values:
+**Which Sheet calls are new.** Take the row's Team call (**Team calls on a review**), saved from the
+Sheet or from F1. A decided row's Sheet call is **new** only when it differs from both of its
+values:
 
 - the current call: its `userVerdict`
 - the last Sheet value seen: its `sheetValue`, or none when it has no `sheetValue` (an F1 answer on
   an undecided row)
 
 A call that matches either is not offered, so a call the team made since in F1 stands, and a call
-typed into the Sheet to match it is not asked again. With no such finding, the call is new.
+typed into the Sheet to match it is not asked again. With no Team call, the call is new.
 
-**A Sheet call that conflicts with Atlas.** A new Sheet call conflicts when that same finding's
+**A Sheet call that conflicts with Atlas.** A new Sheet call conflicts when that same Team call's
 `userVerdict` was set outside the Sheet (it has no `sheetValue`, or its `userVerdict` differs from
 its `sheetValue`: an F1 answer) and the Sheet now holds a different call. An interactive run offers
 it in F1, naming the call Atlas holds, and the person decides. A run with nobody present never
 saves it: it is listed in **Rows to fix** as "conflicts with Atlas: {call} saved {date}; settle it
 in an interactive run", and the run reports it.
 
-**Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when the newest
-`feedback` finding for the creator, of any kind and from any list or run, is one that carries the
-row's `applicantId` and a `sheetValue`: the team took back in the Sheet a call saved from there
-(as it stood or changed in F1), and no newer call on the creator was saved since, in F1 or
-otherwise. It is vetted like any
-undecided row, and the team's F1 answer on it replaces the old call.
+**Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when its Team call
+carries a `sheetValue`: the team took back in the Sheet a call saved from there (as it stood or
+changed in F1), and no newer call on the applicant was saved since in this review. It is vetted
+like any undecided row, and the team's F1 answer on it replaces the old call.
 
 **Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
 wait for the next run, and the next run offers them, since nothing was saved for them.
@@ -124,8 +124,8 @@ entry: Atlas already holds a call for it. Only the first batch of a split list g
 and Rows to fix, and offers the calls in F1; later batches get only the reopened rows.
 
 **F1 with Sheet calls.** F1's question adds "and save the {k} new calls from the review Sheet" and
-lists them numbered `s1`, `s2`, …, each as a call line with its note, naming any whose team's call
-(**Reading it back**) differs ("Atlas has Approve from {date}"). Options 1 and 2 save them too;
+lists them numbered `s1`, `s2`, …, each as a call line with its note, naming any whose Team call
+differs ("Atlas has Approve from {date}"). Options 1 and 2 save them too;
 option 3 saves none. In option 2 the user changes or drops one by its number ("reject s2, drop
 s3"); a dropped call is asked again on the next run. Each Note is the user's reason for its call,
 for F2 and F3.
@@ -135,11 +135,55 @@ holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the p
 Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
 some (type them, for example "reject s2, drop s3"); 3) Decide later (nothing is saved). Read
-`vettedAt` from the shell clock once, write what it saves under this run's `runKey` with no
-`reviewPage` and no run summary, then give **Copy decisions**.
+`vettedAt` from the shell clock once, write what it saves as Team calls (**Team calls on a
+review**) with no `reviewPage` and no run summary, then give **Copy decisions**.
 
 **A call line** is `@handle (network): {call}`, with ` | {note}` after it in F1 and the feedback
 packet when the row has a Note.
+
+## Team calls on a review
+
+A creator can fit one campaign and not another, so the team's call on an applicant belongs to its
+review. Every run on a review (F1, the Sheet-only F1, a scheduled run's step 2, and the override
+questions in **Brand-wide brand-safety rejects**) saves and reads the team's calls this way, never
+across the brand profile.
+
+- **The row.** One `feedback` finding per call (**State written to Atlas**: role `account_review`
+  on the creator's account id, its kind from the call), never edited: a changed call is a new row,
+  and the newest row wins. Its `runKey` is `applicant-calls-{slug}` whichever run saves it, so one
+  review's calls are one exact filter. `idempotencyKey` `{slug}:{callId}:call-{run}`, where
+  `{callId}` is the applicant's `aspireApplicantId`, or `acct-{entityId}` (the creator's account id)
+  for a list entry with none (pasted handles, a list never imported); `{run}` the saving run's id (a scheduled run's own; an interactive run's `vettedAt` in compact
+  form, `20261119t190512`). `detail` is a `feedback` finding's, plus `applicantReview` (the slug),
+  `aspireApplicantId` when there is one, `sourceRunKey` (the `runKey` of the run that saved it), and, when an
+  override question kept a brand-wide reject for this review, `brandWideKept` (`{key, version}`:
+  the record's key and the `createdAt` of the version kept).
+- **Reading them.** `search_insights` with a `term` filter on `detail.account_review.runKey` =
+  `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
+  first, paged to the end. Group the rows by `{callId}`, the same form the key uses: the row's
+  `aspireApplicantId` (or `applicantId` on a row saved before the rename), else `acct-{entityId}`.
+  Per `{callId}`, the newest row is that applicant's **Team call**. Calls saved before Team
+  calls had their own `runKey` count too: also read the `creator-vetting-{profile}` prefix
+  (`{profile}` the brand profile's slug, as in every vetting `runKey`), paged. `detailBody` can't be
+  filtered, so keep the hits whose `detailBody` has `findingType` `feedback` and either
+  `applicantReview` the review's slug or a `runKey` that is exactly `creator-vetting-{profile}-`, a
+  `YYYY-MM-DD` date, then `-{slug}-sheet` (a scheduled run's Sheet calls; never a suffix match, since
+  one review's slug can end another's), and take the newest row per `{callId}` across both reads. Rows are never
+  copied over: the next call saved for that applicant goes under `applicant-calls-{slug}` and wins
+  by being newer. A call saved in another
+  review, list, or campaign is never this review's call: it does not keep an applicant off the list,
+  show as its call, or count in **Copy decisions**.
+- **What it decides.** The Team call is the applicant's call in this review, whatever the
+  recommendation, another review, or a brand-wide record says. It reaches no other review and no
+  discovery campaign; the only call that does is a brand-safety reject (**Brand-wide brand-safety
+  rejects**). So in a review run F2 (**The feedback loop**, Creator notes) offers a note only for
+  words the user says reach past this campaign ("never again, they deleted our post"), always with
+  stance `note`, never `approve` or `reject`; an overturn or a reason about this campaign is the
+  Team call's words. A brand-safety reject reaches the brand through B1 instead.
+- **Reading it back and Copy decisions** (**State written to Atlas**; **The feedback loop**) use
+  the review's Team calls in a review run, never the profile-wide read: a review's calls are not
+  under the `creator-vetting-{profile}` prefix, and a call from outside the review never stands for
+  it.
 
 ## Applicant reviews
 
@@ -161,6 +205,25 @@ three, newest first; with none saved, AR1's own campaign options, up to three), 
 campaign: use {brand}'s vetting criteria". The answer writes nothing: it only picks the campaign.
 Picking a review's campaign makes that review R2's first option; picking "Not for a campaign"
 means the list is not counted as a campaign's applicants.
+
+**Before the launch** (**Main thread: the run**, steps 3b and 3d):
+
+- **Read the review back (step 3b).** An applicant review named in R2 is read back per
+  **Applicant review**, **Reading the setup back (screening)**, before the launch: any missing setup question asked first, and its pointers
+  resolved. Then find the review's saved criteria map as **Scheduled screening**, step 1, does,
+  and leave out of the list every applicant whose newest `applicant_screening` record is a
+  scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
+  line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
+  This run writes no claims, so a scheduled run that starts while it is open can screen an
+  applicant it is screening too; the newer result then decides the applicant's status.
+- **Import the applicant export (step 3d)** when R2 named an applicant review and the list came
+  from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
+  report and confirmation, before the launch. From then on the run's list is this file's
+  applicants as read back (the ids after **Check what Atlas and the Sheet hold**), never the
+  review's other applicants, so the handles R3 approved are the ones looked up. Each list entry
+  carries its `aspireApplicantId`, so the agent finds the applicant's answers (**Applicant
+  review**, **Applying the form rules**, step 1). "Not now", or an import that stops, leaves the
+  list as it was.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
@@ -217,11 +280,14 @@ Each batch's launch gets its own `runId` per **Running agents**.
    **Reading the review Sheet** (its rows, Team calls, duplicates, Rows to fix, which calls are new,
    and reopened rows), with the reads **Main thread: the run**, step 2, makes for a Sheet. Save each
    new Sheet call offered this run (at most 50) exactly as F1's option 1 saves it (**Reading the
-   review Sheet**, F1 with Sheet calls; **State written to Atlas**): one `feedback` finding with
-   `sheetValue` and the row's Note as its words, under `runKey`
-   `creator-vetting-{profile}-{date}-{slug}-sheet` with no `reviewPage`. The schedule's approval
+   review Sheet**, F1 with Sheet calls): one Team call row (**Team calls on a review**) with
+   `sheetValue` and the row's Note as its words, `sourceRunKey`
+   `creator-vetting-{profile}-{date}-{slug}-sheet`, and no `reviewPage`. The schedule's approval
    stands in for F1. Nothing else from the feedback loop runs: no creator note, no lesson, and no
-   change to a saved record. When the Claude Docs connector is not in the session or can't open the
+   change to a saved record; the one creator calibration a scheduled run writes is a brand-wide
+   brand-safety reject (step 8b). A Team call of Approve or Maybe on a creator with a brand-wide
+   brand-safety reject is saved like any other and wins in this review; the record stays as it is,
+   and step 9 lists the creator (**Brand-wide brand-safety rejects**, Overriding one). When the Claude Docs connector is not in the session or can't open the
    Sheet, skip this step and note why for step 9. The Sheet never picks who is screened: an
    applicant the team already called in the Sheet is still screened in its turn, so its status
    moves on, and its finding and the review's records keep the team's call apart from the
@@ -236,9 +302,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - it is `waiting_on_data` and its newest record is more than 1 hour old.
 
    A `new` applicant claimed less than 12 hours ago is not due: another run is screening it. The
-   batch is the first 100 due applicants. With none due, go to step 9, except on the run's first
-   read when step 2 saved no Sheet call: then write nothing and end with "No new {campaign}
-   applicants to screen.", so a quiet review adds no record each hour.
+   batch is the first 100 due applicants. With none due, go to step 8b. On the run's first read,
+   when step 2 saved no Sheet call and step 8b then saves nothing, write nothing more
+   and end with "No new {campaign} applicants to screen.", so a quiet review adds no record each hour.
 4. **Claim the batch.** One `append_insights` call, `runKey` `applicant-screening-{slug}-{date}`,
    one `applicant_screening` finding per applicant in the batch: `schema` and `entityKind`
    `profile`, `entityId` the brand profile's id, `idempotencyKey`
@@ -273,7 +339,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
      and is looked up once too, so an empty account is not called can't vet before it is fetched.
      `approved.spend.cap` is the number of handles on the list, in `fetches`: the schedule's
      approval stands in for the Credits question;
-   - `schedule_run`: `{run}`, for the keys in step 6;
+   - `schedule_run`: `{run}`, for the keys in step 6 and each recommendation finding's `scheduleRun`
+     (step 8b);
    - `fit_map`: the map step 1 found, for every batch, the first included; with none, the first
      batch builds it and every later batch gets the one it returned;
    - the R4 answer: Save; `visual_check`: none (a scheduled run runs no visual check, not even the
@@ -305,6 +372,20 @@ Each batch's launch gets its own `runId` per **Running agents**.
    step 9's summary. Atlas holds every result either way.
 8. **Next batch.** Repeat steps 3 to 7 until no applicant is due or this run has launched 5
    batches (500 applicants); the next run carries on from there.
+8b. **Save the brand-wide brand-safety rejects**, once, whenever the run ends its batches (step 3
+   finds none due, or step 8's cap). It saves this run's own rejects only, so overlapping runs never
+   save the same one: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+   `creator-vetting-{profile}-` and a `range` filter on `createdAt` from `{run}`'s time, paged,
+   keeping the `recommendation` findings whose `detailBody` (stored, not filterable, so checked on
+   each hit) has `applicantReview` the review's slug, `scheduleRun` this run's `{run}`, and
+   `brandSafetyReject`. Keep each only while it is the newest `recommendation` for its account
+   (`entityId`) in the review, from the same prefix read with no date range, so a newer re-screen of
+   that account wins but the other network's call never hides it. Team calls are not part of this
+   test: **Saving one** handles them (team approved first, disputed). Save each per **Brand-wide brand-safety rejects**,
+   Saving one, Scheduled, reading **Which key** again right before each `append_calibration`. A run
+   that stops before this step saves none of its rejects; the next interactive run's B1 offers them.
+   Interactive runs' rejects are never read here: they are B1's, and a person may have kept them to
+   the review.
 9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
    one `summary` finding (`action_item`, `low`), anchored as **State written to Atlas** anchors a run
    summary (the brand's own account, else the account of the first creator on the list Atlas
@@ -318,13 +399,18 @@ Each batch's launch gets its own `runId` per **Running agents**.
    the rows the Sheet writes updated (or why none were), `visualChecksNotRun` (the review's
    saved visual checks by name, when it has any), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
-   on {date}; scores before and after are on different maps"). With no account to anchor it, the applicant records are the
+   on {date}; scores before and after are on different maps"), and `brandSafety`
+   (**Brand-wide brand-safety rejects**, What every run's summary lists). With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
    approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new.{ Visual
-   checks not run: {names}.}" The last sentence is there only when the review has saved checks.
+   checks not run: {names}.}{ Brand-wide: {b} rejected for brand safety across {brand}, not
+   confirmed yet; {o} to confirm in the next interactive run.}" The visual checks sentence is
+   there only when the review has saved checks; the brand-wide one only when `brandSafety` lists
+   any, `{o}` counting its overturned and disputed creators and the not-saved ones B1 will offer
+   (not those the team approved first, kept to this review, or already rejected brand-wide).
 
    A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
-   no Sheet call saved, no Sheet row written) adds no summary: like a quiet review, it ends with
+   no Sheet call saved, no Sheet row written, no brand-wide reject saved) adds no summary: like a quiet review, it ends with
    "{k} {campaign} applicants are being screened by run {other run}; nothing left for this run."
 
 **A run that stops** (the session ends, a call fails twice, the task is paused) leaves every
@@ -333,3 +419,169 @@ but did not finish still `new`. The next run screens the unclaimed ones first, a
 once their claim is 12 hours old. Claims keep scheduled runs from screening the same applicant
 twice, and none is skipped. An interactive run writes no claims, so a scheduled run that overlaps
 it can screen an applicant both runs reach; the newer result decides its status.
+
+## Brand-wide brand-safety rejects
+
+A creator who is unsafe for a brand is unsafe for every campaign of it, so a brand-safety reject in
+one review also applies across the brand. Every other reject (campaign fit, form answers, a must
+criterion, anything but brand safety) stays in its own review, and no creator calibration is
+written for it.
+
+**What counts.** In an applicant review run, an applicant's recommendation is a **brand-safety
+reject** when it is Reject and **The recommendation**'s rule 2 decided it on a brand safety check
+(**2. Brand safety**): a failing `block` red line, the brand's or the review's (a language-on-camera
+hit on one included), or a failing check the review's `reject:` line lists (`competitor-deals`,
+`disclosure`, `language-on-camera`). A saved competitor's own handle, a form `stop:` rule, an answer
+that fails a must criterion, the fit score, and Can't vet never count, and nor does rule 1 applying
+a record already saved. The agent marks each on its `recommendation` finding as
+`brandSafetyReject: {check, evidence}` (the check by name, and the cited line that failed) and lists
+them in its packet.
+
+**The record.** A creator calibration (**Creator calibrations**) on each network the applicant was
+vetted on, with stance `reject` and reason `brand-safety`:
+
+- key `creator:{ig|tt}-{handle}`, built as **Creator calibrations** builds it;
+- `statement`: "@{handle} ({network}): reject for brand safety across {brand}. {check} (from the
+  {campaign} review)", under 280 characters;
+- `detail`: `{concern: "requirement", appliesTo: ["creator-vetting", "creator-discovery"], body:
+  "stance: reject; reason: brand-safety; handle: @{handle}; network: {network}; profile: <brand
+  profile id>; review: <slug>; campaign: <campaign name>; aspire applicant: <the Team call's
+  {callId}>; check: <check>;
+  evidence: <permalink and quoted line>; runKey: <the run's runKey>; found: <the reject finding's
+  createdAt>; saved: <YYYY-MM-DD>; saved by: person | schedule {run}; confirmed: yes | no"}`;
+- `provenance: "interview"` (the person's answer, or the schedule's setup).
+
+**Which brand.** Calibrations are organization-wide, but this record belongs to the brand profile
+its `profile:` names: only that brand's vetting runs and discovery campaigns apply it, and every
+other brand's flows read it as absent. A creator record with no `profile:` line applies across
+the organization, as before. Readers match a creator's records by the handle and network in their
+body, across the `creator:{ig|tt}-{handle}` key and its `-2` (and on) suffixes.
+
+**Which key.** Look at every key for the creator. When one holds this brand's brand-safety record,
+that is the record: one with stance `reject` (active, unconfirmed, or disputed) means nothing is
+written, so a run never overrides a confirmation still waiting or a dispute; a lifted one is
+replaced only by a person (B1's supersede). Only when no record of this brand exists, never replace what the key holds (another
+brand's reject, or an organization-wide note or call): the new record takes the next free suffix,
+`-2` and on, as a different handle would.
+
+**Saving one.**
+
+- **Interactive (B1).** Asked by the main thread after the last batch's F1 to F4, only
+  when R4 was Save, for this run's brand-safety rejects whose call F1 did not turn into Approve or
+  Maybe, plus the review's scheduled ones no run saved (a run that stopped before step 8b, or
+  `brandSafety.notSaved`): its `recommendation` findings with `listSource` `schedule` and
+  `brandSafetyReject` that are still their account's newest call, read as step 8b reads with no
+  `scheduleRun` or date filter, leaving out a finding older than this brand's lifted record (the
+  lift settled it), and any finding whose account has a **kept-to-review marker**, whatever its age
+  (a person kept that account to the review, and step 8b skips it the same way; `search_insights` with a `term` filter on `detail.account_review.runKey` =
+  `applicant-brandwide-{slug}`, exact, paged to the end, matched to the finding by `entityId`). Each with no record of this brand with stance `reject` (active,
+  unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
+  brand safety in every {brand} campaign, and keep them out of creator discovery? Your answer is saved
+  to Atlas.", listing each as
+  `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
+  (type the ones to keep in this review only); 3) Only this review (saved, so this isn't asked
+  again). It is its own write confirmation. Each account kept to the review gets a **kept-to-review
+  marker**: one `account_review` finding (`action_item`, `low`) on its `entityId` under `runKey`
+  `applicant-brandwide-{slug}`, `idempotencyKey` `{slug}:{callId}:kept-{entityId}-{run}`, `detail`
+  `{findingType: "brand-wide-kept", applicantReview, aspireApplicantId when there is one, handle,
+  network}`. It is not a Team call: Team call reads never see its `runKey`, so the applicant's call,
+  the Sheet, and **Copy decisions** are unchanged. Records are saved with `saved by: person` and `confirmed: yes`, at the key
+  **Which key** gives. A creator whose record for this brand was lifted gets a supersede offer
+  instead, with its own Destructive tools confirmation showing both statements. Its gate id is
+  `approve-brand-safety`.
+- **Scheduled (step 8b).** Saved with nobody present when the review's `-schedule` `save:` line names
+  `brand-safety rejects`, under that standing approval, with `saved by: schedule {run}` and
+  `confirmed: no`. When the review's Team call on the applicant is Approve or Maybe and its row is
+  older than the reject finding (`createdAt`), nothing is written: the team approved before the run
+  screened, and a record saved after their call would never count as overturned, so never be
+  offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". A Team call
+  newer than the finding does not stop the save: the record is saved, and its `found` time makes it
+  read as disputed (in its source review) or overturned. Otherwise
+  it is saved at the key **Which key** gives, except that a record of this brand a person lifted is
+  never replaced unattended: when the reject finding is newer than the lift, that creator is listed
+  in `brandSafety.notSaved` as "lifted earlier"; an older finding was already settled by the lift.
+  A reject whose account has a kept-to-review marker in this review (read as B1 reads it) is not
+  saved either, and is listed as "kept to this review": a person already answered it. Every
+  creator, when `save:` does not name `brand-safety rejects`, is listed there too as "not approved to
+  save", and the next interactive run offers the "lifted earlier" and "not approved to save" ones in
+  B1, never the "kept to this review" ones.
+
+**How every run reads one.** From the `creator:*` records the run already reads, keep this brand's
+records with `reason: brand-safety`, and work out each one's state; no run writes a state.
+
+| State | When | Another review, or any other vetting run for the brand | Creator discovery |
+| ----- | ---- | ------------------------------------------------------ | ----------------- |
+| Active | Stance `reject`, and `confirmed: yes`, or `confirmed: no` and not disputed | **Reject** under rule 1, its evidence "Rejected for brand safety across {brand} in the {campaign} review: {check}", adding "Saved by a scheduled run, not confirmed yet." when unconfirmed | Never surfaced |
+| Disputed | Stance `reject`, `confirmed: no`, and the source review's Team call on its `aspire applicant` (**Team calls on a review**) is Approve or Maybe and newer than the record's `found` time (the reject finding's, so a Team call saved before the record but after the reject still counts) | **Maybe** under rule 1, its `maybeQuestion` "Rejected for brand safety in the {campaign} review, but the team approved them there. Confirm or lift?" | Never surfaced |
+| Lifted | Superseded by stance `note` with a `lifted:` line | No effect on the call; its evidence notes the lift | Surfaced as any creator, the lift shown under "Notes" |
+
+Each state is worked as **The recommendation**'s rule 1, naming the check and the source review. In
+its source review (the review its `review:` names) the record is never applied as a saved call:
+that review's Team call decides, and a reopened row is vetted again by the checks. In every review
+the review's own Team call wins over the record (**Team calls on a review**, What it decides).
+
+**Overriding one.**
+
+1. **The team overturns it** by putting Approve or Maybe in any review's Team call column, or by
+   telling an interactive run the reject was wrong (F1). Any run saves that as the review's Team
+   call, so the creator is Approve or Maybe in that review only, at once.
+2. **Elsewhere the record stays** until an interactive run lifts it: other reviews still reject the
+   creator, and discovery still hides them. An overturn in the source review of a record with
+   `confirmed: no` makes it **disputed** (the table above), with nothing written.
+3. **The next interactive run asks.** An interactive vetting run on any of the brand's reviews, after
+   B1, finds this brand's brand-safety records whose active version has stance `reject` and that
+   need a person, reading every review's Team calls
+   on their creators (`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+   `applicant-calls-`, paged, kept by handle and network): disputed ones; ones the team overturned
+   in a review, where that review's Team call is newer than the record's current version and carries
+   no `brandWideKept` naming that version; and, with no overturn, ones with `confirmed: no`. A record
+   both disputed and overturned in its source review is asked as disputed only. "Newer" compares the
+   Team call row's `createdAt`, never `vettedAt`, with the `found` time for a version still
+   `confirmed: no`, and with the version's own `createdAt` for any other. Each is
+   its own question, at most four per call and eight per run (the rest wait for the next run), and
+   each answer that changes the record is then carried out by the main thread with its own
+   Destructive tools confirmation, showing the current and the new statement:
+   - **Overturned in a review:** "@handle is rejected for brand safety across {brand} (from the
+     {source campaign} review), and the team approved them in the {campaign} review. Lift that for
+     every campaign, or only for this review? Your answer is saved to Atlas." When the overturn is in
+     the source review itself, "and the team approved them there" replaces the review's second
+     naming. Options: 1) Lift it for
+     every campaign; 2) Only for the {campaign} review; 3) Decide later (asked again next run).
+   - **Disputed:** "The team approved @handle in the {campaign} review, where the brand-safety reject
+     came from. Lift it for every campaign? Your answer is saved to Atlas." Options: 1) Lift it for
+     every campaign (Recommended); 2) Keep it for other campaigns; 3) Decide later.
+   - **Unconfirmed, not overturned:** "A scheduled run rejected @handle for brand safety across
+     {brand} (from the {campaign} review): {check}. Confirm it? Your answer is saved to Atlas."
+     Options: 1) Confirm the reject (Recommended); 2) Lift it for every campaign; 3) Decide later.
+4. **What each answer saves.**
+   - **Lift it for every campaign:** `supersede_calibration` with `concern: "preference"`, the
+     `statement` "@{handle} ({network}): note. Brand-safety reject from the {campaign} review lifted
+     for every campaign on {YYYY-MM-DD}: {why}", and the body with stance `note`, the same `reason`,
+     `profile`, `review`, `campaign`, `aspire applicant`, and `check` lines, no `confirmed` line,
+     and the line `lifted: brand-safety reject from the {campaign} review lifted by {name} on
+     {YYYY-MM-DD}: {why}`, `{name}` the person's name as `get_status` gives it, `{why}` the Team
+     call's words or the user's. Other reviews then treat the creator as undecided, and discovery may surface them.
+     Retracting the record outright is a separate ask with its own Destructive tools confirmation.
+   - **Only for the {campaign} review:** the record stays as it is; a Team call row in that review
+     repeating its call with `brandWideKept`, so the run stops asking about it for that review.
+   - **Keep it for other campaigns** and **Confirm the reject:** `supersede_calibration` with
+     `confirmed: yes` and `confirmed by: {name} on {YYYY-MM-DD}`. A source review's Team call stays as
+     it is. A record a person confirmed is never disputed: a later overturn in any review, its
+     source included, is asked as an overturn.
+   - **Decide later**, or the supersede's "Keep current": nothing is saved.
+
+**What every run's summary lists.** The run summary's `detail.brandSafety`: `saved` (each record this
+run saved, with `confirmed`), `notSaved` (each with why), `overturned` (each creator the team approved
+in a review while the record stays, as "Team approved in {review}, rejected for brand safety across
+the brand: confirm in the next interactive run"), `disputed`, and `unconfirmed`. An interactive run's
+summary is written by the agent before B1, so it lists `found` (the run's brand-safety rejects) and
+the states it read; what B1 and the override questions saved is in the records themselves and in
+the chat answer. A scheduled run reads the brand's records
+and every review's Team calls on their creators as item 3 of **Overriding one** does, and lists
+every record of the brand in each state, not only the ones it touched, so the team sees them soon; an
+interactive run's chat answer gives the same lists in a line each. A scheduled run's `notSaved` also lists the
+review's scheduled rejects no run saved, read as B1 reads them but leaving out this run's own
+(`scheduleRun` its `{run}`, already listed by step 8b), so `{o}` counts them. Each gets its reason
+from its state: "not approved to save" when `save:` lacks `brand-safety rejects`, "lifted earlier"
+when this brand has a lifted record, otherwise "not saved by its run" (stopped, or still running).
+`notSaved` lists each creator once: step 8b's reason wins over this read's.
