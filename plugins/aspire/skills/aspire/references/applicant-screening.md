@@ -149,7 +149,8 @@ across the brand profile.
   form, `20261119t190512`). `detail` is a `feedback` finding's, plus `applicantReview` (the slug),
   `aspireApplicantId` when there is one, `sourceRunKey` (the `runKey` of the run that saved it), and, when an
   override question kept a brand-wide reject for this review, `brandWideKept` (`{key, version}`:
-  the record's key and the `createdAt` of the version kept).
+  the record's key and the `createdAt` of the version kept), or, when B1 kept a reject to this
+  review, `brandWideDeclined: true`.
 - **Reading them.** `search_insights` with a `term` filter on `detail.account_review.runKey` =
   `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
   first, paged to the end. Group the rows by `{callId}`, the same form the key uses: the row's
@@ -370,9 +371,10 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `creator-vetting-{profile}-` and a `range` filter on `createdAt` from `{run}`'s time, paged,
    keeping the `recommendation` findings whose `detailBody` (stored, not filterable, so checked on
    each hit) has `applicantReview` the review's slug, `scheduleRun` this run's `{run}`, and
-   `brandSafetyReject`. Keep each only while it is the newest `recommendation` or `feedback` for its
-   account (`entityId`) in the review, read with no date range, so a newer call on that account wins
-   but the other network's call never hides it. Save each per **Brand-wide brand-safety rejects**,
+   `brandSafetyReject`. Keep each only while it is the newest `recommendation` for its account
+   (`entityId`) in the review, from the same prefix read with no date range, so a newer re-screen of
+   that account wins but the other network's call never hides it. Team calls are not part of this
+   test: **Saving one** handles them (team approved first, disputed). Save each per **Brand-wide brand-safety rejects**,
    Saving one, Scheduled, reading **Which key** again right before each `append_calibration`. A run
    that stops before this step saves none of its rejects; the next interactive run's B1 offers them.
    Interactive runs' rejects are never read here: they are B1's, and a person may have kept them to
@@ -462,12 +464,16 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   Maybe, plus the review's scheduled ones no run saved (a run that stopped before step 8b, or
   `brandSafety.notSaved`): its `recommendation` findings with `listSource` `schedule` and
   `brandSafetyReject` that are still their account's newest call, read as step 8b reads with no
-  `scheduleRun` or date filter. Each with no record of this brand with stance `reject` (active,
+  `scheduleRun` or date filter, leaving out a finding older than this brand's lifted record (the
+  lift settled it) or than a Team call on its `{callId}` that carries `brandWideDeclined` (a person
+  kept it to the review). Each with no record of this brand with stance `reject` (active,
   unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
   brand safety in every {brand} campaign, and keep them out of creator discovery?", listing each as
   `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
-  (type the ones to keep in this review only); 3) Only this review (nothing is saved). It is its own
-  write confirmation. Records are saved with `saved by: person` and `confirmed: yes`, at the key
+  (type the ones to keep in this review only); 3) Only this review (their Reject stays in this review,
+  and this isn't asked again). It is its own write confirmation. Each creator kept to the review gets
+  a Team call row in it repeating its Team call (Reject when it has none) with `brandWideDeclined:
+  true`, so B1 never offers that finding again. Records are saved with `saved by: person` and `confirmed: yes`, at the key
   **Which key** gives. A creator whose record for this brand was lifted gets a supersede offer
   instead, with its own Destructive tools confirmation showing both statements. Its gate id is
   `approve-brand-safety`.
@@ -558,4 +564,6 @@ the states it read; what B1 and the override questions saved is in the records t
 the chat answer. A scheduled run reads the brand's records
 and every review's Team calls on their creators as item 3 of **Overriding one** does, and lists
 every record of the brand in each state, not only the ones it touched, so the team sees them soon; an
-interactive run's chat answer gives the same lists in a line each.
+interactive run's chat answer gives the same lists in a line each. A scheduled run's `notSaved` also lists the
+review's scheduled rejects no run saved, read as B1 reads them, as "run stopped before saving", so
+`{o}` counts them.
