@@ -492,8 +492,11 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   it is saved at the key **Which key** gives, except that a record of this brand a person lifted is
   never replaced unattended: when the reject finding is newer than the lift, that creator is listed
   in `brandSafety.notSaved` as "lifted earlier"; an older finding was already settled by the lift.
-  Every creator, when `save:` does not name `brand-safety rejects`, is listed there too, and the next
-  interactive run offers the "lifted earlier" and no-approval ones in B1.
+  A reject whose account has a kept-to-review marker in this review (read as B1 reads it) is not
+  saved either, and is listed as "kept to this review": a person already answered it. Every
+  creator, when `save:` does not name `brand-safety rejects`, is listed there too as "not approved to
+  save", and the next interactive run offers the "lifted earlier" and "not approved to save" ones in
+  B1.
 
 **How every run reads one.** From the `creator:*` records the run already reads, keep this brand's
 records with `reason: brand-safety`, and work out each one's state; no run writes a state.

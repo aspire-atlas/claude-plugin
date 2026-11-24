@@ -536,7 +536,7 @@ a borderline match moves one criterion by one step, which the line-by-line view 
   `entityId`), with the team's call when a `feedback` finding holds one, and the creator's
   newest state in any discovery campaign (`creator-discovery-{profile}` prefix). An applicant
   review run reads only its own review's (**Team calls on a review**), plus a brand-safety record's
-  source review's Team calls, only for that record's state.
+  source review's Team calls for its state.
 
 ### 4. Visual check (when the run has one)
 
@@ -862,7 +862,7 @@ Instagram and TikTok only.
 | Can't vet, account held | `action_item` | `low` | `recommendation` |
 | The team's call (F1) | `went_well` for approve, `needs_improvement` for reject, `action_item` `medium` for maybe | as the kind needs | `feedback` |
 | Run summary | `action_item` | `low` | `summary` |
-| B1's kept-to-review marker | `action_item` | `low` | `brand-wide-kept` |
+| B1's marker, `runKey` `applicant-brandwide-{slug}` | `action_item` | `low` | `brand-wide-kept` |
 
 The run summary is anchored to the brand's own account on the first linked network, or, when the
 profile has no linked channel, to the account of the first creator on the list Atlas holds, so it
