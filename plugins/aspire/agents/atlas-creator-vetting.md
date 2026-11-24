@@ -83,7 +83,7 @@ with no posts in the read window counts as missing, so look it up once like the 
 `AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
 attached. Write as you go: once each ten applicants' calls are made (an applicant with both handles counts once), one `append_insights` call with
 those applicants' findings and their `applicant_screening` records, with the statuses and keys the
-reference's step 6 sets (`{run}` is the launch's `schedule_run`), each brand-safety reject marked `brandSafetyReject` on its finding; the run summary goes last, as usual. Never call `append_calibration`: the main thread saves brand-wide rejects (step 6b). Publish no page and run no storyline,
+reference's step 6 sets (`{run}` is the launch's `schedule_run`), each brand-safety reject marked `brandSafetyReject` on its finding; the run summary goes last, as usual. Never call `append_calibration`: the main thread saves brand-wide rejects (step 8b). Publish no page and run no storyline,
 visual check, CSV, or feedback question (skip every step about the page, its page check, and its delivery): return the packet with no `page-check` block, the counts per
 status, each applicant left unwritten and why, and "Needs the main thread" for the run summary to
 carry (the reference's step 6, **Never asks**).

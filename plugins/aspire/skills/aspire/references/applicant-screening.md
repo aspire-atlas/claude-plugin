@@ -152,13 +152,15 @@ across the brand profile.
   the record's key and the `createdAt` of the version kept).
 - **Reading them.** `search_insights` with a `term` filter on `detail.account_review.runKey` =
   `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
-  first, paged to the end. Per applicant (its `aspireApplicantId`, `applicantId` on a row saved
-  before the rename, or else its account id), the newest row is that applicant's **Team call**. Calls saved before Team
+  first, paged to the end. Group the rows by `{callId}`, the same form the key uses: the row's
+  `aspireApplicantId` (or `applicantId` on a row saved before the rename), else `acct-{entityId}`.
+  Per `{callId}`, the newest row is that applicant's **Team call**. Calls saved before Team
   calls had their own `runKey` count too: also read the `creator-vetting-{profile}` prefix
   (`{profile}` the brand profile's slug, as in every vetting `runKey`), paged. `detailBody` can't be
-  filtered, so keep the hits whose `detailBody` has `findingType` `feedback` and an applicant id, and
-  either `applicantReview` the review's slug or a `runKey` ending `-{slug}-sheet` (a scheduled run's
-  Sheet calls), and take the newest row per applicant id across both reads. Rows are never
+  filtered, so keep the hits whose `detailBody` has `findingType` `feedback` and either
+  `applicantReview` the review's slug or a `runKey` that is exactly `creator-vetting-{profile}-`, a
+  `YYYY-MM-DD` date, then `-{slug}-sheet` (a scheduled run's Sheet calls; never a suffix match, since
+  one review's slug can end another's), and take the newest row per `{callId}` across both reads. Rows are never
   copied over: the next call saved for that applicant goes under `applicant-calls-{slug}` and wins
   by being newer. A call saved in another
   review, list, or campaign is never this review's call: it does not keep an applicant off the list,
@@ -275,7 +277,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
    `creator-vetting-{profile}-{date}-{slug}-sheet`, and no `reviewPage`. The schedule's approval
    stands in for F1. Nothing else from the feedback loop runs: no creator note, no lesson, and no
    change to a saved record; the one creator calibration a scheduled run writes is a brand-wide
-   brand-safety reject (step 6b). A Team call of Approve or Maybe on a creator with a brand-wide
+   brand-safety reject (step 8b). A Team call of Approve or Maybe on a creator with a brand-wide
    brand-safety reject is saved like any other and wins in this review; the record stays as it is,
    and step 9 lists the creator (**Brand-wide brand-safety rejects**, Overriding one). When the Claude Docs connector is not in the session or can't open the
    Sheet, skip this step and note why for step 9. The Sheet never picks who is screened: an
@@ -355,17 +357,21 @@ Each batch's launch gets its own `runId` per **Running agents**.
    What the run would ask about the review itself (each "Needs the main thread" item, each proposed
    change to the criteria) is never applied: it goes in the batch's run summary for the next person
    who runs vetting on the review.
-6b. **Save the batch's brand-wide brand-safety rejects**, after the batch's findings are written.
-   Read them back: `search_insights` with a `term` filter on `detail.account_review.runKey` = the
-   batch's `runKey` and a `range` filter on `createdAt` from this run's start (`{run}`'s time), paged,
-   since every run that day can share the batch's `runKey`. Keep the `recommendation` findings whose
-   `detailBody` carries `brandSafetyReject` and an `aspireApplicantId` of this batch. Save each per **Brand-wide brand-safety rejects**, Saving one, Scheduled.
 7. **Write the review Sheet** per **Applicant review**, **Writing the review Sheet**, after each
    batch, when `-schedule` says `sheet: write` (its standing approval, so it never asks); with
    `sheet: none`, or a missing `-schedule` line, it writes nothing. Its report line's counts go in
    step 9's summary. Atlas holds every result either way.
-8. **Next batch.** Repeat steps 3 to 7 (6b included) until no applicant is due or this run has launched 5
+8. **Next batch.** Repeat steps 3 to 7 until no applicant is due or this run has launched 5
    batches (500 applicants); the next run carries on from there.
+8b. **Save the brand-wide brand-safety rejects**, once, after the last batch. Read the review's
+   rejects back from Atlas, so a run that stopped before this step loses none: `search_insights`
+   with a `prefix` filter on `detail.account_review.runKey` = `creator-vetting-{profile}-` and a
+   `range` filter on `createdAt` from the `run` time of the newest summary of this review that
+   carries a `run` (a scheduled run's; with none, no range), paged. Keep the `recommendation`
+   findings whose `detailBody` has `applicantReview` the review's slug, `listSource` `schedule` (an
+   interactive run's rejects are B1's, and a person may have kept them to the review), and
+   `brandSafetyReject`, and are still their applicant's newest recommendation. Save each per **Brand-wide brand-safety
+   rejects**, Saving one, Scheduled; one already saved is skipped by **Which key**.
 9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
    one `summary` finding (`action_item`, `low`), anchored as **State written to Atlas** anchors a run
    summary (the brand's own account, else the account of the first creator on the list Atlas
@@ -438,8 +444,9 @@ the organization, as before. Readers match a creator's records by the handle and
 body, across the `creator:{ig|tt}-{handle}` key and its `-2` (and on) suffixes.
 
 **Which key.** Look at every key for the creator. When one holds this brand's brand-safety record,
-that is the record: an active reject means nothing is written (it already applies), and a lifted one
-is replaced only by a person (B1's supersede). Otherwise, never replace what the key holds (another
+that is the record: one with stance `reject` (active, unconfirmed, or disputed) means nothing is
+written, so a run never overrides a confirmation still waiting or a dispute; a lifted one is
+replaced only by a person (B1's supersede). Only when no record of this brand exists, never replace what the key holds (another
 brand's reject, or an organization-wide note or call): the new record takes the next free suffix,
 `-2` and on, as a different handle would.
 
@@ -448,8 +455,8 @@ brand's reject, or an organization-wide note or call): the new record takes the 
 - **Interactive (B1).** Asked by the main thread after the last batch's F1 to F4, only
   when R4 was Save, for this run's brand-safety rejects whose call F1 did not turn into Approve or
   Maybe, plus any of the review's earlier ones a scheduled run could not save (its run summary's
-  `brandSafety.notSaved`), each with no record of this brand yet and no Team call of Approve or
-  Maybe in the review: "Reject these {k} creators for
+  `brandSafety.notSaved`), each with no record of this brand with stance `reject` (active,
+  unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
   brand safety in every {brand} campaign, and keep them out of creator discovery?", listing each as
   `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
   (type the ones to keep in this review only); 3) Only this review (nothing is saved). It is its own
@@ -457,14 +464,15 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   **Which key** gives. A creator whose record for this brand was lifted gets a supersede offer
   instead, with its own Destructive tools confirmation showing both statements. Its gate id is
   `approve-brand-safety`.
-- **Scheduled (step 6b).** Saved with nobody present when the review's `-schedule` `save:` line names
+- **Scheduled (step 8b).** Saved with nobody present when the review's `-schedule` `save:` line names
   `brand-safety rejects`, under that standing approval, with `saved by: schedule {run}` and
   `confirmed: no`. When the review's Team call on the applicant is already Approve or Maybe (the
   team called it in the Sheet before the run screened it), nothing is written: the team overturned
   the reject first, and a record saved after their call would never count as overturned, so never
   be offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". Otherwise
   it is saved at the key **Which key** gives, except that a record of this brand a person lifted is
-  never replaced unattended: that creator is listed in `brandSafety.notSaved` as "lifted earlier".
+  never replaced unattended: when the reject finding is newer than the lift, that creator is listed
+  in `brandSafety.notSaved` as "lifted earlier"; an older finding was already settled by the lift.
   Every creator, when `save:` does not name `brand-safety rejects`, is listed there too, and the next
   interactive run offers the "lifted earlier" and no-approval ones in B1.
 
