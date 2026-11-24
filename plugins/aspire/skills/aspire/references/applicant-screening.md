@@ -294,9 +294,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
    - it is `waiting_on_data` and its newest record is more than 1 hour old.
 
    A `new` applicant claimed less than 12 hours ago is not due: another run is screening it. The
-   batch is the first 100 due applicants. With none due, go to step 9, except on the run's first
-   read when step 2 saved no Sheet call: then write nothing and end with "No new {campaign}
-   applicants to screen.", so a quiet review adds no record each hour.
+   batch is the first 100 due applicants. With none due, go to step 8b. On the run's first read,
+   when step 2 saved no Sheet call and step 8b then saves and recovers nothing, write nothing more
+   and end with "No new {campaign} applicants to screen.", so a quiet review adds no record each hour.
 4. **Claim the batch.** One `append_insights` call, `runKey` `applicant-screening-{slug}-{date}`,
    one `applicant_screening` finding per applicant in the batch: `schema` and `entityKind`
    `profile`, `entityId` the brand profile's id, `idempotencyKey`
@@ -331,7 +331,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
      and is looked up once too, so an empty account is not called can't vet before it is fetched.
      `approved.spend.cap` is the number of handles on the list, in `fetches`: the schedule's
      approval stands in for the Credits question;
-   - `schedule_run`: `{run}`, for the keys in step 6;
+   - `schedule_run`: `{run}`, for the keys in step 6 and each recommendation finding's `scheduleRun`
+     (step 8b);
    - `fit_map`: the map step 1 found, for every batch, the first included; with none, the first
      batch builds it and every later batch gets the one it returned;
    - the R4 answer: Save; `visual_check`: none (a scheduled run runs no visual check, not even the
@@ -363,15 +364,21 @@ Each batch's launch gets its own `runId` per **Running agents**.
    step 9's summary. Atlas holds every result either way.
 8. **Next batch.** Repeat steps 3 to 7 until no applicant is due or this run has launched 5
    batches (500 applicants); the next run carries on from there.
-8b. **Save the brand-wide brand-safety rejects**, once, after the last batch. Read the review's
-   rejects back from Atlas, so a run that stopped before this step loses none: `search_insights`
-   with a `prefix` filter on `detail.account_review.runKey` = `creator-vetting-{profile}-` and a
-   `range` filter on `createdAt` from the `run` time of the newest summary of this review that
-   carries a `run` (a scheduled run's; with none, no range), paged. Keep the `recommendation`
-   findings whose `detailBody` has `applicantReview` the review's slug, `listSource` `schedule` (an
-   interactive run's rejects are B1's, and a person may have kept them to the review), and
-   `brandSafetyReject`, and are still their applicant's newest recommendation. Save each per **Brand-wide brand-safety
-   rejects**, Saving one, Scheduled; one already saved is skipped by **Which key**.
+8b. **Save the brand-wide brand-safety rejects**, once, whenever the run ends its batches (step 3
+   finds none due, or step 8's cap). Read back with `search_insights`, a `prefix` filter on
+   `detail.account_review.runKey` = `creator-vetting-{profile}-`, paged, keeping `recommendation`
+   findings whose `detailBody` has `applicantReview` the review's slug and `brandSafetyReject`, from
+   two sources only, so overlapping runs never save the same reject and none is read twice:
+   - **This run's:** `createdAt` from `{run}`'s time, and `scheduleRun` this run's `{run}`.
+   - **A stopped run's:** `createdAt` from 48 to 12 hours before `{run}`'s time, and a `scheduleRun`
+     that no summary of this review names as its `run` or in its `recovered` list. Each such run is
+     recovered once: this run's summary lists it in `recovered`.
+
+   Keep a finding only while it is the newest recommendation for its applicant on its network
+   (`entityId`), so a newer call on that account wins but the other network's call never hides it.
+   Interactive runs' rejects are never read here: they are B1's, and a person may have kept them to
+   the review. Save each per **Brand-wide brand-safety rejects**, Saving one, Scheduled, reading
+   **Which key** again right before each `append_calibration`.
 9. **Run summary.** One `append_insights` call, `runKey` `creator-vetting-{profile}-{date}-{slug}-schedule`,
    one `summary` finding (`action_item`, `low`), anchored as **State written to Atlas** anchors a run
    summary (the brand's own account, else the account of the first creator on the list Atlas
@@ -386,7 +393,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    saved visual checks by name, when it has any), and `criteriaMap` with `mapFrom`: the `run` or `runKey` of the
    summary it was reused from, or `built` with why ("first run on the review", or "criteria changed
    on {date}; scores before and after are on different maps"), and `brandSafety`
-   (**Brand-wide brand-safety rejects**, What every run's summary lists). With no account to anchor it, the applicant records are the
+   (**Brand-wide brand-safety rejects**, What every run's summary lists) with `recovered`, the
+   stopped runs step 8b read. With no account to anchor it, the applicant records are the
    run's record. Then one line, the run's last: "{n} applicants screened for {campaign} ({a}
    approve, {m} maybe, {r} reject, {c} can't vet, {w} waiting on Atlas); {d} still new.{ Visual
    checks not run: {names}.}{ Brand-wide: {b} rejected for brand safety across {brand}, not
@@ -396,7 +404,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
    (not those the team approved first or already rejected brand-wide).
 
    A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
-   no Sheet call saved, no Sheet row written, no brand-wide reject saved) adds no summary: like a quiet review, it ends with
+   no Sheet call saved, no Sheet row written, no brand-wide reject saved, no run recovered) adds no summary: like a quiet review, it ends with
    "{k} {campaign} applicants are being screened by run {other run}; nothing left for this run."
 
 **A run that stops** (the session ends, a call fails twice, the task is paused) leaves every
@@ -466,10 +474,11 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   `approve-brand-safety`.
 - **Scheduled (step 8b).** Saved with nobody present when the review's `-schedule` `save:` line names
   `brand-safety rejects`, under that standing approval, with `saved by: schedule {run}` and
-  `confirmed: no`. When the review's Team call on the applicant is already Approve or Maybe (the
-  team called it in the Sheet before the run screened it), nothing is written: the team overturned
-  the reject first, and a record saved after their call would never count as overturned, so never
-  be offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". Otherwise
+  `confirmed: no`. When the review's Team call on the applicant is Approve or Maybe and its row is
+  older than the reject finding (`createdAt`), nothing is written: the team approved before the run
+  screened, and a record saved after their call would never count as overturned, so never be
+  offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". A Team call
+  newer than the finding does not stop the save: the record is saved and shows as disputed. Otherwise
   it is saved at the key **Which key** gives, except that a record of this brand a person lifted is
   never replaced unattended: when the reject finding is newer than the lift, that creator is listed
   in `brandSafety.notSaved` as "lifted earlier"; an older finding was already settled by the lift.
