@@ -153,9 +153,10 @@ across the brand profile.
   `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
   first, paged to the end. Per applicant id (`aspireApplicantId`, or `applicantId` on a row saved
   before the rename), the newest row is that applicant's **Team call**. Calls saved before Team
-  calls had their own `runKey` count too: also read `feedback` findings under the
-  `creator-vetting-{profile}` prefix whose `detailBody` has `applicantReview` the review's slug and
-  an applicant id, and take the newest row per applicant id across both reads. Rows are never
+  calls had their own `runKey` count too: also read the `creator-vetting-{profile}` prefix
+  (`{profile}` the brand profile's slug, as in every vetting `runKey`), paged. `detailBody` can't be
+  filtered, so keep the hits whose `detailBody` has `findingType` `feedback`, `applicantReview` the
+  review's slug, and an applicant id, and take the newest row per applicant id across both reads. Rows are never
   copied over: the next call saved for that applicant goes under `applicant-calls-{slug}` and wins
   by being newer. A call saved in another
   review, list, or campaign is never this review's call: it does not keep an applicant off the list,
@@ -485,7 +486,9 @@ the review's own Team call wins over the record (**Team calls on a review**, Wha
    on their creators (`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `applicant-calls-`, paged, kept by handle and network): disputed ones; ones the team overturned
    in a review, where that review's Team call is newer than the record's current version and carries
-   no `brandWideKept` naming that version; and, with no overturn, ones with `confirmed: no`. Each is
+   no `brandWideKept` naming that version; and, with no overturn, ones with `confirmed: no`. A record
+   both disputed and overturned in its source review is asked as disputed only. "Newer" compares the
+   Team call row's `createdAt` with the record version's `createdAt`, never `vettedAt`. Each is
    its own question, at most four per call and eight per run (the rest wait for the next run), and
    each answer that changes the record is then carried out by the main thread with its own
    Destructive tools confirmation, showing the current and the new statement:
