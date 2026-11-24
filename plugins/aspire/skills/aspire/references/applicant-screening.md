@@ -399,7 +399,7 @@ Each batch's launch gets its own `runId` per **Running agents**.
    confirmed yet; {o} to confirm in the next interactive run.}" The visual checks sentence is
    there only when the review has saved checks; the brand-wide one only when `brandSafety` lists
    any, `{o}` counting its overturned and disputed creators and the not-saved ones B1 will offer
-   (not those the team approved first or already rejected brand-wide).
+   (not those the team approved first, kept to this review, or already rejected brand-wide).
 
    A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
    no Sheet call saved, no Sheet row written, no brand-wide reject saved) adds no summary: like a quiet review, it ends with
@@ -464,8 +464,8 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   `brandSafety.notSaved`): its `recommendation` findings with `listSource` `schedule` and
   `brandSafetyReject` that are still their account's newest call, read as step 8b reads with no
   `scheduleRun` or date filter, leaving out a finding older than this brand's lifted record (the
-  lift settled it) or than a **kept-to-review marker** for its account (a person kept it to the
-  review; `search_insights` with a `term` filter on `detail.account_review.runKey` =
+  lift settled it), and any finding whose account has a **kept-to-review marker**, whatever its age
+  (a person kept that account to the review, and step 8b skips it the same way; `search_insights` with a `term` filter on `detail.account_review.runKey` =
   `applicant-brandwide-{slug}`, exact, paged to the end, matched to the finding by `entityId`). Each with no record of this brand with stance `reject` (active,
   unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
   brand safety in every {brand} campaign, and keep them out of creator discovery? Your answer is saved
@@ -496,7 +496,7 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   saved either, and is listed as "kept to this review": a person already answered it. Every
   creator, when `save:` does not name `brand-safety rejects`, is listed there too as "not approved to
   save", and the next interactive run offers the "lifted earlier" and "not approved to save" ones in
-  B1.
+  B1, never the "kept to this review" ones.
 
 **How every run reads one.** From the `creator:*` records the run already reads, keep this brand's
 records with `reason: brand-safety`, and work out each one's state; no run writes a state.
