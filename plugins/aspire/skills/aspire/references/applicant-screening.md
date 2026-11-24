@@ -51,6 +51,10 @@ stays on one id even after Atlas starts holding the row's other account.
   or campaign does not keep the row off the list.
 - **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
   **Rows to fix**.
+- **Already screened**: an undecided row, reopened or not, whose applicant is `screened` in this
+  review is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
+  Recommendation stands for the team to call in the Sheet. A reopened one is listed in **Rows to
+  fix** as "Team call cleared: the saved {call} stands until a call is set in the Sheet".
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
@@ -122,7 +126,7 @@ option 3 saves none. In option 2 the user changes or drops one by its number ("r
 s3"); a dropped call is asked again on the next run. Each Note is the user's reason for its call,
 for F2 and F3.
 
-**When the list is empty** (every row decided in the Sheet or in Atlas, a duplicate, or skipped), after **Check what Atlas
+**When the list is empty** (every row decided in the Sheet or in Atlas, already screened, a duplicate, or skipped), after **Check what Atlas
 holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
 Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
