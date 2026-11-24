@@ -270,25 +270,13 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    **2**); on a rerun to a page already published, it joins this call when there is room. The
    confirmation sets the recipient (`team` by default; `brand` for "are these safe"; `campaign` when
    the list is a launch lineup). Skip R3 when Atlas holds every creator.
-3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
-   back (screening)**, before the launch: any missing setup question asked first, and its pointers
-   resolved. Then find the review's saved criteria map as **Scheduled screening**, step 1, does,
-   and leave out of the list every applicant whose newest `applicant_screening` record is a
-   scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
-   line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
-   This run writes no claims, so a scheduled run that starts while it is open can screen an
-   applicant it is screening too; the newer result then decides the applicant's status.
+3b. **An applicant review named in R2** is read back before the launch, per **Applicant
+   reviews**, Before the launch.
 3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
    for a review), still before the storyline draft, so its options come from the source the run
    uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
 3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
-   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
-   report and confirmation, before the launch. From then on the run's list is this file's
-   applicants as read back (the ids after **Check what Atlas and the Sheet hold**), never the review's other applicants, so the
-   handles R3 approved are the ones looked up. Each list entry carries its `aspireApplicantId`, so
-   the agent finds the applicant's answers (**Applicant review**, **Applying the form rules**,
-   step 1). "Not now", or an import that stops, leaves the list
-   as it was.
+   from a CSV, per **Applicant reviews**, Before the launch.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -311,8 +299,10 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
    actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
    batch.
+5b. **Brand-wide brand-safety rejects**, for an applicant review: after the last batch's F1 to F4,
+   ask B1 and the override questions per **Brand-wide brand-safety rejects**.
 6. **Write the review Sheet**, when R2 named an applicant review and R4 was "Save": after the last
-   batch's feedback (F1 to F4), per **Applicant review**, **Writing the review Sheet**, with its own
+   batch's feedback (F1 to F4) and step 5b, per **Applicant review**, **Writing the review Sheet**, with its own
    confirmation. It writes what Atlas now holds for the review's applicants (each applicant's
    status record, **Applicant review**, **Applicant status**), so it covers every batch of the run
    at once and any row an earlier run left.
@@ -544,7 +534,9 @@ a borderline match moves one criterion by one step, which the line-by-line view 
 - Every `vetting:lesson-*` record.
 - The creator's newest earlier vetting (`creator-vetting-{profile}` prefix, newest record per
   `entityId`), with the team's call when a `feedback` finding holds one, and the creator's
-  newest state in any discovery campaign (`creator-discovery-{profile}` prefix).
+  newest state in any discovery campaign (`creator-discovery-{profile}` prefix). An applicant
+  review run reads only its own review's (**Team calls on a review**), plus a brand-safety record's
+  source review's Team calls for its state.
 
 ### 4. Visual check (when the run has one)
 
@@ -694,9 +686,11 @@ and the agent never writes it.
 
 In this order; the first rule that applies decides, and the page names it:
 
-1. **Saved team call.** A `creator:*` record with stance `reject` → **Reject** ("Rejected
-   under the team's saved call: …"). Stance `approve` → **Approve**, unless a check below
-   fails that the saved call predates: then **Maybe**, naming what is new since.
+1. **Saved team call.** A `creator:*` record that applies to this brand (**Creator
+   calibrations**) with stance `reject` → **Reject** ("Rejected under the team's saved call: …").
+   Stance `approve` → **Approve**, unless a check below fails that the saved call predates: then
+   **Maybe**, naming what is new since. A brand-safety reject decides by its state, per
+   **Brand-wide brand-safety rejects**.
 2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, a
    `vetting:hard-rejects` rule that fails, or, in an applicant review run, a check the review's
    `reject:` line lists that fails, a form `stop:` rule that matches, or an application answer
@@ -752,11 +746,14 @@ Rules:
   rest as recommended). Resolve the numbers against this run's page.
 - **Sheet calls.** When the list came from a review Sheet, F1 also offers its new Sheet calls, per
   **Reading the review Sheet**, F1 with Sheet calls.
+- **An applicant review run** saves F1's calls as the review's Team calls, and its main thread
+  asks B1 and the override questions after F4 (**Brand-wide brand-safety rejects**).
 - **Creator notes.** Every creator the user overturned (a Sheet call whose `agentVerdict` is
   `none` overturns nothing), and every reason the user gave about
   a creator ("never again, they deleted our post", "great, but only for Reels"), becomes a
   note. Word it yourself: the stance and the reason in one sentence, with the date. Show it in
-  F2 before it is saved. Never save a note the user has not seen.
+  F2 before it is saved. Never save a note the user has not seen. An applicant review run limits
+  F2 per **Team calls on a review**.
 - **Lessons.** When a correction says "always", "never", "any creator", or the same kind of
   call is overturned for two or more creators in one run, word one lesson that generalizes it
   ("Mild profanity in comedy content is fine; flag it only in family content") and ask F3.
@@ -819,9 +816,12 @@ One record per creator per network, organization-wide, read by vetting and creat
   for maybe and note (they inform it).
 - `provenance: "interview"`.
 
-Creator discovery reads these: a creator with stance `reject` is never surfaced, as if the
-campaign had rejected them, and any other stance is shown on the creator's card under
-"Notes".
+A record whose body names a brand profile (an applicant review's brand-safety reject, **Brand-wide
+brand-safety rejects**) applies only to that brand; any other applies across the organization.
+
+Creator discovery reads these: a creator with stance `reject` that applies to the campaign's brand
+is never surfaced, as if the campaign had rejected them, and any other stance is shown on the
+creator's card under "Notes".
 
 ### Visual check records
 
@@ -851,7 +851,8 @@ relaxes a check and `"requirement"` when it tightens one, `appliesTo: ["creator-
 `append_insights`, `runKey` `creator-vetting-{profile}-{YYYY-MM-DD}-{list-slug}`, role
 `account_review`, `schema` = network, `entityKind` = `account`, `entityId` = the network's own
 account id from the search hit (never a handle or uuid). Written only on R4 "Save", except the
-F1 feedback findings, which F1 confirms. Instagram and TikTok only.
+F1 feedback findings, which F1 confirms (in an applicant review run, the review's Team calls).
+Instagram and TikTok only.
 
 | Finding | Kind | `priority` | `findingType` |
 | ------- | ---- | ---------- | ------------- |
@@ -861,6 +862,7 @@ F1 feedback findings, which F1 confirms. Instagram and TikTok only.
 | Can't vet, account held | `action_item` | `low` | `recommendation` |
 | The team's call (F1) | `went_well` for approve, `needs_improvement` for reject, `action_item` `medium` for maybe | as the kind needs | `feedback` |
 | Run summary | `action_item` | `low` | `summary` |
+| B1's marker, `runKey` `applicant-brandwide-{slug}` | `action_item` | `low` | `brand-wide-kept` |
 
 The run summary is anchored to the brand's own account on the first linked network, or, when the
 profile has no linked channel, to the account of the first creator on the list Atlas holds, so it
@@ -873,7 +875,8 @@ still on record. It also carries `detail.findings` (**The findings behind the ch
 `{viewFloor, measured, working: [{label, medianLift, measured, total, examples[]}], sentiment:
 {positive, neutral, mixed, negative, posts}, challenges: [{n, title, evidence[]}], brandsNamed:
 [{brand, posts, competitor}], reach: {totalViews, topPostShare, paidPosts, restAverage}, supply:
-{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`, and
+{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`,
+`detail.brandSafety` in a review run (**Brand-wide brand-safety rejects**), and
 `detail.criteriaMap` (**How criteria become points**): `{source, criteria: [{id, text, component,
 measure, share}], unscored: [{id, text, why: "exclusion" | "not-from-posts"}], defaults:
 [component]}`, where `source` is the criteria record's key and `share` the criterion's points at Met.
@@ -901,7 +904,9 @@ comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
 `aspire-app`, `review-sheet`, `cas-lane`, or `schedule`), `campaign` when R2 named one, `applicantReview`
 when the criteria source is an applicant review (**Applicant reviews**), and with it
 `aspireApplicantId`, `formRules[]`, `responsesUsed[]`, and `priorityKeys` (**Applicant review**,
-**Applying the form rules**), `reviewPage`, and `recipient` (**Recipient lens**). A
+**Applying the form rules**), `brandSafetyReject` (**Brand-wide brand-safety rejects**), `scheduleRun` (scheduled runs: their
+`{run}`),
+`reviewPage`, and `recipient` (**Recipient lens**). A
 `feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
 user's words verbatim; one for a creator whose list came from a review Sheet also adds
 the row's `applicantId`. One saved from an offered Sheet call also adds `sheetValue`, the Sheet's
@@ -917,9 +922,10 @@ own, or the one its feedback packet carries.
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
 record per `entityId` wins, and a `feedback` finding outranks a `recommendation` from the same
-run. The newest `feedback` finding per `entityId` is the team's call on that creator. For a review
-Sheet row vetted on two channels, the team's call is under the row's account id (**Reading the
-review Sheet**); the other channel's id holds only its recommendation.
+run. The newest `feedback` finding per `entityId` is the team's call on that creator; in an
+applicant review run, the review's Team call is instead. For a review Sheet row vetted on two channels,
+the team's call is under the row's account id (**Reading the review Sheet**); the other channel's
+id holds only its recommendation.
 
 ## The page
 

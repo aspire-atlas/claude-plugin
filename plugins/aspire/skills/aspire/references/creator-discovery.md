@@ -223,9 +223,13 @@ Rules:
   tiers 1 and 2 alone is a good run, not a shallow one.
 - Record the tier and the exact source on every candidate; the page shows it.
 - Never surface the brand's own handles, any `competitor` handle, any handle already
-  decided for this campaign, or any creator whose `creator:*` calibration has stance `reject`
-  (the team's call from creator vetting, **Creator vetting**). Any other stance is shown on
-  the card under "Notes".
+  decided for this campaign, or any creator whose active `creator:*` calibration has stance `reject`
+  (the team's call from creator vetting, **Creator vetting**) and applies to this brand: one whose
+  body names a brand profile (a brand-safety reject from an applicant review, **Applicant
+  screening**, **Brand-wide brand-safety rejects**) applies only to that profile, confirmed,
+  unconfirmed, or disputed alike. Any other stance, a lifted reject included, is shown on the
+  card under "Notes". A reject from an applicant review for anything but brand safety stays in
+  that review and never hides a creator here.
 - Web research is evidence, never a write: a web-sourced candidate still enters the pool
   through `lookup_creators`, with the source URL in its evidence.
 
