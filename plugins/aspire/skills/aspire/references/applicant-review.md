@@ -347,19 +347,26 @@ Every vetting run on a review writes them, under its own `runKey`:
 
 **Screened once.** An applicant whose status is `screened` is never screened again in its review:
 its recommendation stands, and the team's call goes in the Sheet's Team call or in F1. Every
-interactive run on a review checks before any question or page is built on its list
-(**Creator vetting**, **Main thread: the run**):
+interactive run on a review checks as soon as it knows the review, before any later question, the
+storyline, or the page is built on its list (**Creator vetting**, **Main thread: the run**):
 
 - **A review Sheet**: as soon as **Applicant screening**, **Reading the review Sheet** finishes
   the list, before R2.
 - **A CSV or pasted handles**: right after R2 picks the review and it is read back (step 3b),
-  before R5 (step 3c) and the storyline draft. It needs no import: a CSV entry carries its id or
-  handles from the file. For a CSV, it runs again on the list the run goes on with once
-  **Importing applicants** (step 3d) ends, whatever it wrote (new applicants, nothing new, "Not
-  now", or a stop).
+  before R5 (step 3c), the import, and the storyline draft. R2 to R4 come first, in one call on the
+  whole list, since the review is not known until R2 answers: R3's count can include screened
+  applicants, and its approval then covers only the creators still on the list, so no screened
+  applicant is looked up. It needs no import: a CSV entry carries its id or handles from the file.
+  For a CSV, it runs again on the list the run goes on with once **Importing applicants** (step 3d)
+  ends, whatever it wrote (new applicants, nothing new, "Not now", or a stop).
 
-When **Getting the list** split a long list into runs, the split and the run count it gave are
-redone from the list that is left.
+When a long list is split into runs (**Getting the list**, or R5's runs of 25), the parts are cut
+from the list as it was read, in file order, and keep their names and slugs ("{list name} (part
+{n} of {k})", `{slug}-part-{n}`), so a rerun after some parts were screened updates the same part
+pages. Each part loses its screened applicants, and a part left empty is not run. When that
+changes the number of runs said earlier (in **Getting the list**, at R5, or after the check that
+follows the import), the run says the new count once, in the line before the launch:
+"{n} of the {k} runs still have applicants to vet".
 
 It reads the statuses with `list_applicants` (`asProfileId` the brand profile,
 `reviewId` the review's slug, `statuses` `["screened"]`, `limit` 1000, paged to the end) and keeps
@@ -558,9 +565,10 @@ a missing pointer is asked per steps 3 and 4.
 6. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
    slug, the campaign's name and `campaign key`, criteria, thresholds, the `reject:`
    checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.
-   **How screening applies a review** says how screening applies each. Once the review is read
-   back, before R5, and again after any import (**Creator vetting**, step 3d), the list loses
-   every applicant already screened in the review (**Applicant status**, Screened once).
+   **How screening applies a review** says how screening applies each. For a CSV or pasted
+   handles, once the review is read back, before R5, and again after any import (**Creator
+   vetting**, step 3d), the list loses every applicant already screened in the review
+   (**Applicant status**, Screened once); a review Sheet's list was checked before R2.
 
 ## How screening applies a review
 
