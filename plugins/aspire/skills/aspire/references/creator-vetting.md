@@ -862,6 +862,7 @@ Instagram and TikTok only.
 | Can't vet, account held | `action_item` | `low` | `recommendation` |
 | The team's call (F1) | `went_well` for approve, `needs_improvement` for reject, `action_item` `medium` for maybe | as the kind needs | `feedback` |
 | Run summary | `action_item` | `low` | `summary` |
+| B1's kept-to-review marker | `action_item` | `low` | `brand-wide-kept` |
 
 The run summary is anchored to the brand's own account on the first linked network, or, when the
 profile has no linked channel, to the account of the first creator on the list Atlas holds, so it

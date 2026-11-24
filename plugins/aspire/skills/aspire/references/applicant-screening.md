@@ -465,7 +465,8 @@ brand's reject, or an organization-wide note or call): the new record takes the 
   `brandSafetyReject` that are still their account's newest call, read as step 8b reads with no
   `scheduleRun` or date filter, leaving out a finding older than this brand's lifted record (the
   lift settled it) or than a **kept-to-review marker** for its account (a person kept it to the
-  review; read with a `term` filter on `runKey` `applicant-brandwide-{slug}`). Each with no record of this brand with stance `reject` (active,
+  review; `search_insights` with a `term` filter on `detail.account_review.runKey` =
+  `applicant-brandwide-{slug}`, exact, paged to the end, matched to the finding by `entityId`). Each with no record of this brand with stance `reject` (active,
   unconfirmed, or disputed) and no Team call of Approve or Maybe in the review: "Reject these {k} creators for
   brand safety in every {brand} campaign, and keep them out of creator discovery? Your answer is saved
   to Atlas.", listing each as
@@ -569,5 +570,7 @@ and every review's Team calls on their creators as item 3 of **Overriding one** 
 every record of the brand in each state, not only the ones it touched, so the team sees them soon; an
 interactive run's chat answer gives the same lists in a line each. A scheduled run's `notSaved` also lists the
 review's scheduled rejects no run saved, read as B1 reads them but leaving out this run's own
-(`scheduleRun` its `{run}`, already listed by step 8b), as "run stopped before saving", so `{o}`
-counts them. `notSaved` lists each creator once, with one reason.
+(`scheduleRun` its `{run}`, already listed by step 8b), so `{o}` counts them. Each gets its reason
+from its state: "not approved to save" when `save:` lacks `brand-safety rejects`, "lifted earlier"
+when this brand has a lifted record, otherwise "not saved by its run" (stopped, or still running).
+`notSaved` lists each creator once: step 8b's reason wins over this read's.
