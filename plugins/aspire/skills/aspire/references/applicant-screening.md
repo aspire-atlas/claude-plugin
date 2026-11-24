@@ -437,7 +437,8 @@ A creator record with no `profile:` line applies across the organization, as bef
 - **Interactive (B1).** Asked by the main thread after the last batch's F1 to F4, only
   when R4 was Save, for this run's brand-safety rejects whose call F1 did not turn into Approve or
   Maybe, plus any of the review's earlier ones a scheduled run could not save (its run summary's
-  `brandSafety.notSaved`), each with no record of this brand yet: "Reject these {k} creators for
+  `brandSafety.notSaved`), each with no record of this brand yet and no Team call of Approve or
+  Maybe in the review: "Reject these {k} creators for
   brand safety in every {brand} campaign, and keep them out of creator discovery?", listing each as
   `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
   (type the ones to keep in this review only); 3) Only this review (nothing is saved). It is its own
@@ -447,11 +448,15 @@ A creator record with no `profile:` line applies across the organization, as bef
   `approve-brand-safety`.
 - **Scheduled (step 6b).** Saved with nobody present when the review's `-schedule` `save:` line names
   `brand-safety rejects`, under that standing approval, with `saved by: schedule {run}` and
-  `confirmed: no`. When the key already holds a brand-safety reject of this brand, nothing is
-  written (it already applies). When it holds any other record, nothing is written
+  `confirmed: no`. When the review's Team call on the applicant is already Approve or Maybe (the
+  team called it in the Sheet before the run screened it), nothing is written: the team overturned
+  the reject first, and a record saved after their call would never count as overturned, so never
+  be offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". When
+  the key already holds a brand-safety reject of this brand, nothing is written (it already
+  applies). When it holds any other record, nothing is written
   either: an unattended run never supersedes. That creator, and every one when `save:` does not name
   `brand-safety rejects`, is listed in `brandSafety.notSaved` with why, and the next interactive run
-  offers it in B1.
+  offers it in B1 unless the team approved it first.
 
 **How every run reads one.** From the `creator:*` records the run already reads, keep this brand's
 records with `reason: brand-safety`, and work out each one's state; no run writes a state.
