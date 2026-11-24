@@ -147,7 +147,9 @@ carry (the reference's step 6, **Never asks**).
 6. **Read what the team already said** per the reference, **What the team already said**:
    `search_insights` on the `creator-vetting-{profile}` and `creator-discovery-{profile}`
    prefixes (paged, newest record per `entityId`; in an applicant review run, only this review's
-   findings, and its Team calls from `applicant-calls-{slug}`, never a call from another review),
+   findings, and its Team calls from `applicant-calls-{slug}`, never a call from another review,
+   except that for a creator with a brand-safety `creator:*` record you also read its source
+   review's Team calls, `applicant-calls-{source slug}`, only to work out the record's state),
    and the `brand_safety` role and
    `content-review-{profile}` findings that name these creators. For a lane run, also the
    `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of

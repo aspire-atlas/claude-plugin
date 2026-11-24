@@ -143,20 +143,22 @@ across the brand profile.
 - **The row.** One `feedback` finding per call (**State written to Atlas**: role `account_review`
   on the creator's account id, its kind from the call), never edited: a changed call is a new row,
   and the newest row wins. Its `runKey` is `applicant-calls-{slug}` whichever run saves it, so one
-  review's calls are one exact filter. `idempotencyKey` `{slug}:{aspireApplicantId}:call-{run}`,
-  `{run}` the saving run's id (a scheduled run's own; an interactive run's `vettedAt` in compact
+  review's calls are one exact filter. `idempotencyKey` `{slug}:{callId}:call-{run}`, where
+  `{callId}` is the applicant's `aspireApplicantId`, or `acct-{entityId}` (the creator's account id)
+  for a list entry with none (pasted handles, a list never imported); `{run}` the saving run's id (a scheduled run's own; an interactive run's `vettedAt` in compact
   form, `20261119t190512`). `detail` is a `feedback` finding's, plus `applicantReview` (the slug),
-  `aspireApplicantId`, `sourceRunKey` (the `runKey` of the run that saved it), and, when an
+  `aspireApplicantId` when there is one, `sourceRunKey` (the `runKey` of the run that saved it), and, when an
   override question kept a brand-wide reject for this review, `brandWideKept` (`{key, version}`:
   the record's key and the `createdAt` of the version kept).
 - **Reading them.** `search_insights` with a `term` filter on `detail.account_review.runKey` =
   `applicant-calls-{slug}` (exact, never a prefix: one review's slug can start another's), newest
-  first, paged to the end. Per applicant id (`aspireApplicantId`, or `applicantId` on a row saved
-  before the rename), the newest row is that applicant's **Team call**. Calls saved before Team
+  first, paged to the end. Per applicant (its `aspireApplicantId`, `applicantId` on a row saved
+  before the rename, or else its account id), the newest row is that applicant's **Team call**. Calls saved before Team
   calls had their own `runKey` count too: also read the `creator-vetting-{profile}` prefix
   (`{profile}` the brand profile's slug, as in every vetting `runKey`), paged. `detailBody` can't be
-  filtered, so keep the hits whose `detailBody` has `findingType` `feedback`, `applicantReview` the
-  review's slug, and an applicant id, and take the newest row per applicant id across both reads. Rows are never
+  filtered, so keep the hits whose `detailBody` has `findingType` `feedback` and an applicant id, and
+  either `applicantReview` the review's slug or a `runKey` ending `-{slug}-sheet` (a scheduled run's
+  Sheet calls), and take the newest row per applicant id across both reads. Rows are never
   copied over: the next call saved for that applicant goes under `applicant-calls-{slug}` and wins
   by being newer. A call saved in another
   review, list, or campaign is never this review's call: it does not keep an applicant off the list,
@@ -355,8 +357,9 @@ Each batch's launch gets its own `runId` per **Running agents**.
    who runs vetting on the review.
 6b. **Save the batch's brand-wide brand-safety rejects**, after the batch's findings are written.
    Read them back: `search_insights` with a `term` filter on `detail.account_review.runKey` = the
-   batch's `runKey`, paged, and keep the `recommendation` findings whose `detailBody` carries
-   `brandSafetyReject`. Save each per **Brand-wide brand-safety rejects**, Saving one, Scheduled.
+   batch's `runKey` and a `range` filter on `createdAt` from this run's start (`{run}`'s time), paged,
+   since every run that day can share the batch's `runKey`. Keep the `recommendation` findings whose
+   `detailBody` carries `brandSafetyReject` and an `aspireApplicantId` of this batch. Save each per **Brand-wide brand-safety rejects**, Saving one, Scheduled.
 7. **Write the review Sheet** per **Applicant review**, **Writing the review Sheet**, after each
    batch, when `-schedule` says `sheet: write` (its standing approval, so it never asks); with
    `sheet: none`, or a missing `-schedule` line, it writes nothing. Its report line's counts go in
@@ -383,7 +386,8 @@ Each batch's launch gets its own `runId` per **Running agents**.
    checks not run: {names}.}{ Brand-wide: {b} rejected for brand safety across {brand}, not
    confirmed yet; {o} to confirm in the next interactive run.}" The visual checks sentence is
    there only when the review has saved checks; the brand-wide one only when `brandSafety` lists
-   any, `{o}` counting its overturned, disputed, and not-saved creators.
+   any, `{o}` counting its overturned and disputed creators and the not-saved ones B1 will offer
+   (not those the team approved first or already rejected brand-wide).
 
    A run that wrote nothing but claims another run kept (no applicant screened or marked can't vet,
    no Sheet call saved, no Sheet row written, no brand-wide reject saved) adds no summary: like a quiet review, it ends with
@@ -421,17 +425,23 @@ vetted on, with stance `reject` and reason `brand-safety`:
   {campaign} review)", under 280 characters;
 - `detail`: `{concern: "requirement", appliesTo: ["creator-vetting", "creator-discovery"], body:
   "stance: reject; reason: brand-safety; handle: @{handle}; network: {network}; profile: <brand
-  profile id>; review: <slug>; campaign: <campaign name>; aspire applicant: <id>; check: <check>;
+  profile id>; review: <slug>; campaign: <campaign name>; aspire applicant: <the Team call's
+  {callId}>; check: <check>;
   evidence: <permalink and quoted line>; runKey: <the run's runKey>; saved: <YYYY-MM-DD>; saved by:
   person | schedule {run}; confirmed: yes | no"}`;
 - `provenance: "interview"` (the person's answer, or the schedule's setup).
 
 **Which brand.** Calibrations are organization-wide, but this record belongs to the brand profile
 its `profile:` names: only that brand's vetting runs and discovery campaigns apply it, and every
-other brand's flows read it as absent. When the creator's key already holds another brand's
-brand-safety reject, the record takes `-2` (and on).
+other brand's flows read it as absent. A creator record with no `profile:` line applies across
+the organization, as before. Readers match a creator's records by the handle and network in their
+body, across the `creator:{ig|tt}-{handle}` key and its `-2` (and on) suffixes.
 
-A creator record with no `profile:` line applies across the organization, as before.
+**Which key.** Look at every key for the creator. When one holds this brand's brand-safety record,
+that is the record: an active reject means nothing is written (it already applies), and a lifted one
+is replaced only by a person (B1's supersede). Otherwise, never replace what the key holds (another
+brand's reject, or an organization-wide note or call): the new record takes the next free suffix,
+`-2` and on, as a different handle would.
 
 **Saving one.**
 
@@ -443,8 +453,8 @@ A creator record with no `profile:` line applies across the organization, as bef
   brand safety in every {brand} campaign, and keep them out of creator discovery?", listing each as
   `@handle (network): {check}`. Options: 1) Save for every campaign (Recommended); 2) Change some
   (type the ones to keep in this review only); 3) Only this review (nothing is saved). It is its own
-  write confirmation. Records are saved with `saved by: person` and `confirmed: yes`. A creator whose
-  key already holds any other record (a note, or another flow's call) gets a supersede offer
+  write confirmation. Records are saved with `saved by: person` and `confirmed: yes`, at the key
+  **Which key** gives. A creator whose record for this brand was lifted gets a supersede offer
   instead, with its own Destructive tools confirmation showing both statements. Its gate id is
   `approve-brand-safety`.
 - **Scheduled (step 6b).** Saved with nobody present when the review's `-schedule` `save:` line names
@@ -452,12 +462,11 @@ A creator record with no `profile:` line applies across the organization, as bef
   `confirmed: no`. When the review's Team call on the applicant is already Approve or Maybe (the
   team called it in the Sheet before the run screened it), nothing is written: the team overturned
   the reject first, and a record saved after their call would never count as overturned, so never
-  be offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". When
-  the key already holds a brand-safety reject of this brand, nothing is written (it already
-  applies). When it holds any other record, nothing is written
-  either: an unattended run never supersedes. That creator, and every one when `save:` does not name
-  `brand-safety rejects`, is listed in `brandSafety.notSaved` with why, and the next interactive run
-  offers it in B1 unless the team approved it first.
+  be offered for a lift. It is listed in `brandSafety.notSaved` as "team approved first". Otherwise
+  it is saved at the key **Which key** gives, except that a record of this brand a person lifted is
+  never replaced unattended: that creator is listed in `brandSafety.notSaved` as "lifted earlier".
+  Every creator, when `save:` does not name `brand-safety rejects`, is listed there too, and the next
+  interactive run offers the "lifted earlier" and no-approval ones in B1.
 
 **How every run reads one.** From the `creator:*` records the run already reads, keep this brand's
 records with `reason: brand-safety`, and work out each one's state; no run writes a state.

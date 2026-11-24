@@ -535,7 +535,8 @@ a borderline match moves one criterion by one step, which the line-by-line view 
 - The creator's newest earlier vetting (`creator-vetting-{profile}` prefix, newest record per
   `entityId`), with the team's call when a `feedback` finding holds one, and the creator's
   newest state in any discovery campaign (`creator-discovery-{profile}` prefix). An applicant
-  review run reads only its own review's (**Team calls on a review**).
+  review run reads only its own review's (**Team calls on a review**), plus a brand-safety record's
+  source review's Team calls, only for that record's state.
 
 ### 4. Visual check (when the run has one)
 
