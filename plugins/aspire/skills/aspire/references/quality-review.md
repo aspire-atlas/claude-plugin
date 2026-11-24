@@ -664,6 +664,13 @@ with `AskUserQuestion`: "Fix it first (Recommended)" or "Publish it as it is". I
 publish pass with the person's words added to `uxReview` as `personFix`, or with
 `uxReview.publishOpen` set to `true`.
 
+**A page held by the page check.** When a publish pass returns a `page-check` block with `"held":
+true`, the page was saved as a file, not published, because a scripted check still fails
+(`skills/page-standard/SKILL.md`, section 4, step 5). The main thread names each failing check in
+one line, in plain words, and asks with `AskUserQuestion`: "Fix it first (Recommended)" or "Publish
+it as it is". It relaunches the publish pass with the person's words in `pageCheck.personFix`, or
+with `pageCheck.publishFailing` set to `true`.
+
 **Examples.** Good: the monthly program report in the examples library, after its UX review: the
 answer, then three takeaways with their copy text shown, then the steps, on one phone screen. Bad:
 the first task sits 3,300px down on a phone, found only when a person opened the published page.

@@ -117,6 +117,8 @@ HEADLINE_WORDS = 3
 LABEL_WORDS = 4
 TOPIC = re.compile(r"(?i)\b(?:overview|summary|report|update|recap|review|analysis|dashboard|readout|results|performance"
                    r"|snapshot|insights|highlights|breakdown|roundup|digest|findings|status)$")
+# A quarter, a half or a year names a period, not a figure, so it does not make a label a finding.
+PERIOD = re.compile(r"(?i)\b(?:[QH][1-4]|FY\d{2,4}|(?:19|20)\d{2})\b")
 INSIGHTS_MAX = 3
 FIXED_SOURCES = ("Atlas", "Brand memory", "Web", "You", "Our read")
 NO_OWNER = {"tbd", "tba", "tbc", "someone", "anyone", "unassigned", "owner", "n/a", "na", "none", "-"}
@@ -326,6 +328,11 @@ def classes(node):
 def blocks_named(nodes, name):
     return [n for n in nodes if n.attrs.get("data-block") == name]
 
+def insight_cards(nodes):
+    # The full insight cards. A summary card (pb-insight-summary, blocks.md) repeats one at the top of
+    # a long page, with no comparison of its own, and is not counted again.
+    return [n for n in blocks_named(nodes, "insight") if "pb-insight-summary" not in classes(n)]
+
 def template_of(nodes):
     # The main element of a page the fill script printed, or None for a hand-written page.
     return next((n for n in nodes if "data-template" in n.attrs), None)
@@ -344,7 +351,8 @@ def r3(nodes, regions, out):
         return ["the page needs exactly one h1, the headline that answers its question (found %d)" % len(heads)]
     shown, problems = text(heads[0], gap=" "), []
     words = re.findall(r"[A-Za-z0-9]+", shown)
-    if len(words) < HEADLINE_WORDS or (len(words) <= LABEL_WORDS and TOPIC.search(shown.rstrip(" .")) and not re.search(r"\d", shown)):
+    figure = re.search(r"\d", PERIOD.sub(" ", shown))
+    if len(words) < HEADLINE_WORDS or (len(words) <= LABEL_WORDS and TOPIC.search(shown.rstrip(" .")) and not figure):
         problems.append("the headline \"%s\" is a label, not a finding; write the answer as one sentence" % shown)
     if shown.endswith("?"):
         problems.append("the headline \"%s\" asks a question; the question is the title, the headline answers it" % shown[:60])
@@ -355,7 +363,7 @@ def r3(nodes, regions, out):
 def r4(nodes, regions, out):
     # Returns None (unmarked) on a hand-written page with no insight or KPI block: read it for
     # numbers with nothing beside them, and count its insights.
-    insights, tiles = blocks_named(nodes, "insight"), blocks_named(nodes, "kpi")
+    insights, tiles = insight_cards(nodes), blocks_named(nodes, "kpi")
     if not (insights or tiles or template_of(nodes) is not None):
         return None
     problems = []
@@ -561,7 +569,7 @@ def owner_problems(nodes, steps):
         label = "next step %d (\"%s\")" % (index, text(node, gap=" ")[:50])
         if not owner or owner.lower() in NO_OWNER:
             problems.append("%s has no owner: name the person or role who does it in data-owner and on the step" % label)
-        elif not has(text(node, gap=" "), owner):
+        elif not has_phrase(text(node, gap=" "), owner):
             problems.append("%s names its owner (%s) in data-owner but not on the step" % (label, owner))
     return problems
 
@@ -679,6 +687,18 @@ def saved_problems(nodes):
             problems.append("%s is marked data-gone but does not say \"no longer visible\"" % label)
     return problems
 
+SAID_PREFIX = re.compile(r"(?i)^\s*(?:source|sources|based on|from)\s*:\s*")
+
+def shows_label(node, label):
+    # The label stands on its own on the claim: an element whose words, after an optional "Source:"
+    # or "Based on:", are the label and nothing else, so "your" never passes for "You".
+    want = re.sub(r"\s+", " ", label).strip().lower()
+    for n in walk(node, keep=lambda n: n.tag not in SKIP):
+        said = SAID_PREFIX.sub("", text(n, gap=" ")).strip(" .").lower()
+        if said == want:
+            return True
+    return False
+
 def source_problems(nodes, regions):
     # Every claim names where it came from: each insight, each next step on a page built from a
     # template, and anything else marked data-source. The label is one of FIXED_SOURCES or a connected
@@ -687,10 +707,11 @@ def source_problems(nodes, regions):
     tools = [t.strip() for t in ((scope.attrs.get("data-tools") or "") if scope is not None else "").split(";") if t.strip()]
     allowed = {label.lower() for label in FIXED_SOURCES + tuple(tools)}
     steps = [item for region in regions.get("next-steps", []) for item in step_items(region)] if template_of(nodes) is not None else []
-    claims = [("insight %d" % i, n) for i, n in enumerate(blocks_named(nodes, "insight"), 1)]
+    claims = [("insight %d" % i, n) for i, n in enumerate(insight_cards(nodes), 1)]
     claims += [("next step %d" % i, n) for i, n in enumerate(steps, 1)]
     seen = {id(n) for _, n in claims}
-    claims += [("the claim", n) for n in nodes if "data-source" in n.attrs and id(n) not in seen]
+    claims += [("the claim", n) for n in nodes if "data-source" in n.attrs and id(n) not in seen
+               and "pb-insight-summary" not in classes(n)]
     problems = []
     for name, node in claims:
         label = "%s (\"%s\")" % (name, shown_label(node))
@@ -700,7 +721,7 @@ def source_problems(nodes, regions):
             problems.append("%s has no source label: say where it came from (%s, or the connected tool) in data-source and on the claim" % (label, ", ".join(FIXED_SOURCES)))
         elif source.lower() not in allowed:
             problems.append("%s's source \"%s\" is not a source label: use %s, or a connected tool the scope lists in data-tools" % (label, source, ", ".join(FIXED_SOURCES)))
-        elif not has(text(node, gap=" "), source):
+        elif not shows_label(node, source):
             problems.append("%s names its source (%s) in data-source but does not show it" % (label, source))
     return problems if claims else None
 
@@ -956,8 +977,11 @@ def r11(nodes, regions, out):
     for pattern, kind in BANNED:
         for hit in sorted(set(pattern.findall(shown)))[:5]:
             problems.append("names %s: \"%s\"" % (kind, hit))
+    # The brand's own name is its name, not a phrase the page chose ("Seamless").
+    brand = ((regions.get("scope") or [None])[0] or Node("div", [], None)).attrs.get("data-brand") or ""
+    plain = re.sub(r"(?i)%s" % re.escape(brand.strip()), " ", shown) if brand.strip() else shown
     for pattern, form, instead in PHRASES:
-        if pattern.search(shown):
+        if pattern.search(plain):
             problems.append("uses the banned phrase \"%s\": %s (glossary.md)" % (form, instead))
     return problems + paid_label(nodes, regions)
 

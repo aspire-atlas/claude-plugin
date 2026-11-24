@@ -225,16 +225,27 @@ def rules(data, templates, tools, phrases):
         errs.append(("shared-page", "gaps", "a page shared outside the team lists no gaps; return them to the main thread"))
     if not theme_ok(data.get("theme", {}).get("css", "")):
         errs.append(("theme", "theme.css", "holds custom-property declarations only, in plain or @media rules, loading nothing"))
+    for i, tool in enumerate(data["scope"].get("tools", [])):
+        if ";" in tool:
+            errs.append(("source-label", "scope.tools[%d]" % i, "holds no \";\", which separates the tools on the page"))
     # scope.tools entries are the labels the reader sees on source chips, so they are read too.
     named = reader_text(data) + [("scope.tools[%d]" % i, t) for i, t in enumerate(data["scope"].get("tools", []))]
     for path, value in named:
         if any(pattern.search(value) for pattern in INTERNAL) or any(names_tool(w, tools) for w in WORD.findall(value)):
             errs.append(("no-internal-names", path, "names a tool or an id"))
+    # Quoted words and names are someone else's and never change: a post's quote, a creator's name,
+    # and the brand's own name.
+    brand = data["scope"]["brand"].strip()
     for path, value in reader_text(data):
+        if path == "scope.brand" or QUOTED.search(path):
+            continue
+        value = re.sub(r"(?i)%s" % re.escape(brand), " ", value) if brand else value
         for pattern, form, instead in phrases:
             if pattern.search(value):
                 errs.append(("banned-phrase", path, "uses \"%s\": %s (glossary.md)" % (form, instead)))
     return errs
+
+QUOTED = re.compile(r"(?:\.quote|^sections\.creators\[\d+\]\.name)$")
 
 def names_tool(word, tools):
     """A tool name alone or inside a prefixed name such as mcp__atlas__search_posts."""

@@ -75,12 +75,8 @@ agent only through this skill or a shortcut.
      close-out.
    - **A page held by the UX review** (`"uxReview": {"status": "blocked"}`): follow **Quality
      review**, A page held by the UX review.
-   - **A page held by the page check** (its `page-check` block has `"held": true`): the page was
-     saved as a file because a scripted check still fails (`skills/page-standard/SKILL.md`, section 4,
-     step 5).
-     Name each failing check in one line, in plain words, and ask with `AskUserQuestion`: "Fix it
-     first (Recommended)" or "Publish it as it is". Relaunch the publish pass with the person's
-     words in `pageCheck.personFix`, or with `pageCheck.publishFailing` set to `true`.
+   - **A page held by the page check** (its `page-check` block has `"held": true`): follow
+     **Quality review**, A page held by the page check.
    - A page you build yourself (**Visual output**, a deck you export) gets the same read and review
      before you publish it, and you apply their Musts yourself.
    - Act on the `result-packet` block: relay the summary, the page link ("Saved as a file: {path}"
