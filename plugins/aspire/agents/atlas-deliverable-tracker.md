@@ -27,7 +27,7 @@ user's changes after an earlier `propose`). Every Atlas tool needs a `context` a
 schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields`
 and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load
 `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/deliverable-tracker.md` before starting. The
@@ -67,8 +67,10 @@ step needs one of those, skip that step and name it in your output as needing a 
    dated after the due date (reference **Status**). It stays `late` while a match is open, a Story
    is to be confirmed by hand, or Atlas holds no posts from the creator since the due date.
 5. **Disclosure on evidence.** Every disclosure result quotes the caption, the transcript, the
-   on-screen text, or a field. The paid partnership label is not held in Atlas: it is unclear,
-   never missing, and never a fix by itself. Never infer speech from visuals.
+   on-screen text, or a field. The paid partnership label is found when the post's `partnershipAds` overlay
+   holds `BRANDED_CONTENT` (the reference's **Label**). Without the overlay (not Instagram, no
+   explicit `asProfileId`, or the Profile lacks its Meta links), or with an overlay that holds no
+   `BRANDED_CONTENT` entry, it is unclear, never missing, and never a fix by itself. Never infer speech from visuals.
 6. **Read only what Atlas holds.** Never call `lookup_creators`, `search_creator_marketplace`,
    or `start_business_discovery`. Call `lookup_posts` only in `check`, only with T0, only for
    the links the user pasted.
@@ -95,11 +97,11 @@ step needs one of those, skip that step and name it in your output as needing a 
    uses it.
 2. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, the
    `voice_and_content_ops` brand fact, `guideline:voice`, every `creator:*` record, and
-   `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, `campaign:` keys and other programs' keys. Parse
+   `theme:brand`. Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, `campaign:` keys and other programs' keys. Parse
    every JSON body with a JSON parser. Resolve today as the shell date in the cadence timezone
    (`TZ=<tz> date +%F`), or the user's when there is no cadence.
-3. `list_insight_search_fields`, `list_post_search_fields`, and `list_creator_search_fields`
-   once each; use only paths they return.
+3. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list.
 4. **Read the program state**: `search_insights` on the prefix `program-{profile}-{slug}`,
    newest first, paged to the end. Keep the newest `roster`, `terms`, `fulfillment`,
    `deliverable`, and `draft` per identity by `detail.recordedAt`, and the newest `page`

@@ -99,8 +99,7 @@ skip any the S1 answer already settles. Never ask more than five.
    cost), with bands that suit the archetype rather than fixed numbers.
 4. **Geography and language** — market fit, when the brief implies a market at all.
 5. **Content and hard exclusions** — formats the campaign needs, and who is disqualified.
-   Always fold in the brand's existing `competitor` and `red_line` records (except `review:`
-   keys, which are content review only) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
+   Always fold in the brand's existing `competitor` records and brand red lines (**Atlas tools**, Calibration kinds) as a stated default ("competitors already recorded are excluded"), so the user only has to add to it.
 
 Rules:
 
@@ -155,8 +154,8 @@ brand's own history is the stronger signal.
 
 | Tier | Who | How to find them |
 | ---- | --- | ---------------- |
-| 1 | Creators the brand has worked with | `search_posts` for posts whose text or `instagram.hashtags` mention the brand's handles, plus the brand's own posts that tag another account, keeping only those carrying a partnership marker the field census exposes (branded-content / paid-partnership). Union with every `partner` calibration. |
-| 2 | Creators who have posted about the brand | The same mention query, minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
+| 1 | Creators the brand has worked with | The brand's partnership content: `search_posts` with the explicit `asProfileId` and `partnership: {"contentTypes": ["BRANDED_CONTENT", "COLLAB_POST", "AFFILIATE", "PRODUCT"]}` (**Partnership content**), plus the brand's own posts that tag another account. Union with every `partner` calibration. Without the Profile's Meta Business and Instagram links, tier 1 is the `partner` records and the brand's own posts that tag another account, and the summary says so. |
+| 2 | Creators who have posted about the brand | `search_posts` where `match_phrase` on `text` names the brand, `instagram.hashtags` holds a brand handle, or a brand handle is tagged or mentioned (the `nested` clause on `instagram.mentions` or `tiktok.mentions` in **Atlas search**), minus everything already in tier 1. Recency-weighted: a mention in the campaign window outranks a two-year-old one. |
 | 3 | Lookalikes of what's working | Creators who resemble the brand's best-performing creators, per **Lookalike seeds** below. |
 | 4 | New creators already indexed in Atlas | `search_creators` filtered on the saved criteria (network, follower range, country, verification), then `search_posts` per shortlisted handle for topic evidence. |
 | 5 | New creators from outside the index | `search_creator_marketplace` against the criteria (one call per keyword, `networks` = the campaign's Networks answer, each network's filters mapped from the size band and countries, TikTok topic labels from `list_creator_marketplace_labels`; see **Marketplace search** below), and `WebSearch` / `WebFetch` for creators covering the campaign's topic. Resolve every web-sourced handle with `lookup_creators` before scoring it; an unresolvable handle is dropped, never scored from web copy alone. |
@@ -232,27 +231,59 @@ Rules:
 
 ## Scoring
 
-A fit score out of 100, computed from the saved criteria only. Every component names the
-field or hit it came from; a component with no data scores zero and is listed as missing,
-never guessed, and the page shows it as "not available: {reason}", never as 0 (**Page
-standard**, section 8).
+A fit score out of 100, worked out exactly as **Creator vetting**, **1. Brand fit**, **How
+criteria become points** says, so a creator scores the same in discovery and in vetting. Follow
+that section for the criteria map, the even split of each component's weight, the credit (Met 1,
+Partly met ½, Not met 0), the per-measure table, the engagement rate, what counts as a match, the
+defaults when the criteria are silent (the size-band engagement bars, cadence, the dormant cap at
+50), and the scaling to 100 when no criterion names a component. Never split points per creator.
+The weights are the same in both flows:
 
-| Component | Weight | Source |
-| --------- | ------ | ------ |
-| Audience and archetype fit | 30 | Bio, recent post topics, the criteria record |
-| Topic evidence | 25 | Posts matching the campaign's subject, cited by permalink |
-| Engagement quality | 20 | Engagement rate against the creator's own size band, not a global average |
-| Cadence and recency | 10 | Posts in the last 30 days; a dormant account is capped at 50 overall |
-| Format match | 10 | `mediaKind` / `instagram.mediaProductType` mix vs. the formats the campaign needs |
-| Market fit | 5 | Country and language against the criteria |
+| Component | Weight |
+| --------- | ------ |
+| Audience and archetype fit | 30 |
+| Topic evidence | 25 |
+| Engagement quality | 20 |
+| Cadence and recency | 10 |
+| Format match | 10 |
+| Market fit | 5 |
+
+How it applies to discovery:
+
+- **The criteria record** is `campaign:{slug}-criteria`; the Topic evidence default reads the
+  brand's subject from `brand:summary`, as vetting's does.
+- **The posts read per candidate** are vetting's (**What to read per creator**): `search_posts`
+  on the author, the last 90 days, newest first, limit 50, widened once to 180 days when fewer
+  than 5 are indexed. Every count is over those posts. A post found by a sourcing query (a tier 1
+  partnership post or a tier 2 mention, a lookalike hit, a marketplace result) counts only when it is among them, so a
+  candidate later vetted on the same Atlas data gets the same counts. The card and the finding
+  name the window and the count ("4 of 31 posts, 90 days").
+- **One map per campaign, kept between runs.** Build the map before scoring the first candidate
+  and score every candidate in the run against it, re-scores included. Each candidate's finding
+  carries it as `detail.criteriaMap` with the criteria record's `version`. The next run, refill or
+  `shortlist` re-score alike, takes the map from the newest finding that carries a `criteriaMap`
+  (a verdict written under **Decisions** carries none, so skip past it) and uses it as given while
+  `campaign:{slug}-criteria` is at that version. When the record has changed, it builds a new map,
+  re-scores the whole undecided pool against it, and says so under **Since last run** ("criteria
+  changed: map rebuilt, 50 re-scored"). When no finding carries a map yet (the first run, or a pool
+  written before the map), it builds one at the current version and says "map built, 50 scored
+  against it", never "criteria changed".
+- **Exclusions** in the map are checked as vetting's **2. Brand safety**, **Criteria
+  exclusions** says: a post that shows what one rules out is a safety Flag on the card, citing
+  the post, never points. Criteria posts can't show are listed on the page under what posts
+  can't tell and change no score.
+- **A component with no data** for a candidate earns 0 and is listed as missing; the page shows
+  it as "not available: {reason}", never as 0 (**Page standard**, section 8).
+- **Creator-ads mode** keeps the campaign's match score (**Creator-ads mode** below); the map is
+  not built there.
 
 Infer a trait from what the posts show, never from a number or label the creator states in a bio.
 A niche fandom or subculture the criteria name is a theme, not a keyword: count the posts that
 are about it, whatever words they use.
 
-Risk flags are reported, never scored: competitor mention, a `red_line` match in recent
-content, no contact route, or a follower-to-engagement pattern that looks bought. A flagged
-candidate still appears, with the flag on its card.
+Risk flags are reported, never scored: competitor mention, a brand red line match in recent
+content, a criteria exclusion hit, no contact route, or a follower-to-engagement pattern that
+looks bought. A flagged candidate still appears, with the flag on its card.
 
 ## The findings behind the shortlist
 
@@ -300,11 +331,19 @@ handle or uuid), `idempotencyKey` per candidate per run.
 | `went_well` | Accepted | n/a |
 | `needs_improvement` | Rejected | n/a |
 
-`detail` carries: `campaign`, `tier`, `source`, `fitScore`, the per-component breakdown,
-`evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, `verdictAt` when
+`detail` carries: `campaign`, `tier`, `source`, `fitScore`, `fitBreakdown` and `criteriaMap`
+(below), `evidence` (permalinks and the profile URL), `riskFlags`, `verdict`, `verdictAt` when
 decided, `seed` for a lookalike, `recommendationTypes` (creator-ads mode, every Meta ranking
 that returned the creator, per **Recommendation passes**), and `tierScheme: 2`. Records without `tierScheme` were written
-before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5. Reading state back: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
+before the lookalike tier: read their tier 3 as tier 4 and their tier 4 as tier 5.
+
+`fitBreakdown` and `criteriaMap` have exactly the shapes **Creator vetting**, **State written to
+Atlas** gives them (`fitBreakdown`: each component's weight, points, basis, reason, and each
+criterion's id, credit, points, count, and evidence; `criteriaMap`: `{source, criteria, unscored,
+defaults}`), with one addition: `criteriaMap.version`, the version of `campaign:{slug}-criteria`
+the map was built from (**Scoring**). Every candidate written in one run carries the same map. A
+creator-ads candidate carries neither. Records written before the map have no `fitBreakdown`: the
+next run re-scores them against the map like any other undecided candidate. Reading state back: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
 `creator-discovery-{profile}-{campaign}`, newest first, paged; the newest record per `entityId`
 wins. `search_insights` returns findings tenant-wide, so always filter on the prefix.
 
@@ -342,15 +381,22 @@ whenever undecided candidates are ready to vet. Build this page from the page bl
    the card's own badges; safety flags in the brand safety tile and every other risk flag under
    "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
    thumbnails. `{DETAILS}` also holds each check's mark with the post or number behind it (a
-   lift as "3.0× usual views"), the two strongest fit components with their points, the
+   lift as "3.0× usual views"), the points per criterion as `c1 Met 15 · c2 Partly 7.5 (2 of 31
+   posts)`, each count linked to its posts, as on the vetting card (**Scoring**), the
    source, the contact route if known, and the estimated fee from the fee calculator
    (**Fee calculator**, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
    target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
    label once.
 7. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
    decision is auditable.
-8. **Criteria and scoring** (3.11): the saved criteria in plain words, the scoring table's
-   components and weights, and the platform counts again, so a reader can see what "fit" meant.
+8. **Criteria and scoring** (3.11): the saved criteria in plain words, the components and
+   weights, the criteria map as a table (each criterion's id, words, component, measure, and
+   points at Met; the exclusions and the criteria posts can't show listed apart; the components
+   on their defaults named, and the scaling when a component had no criterion), the credit rules
+   in one line ("Met 1, Partly met ½, Not met 0; posts counted over each candidate's last 90 days,
+   newest 50"), the map's date and whether this run reused or rebuilt it, and the platform counts
+   again, so a reader can see what "fit" meant. A creator-ads page shows the match score's
+   factors instead.
 9. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
 
 More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
@@ -414,8 +460,9 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
 
 1. Ask S1: what the campaign is, in the user's own words.
 2. **Then write the refinement questions.** Read the S1 answer together with `brand:summary`,
-   `brand:business-context`, and the `competitor`, `red_line` and `guideline` records (not
-   `review:` keys, which are content review only, nor `theme:` keys, which style pages, nor
+   `brand:business-context`, the brand red lines, and the `competitor` and `guideline` records (not
+   `review:` keys, which are content review only, nor `applicantreview:` keys, which are
+   one campaign's applicant screening only, nor `theme:` keys, which style pages, nor
    `lastrun:` keys, which hold a flow's saved setup answers), and from
    those compose 3 to 5 `AskUserQuestion` questions covering the dimensions above, in their
    order, skipping anything S1 already settled. The options are inferred from the brief and the
@@ -427,9 +474,23 @@ offer "Change setup" as an option on the run question. Several campaigns may be 
    with `append_calibration`, `provenance: "interview"`. A `key-exists` follows the Phase 5
    supersede rule in SKILL.md with its own confirmation.
 
-**The run question.** Ask once with `AskUserQuestion`: "What should the discovery agent do?"
-Options: "Fill the shortlist to {target}", "Show the current shortlist", "Record decisions on the
-shortlist", "Change setup". Then launch `atlas-creator-discovery` with: tool prefix,
+**The run question.** Ask once with `AskUserQuestion`, in the setup reply's call just before its
+Credits question (**Orchestration contract** **2**), since its answer sets whether the run spends: "What
+should the discovery agent do?" Options: "Fill the shortlist to {target}", "Show the current
+shortlist", "Record decisions on the shortlist", "Change setup". Credits asks the cost in
+candidates (the target minus the undecided candidates already in the pool, counted from the
+newest pool records as the agent's pool rebuild does, `search_insights` on the
+`creator-discovery-{profile}-{campaign}` run key) and applies only to
+"Fill the shortlist", so it opens "If it fills the shortlist, …". It is asked on every interactive
+run, a repeat run included, and takes Scope's slot, which discovery does not ask. The campaign is
+settled before this call (its own question when more than one is active), so `{n}` and `{target}`
+are read from that campaign's pool. With the pool already at its target, `{n}` is 0, Credits is
+not asked, and the launch carries a cap of 0. "Show the current shortlist" launches `job: view`
+with `{"cap": 0, "unit": "candidates"}`. "Record decisions on
+the shortlist" launches nothing: it goes to **Recording decisions** below. "Change setup" launches
+nothing until **Setup** is done, discards the same call's Credits and Save answers, then asks the
+run question and Credits again, and Save only on a first run (a repeat run never asks Save).
+For "Fill the shortlist" or "Show the current shortlist", launch `atlas-creator-discovery` with: tool prefix,
 `profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
@@ -474,7 +535,8 @@ A scheduled run starts a fresh session with nobody to answer questions.
   record is the standing approval, and it covers `search_creators`, `search_creator_marketplace`
   (including the lookalike tier, with `get_job_status` and `list_creator_marketplace_labels`),
   `lookup_creators`, and web research. Every other scheduled run in this plugin still starts no
-  discovery work.
+  discovery work, except an applicant review's scheduled screening, which fetches only its own
+  applicants' accounts (**Applicant screening**, **Scheduled screening**).
 - Never run a destructive tool, and never record a verdict. Only a person decides, so an
   unattended run publishes and writes `action_item` findings, nothing else.
 - Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
@@ -555,7 +617,7 @@ Everything above applies, with these changes:
   - Meta recommends: `detail.recommendationTypes` as chips in plain words ("High ad
     performance", "Most ads experience", "Similar brands"); left out when empty
 
-  Project the `instagram` container to read them, per **Creator brief**, **Atlas quirks**. A
+  Project the leaf paths above that are not card fields, per **Creator brief**, **Atlas quirks**. A
   figure Atlas does not hold shows "Not in Atlas", never a guess. Atlas gives no period for
   views or interactions, so never call them "30-day" or "lifetime". TikTok cards carry one
   plain line: "Hook rate is not available on TikTok."
@@ -616,8 +678,8 @@ returned nothing is named under Gaps as a gap line, never as an error.
 
 ## Atlas quirks that apply here
 
-Inherited from **Creator brief** and **Readouts**: project the `media` and
-`instagram.account` containers, not leaf URLs; exclude stories with `exists mediaKind`; some
+Inherited from **Creator brief** and **Readouts**: `media` and the author's picture come back on
+every hit, so project only the leaf paths a card shows; exclude stories with `exists mediaKind`; some
 `/thumbnail` routes 404 on image posts; published pages cannot load `cdn.aspire.io` images, so embed them.
 New for creator discovery: `search_creators` carries no post-level fields, so topic evidence always
 needs a second `search_posts` call per candidate; `lookup_creators` has no status-check tool

@@ -7,6 +7,8 @@ state written to Atlas, and the page.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
+**Reading the review Sheet**, **Applicant reviews**, and **Scheduled screening** are in **Applicant
+screening**.
 
 ## Contents
 
@@ -29,15 +31,18 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 
 Trigger when the user has a list of creators to decide on: a CSV export from Aspire, pasted
 handles, or "the creators in our Aspire program" ("vet these creators", "which of these should we
-approve", "screen these applicants"). Requires a brand profile. Interactive only: never schedule
-it; without `AskUserQuestion`, say vetting needs a person to supply the list and make the call,
-and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
+approve", "screen these applicants"). Requires a brand profile. Interactive only, except the
+**Scheduled screening** of an applicant review's new applicants: never schedule anything else, and
+without `AskUserQuestion` outside that, say vetting needs a person to supply the list and make the
+call, and stop. One creator in depth is **Creator profile**; new creators, **Creator discovery**.
 Before anything, read this file (**Setup**, **Getting the list**,
 **Per-run questions**, **Main thread: the run**, **The feedback loop**) and follow it.
 
 ### Setup
 
-V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup. Every
+V1 to V4, one at a time, one batch confirmation. A campaign's criteria need no setup, and nor does
+an applicant review, which replaces V1 to V4 (**R2 options** below). When vetting setup is missing,
+get the list (R1) first, so a campaign's applicants are known before V1 to V4 are offered. Every
 question is asked exactly as worded in the reference, at most four per call (**Guardrails**). An
 interactive run's reader and save choice go on `lastrun:creator-vetting`, or
 `lastrun:creator-vetting-{slug}` for a campaign (**Orchestration contract**, **2**, Saved
@@ -46,8 +51,8 @@ answers).
 ### Run
 
 Get the list (R1; the Aspire app only with a browser tool, the user signs in, read only), check
-what Atlas holds, ask R2 to R5 at most four per call (R3 approves the fetches, R4 the write, R5
-picks the visual check), then launch `atlas-creator-vetting` with the list, criteria source,
+what Atlas holds, ask R2 to R4 in one call (R3 approves the fetches, R4 the write), then R5 on its
+own once the criteria source is settled (it picks the visual check), then launch `atlas-creator-vetting` with the list, criteria source,
 approved fetches, R4 answer, visual check, and `recipient`, in batches of 100 (25 with a visual
 check). Relay the page and counts in text (cards only on request); offer the shortlist add.
 
@@ -57,6 +62,14 @@ Every run ends with F1 to F3 (the agent's or yours, before anything else), and F
 visual check's last batch. F1 confirms its own write; notes are shown worded before saving.
 Supersedes and retractions are the main thread's, one Destructive tools confirmation each. Feedback
 outside a run: "Save this about @handle for future vetting and discovery?"
+
+### Scheduled screening of applicants
+
+A scheduled task screens an applicant review's new applicants, 100 at a time, with nobody present,
+under the standing approval **Applicant review**, **Scheduled screening setup** saves. An
+unattended run whose prompt names an applicant review goes straight to **Scheduled screening**; any
+other unattended vetting stops. It never asks: anything that needs a decision becomes a Maybe with
+its question.
 
 ## Why the vetting agent exists
 
@@ -69,9 +82,12 @@ own call. What the team says about a creator is saved as a calibration, so the n
 run, creator discovery, and every teammate start from it. The recommendations are saved as
 insights, so a creator vetted once is never vetted blind again.
 
-Vetting is interactive only. A person supplies the list and a person makes the final call.
-Never schedule it; if `AskUserQuestion` is unavailable, say in one line that vetting needs a
-person to supply the list and make the call, and stop. For one creator in depth, use
+Vetting is interactive. A person supplies the list and a person makes the final call. The one
+scheduled run is **Scheduled screening**, where the list is an applicant review's new applicants and
+the schedule a person saved approves the run; it recommends and records statuses, and the call
+still belongs to people. Never schedule any other vetting; outside it, if `AskUserQuestion` is
+unavailable, say in one line that vetting needs a person to supply the list and make the call, and
+stop. For one creator in depth, use
 **Creator profile** in SKILL.md; to find new creators, **Creator discovery**.
 
 ## Setup: define what fit means, once, for everyone
@@ -98,7 +114,7 @@ Rules:
 - V3: call `get_brand_instruction` with `agentType: "brand_safety"` first. If an instruction
   exists, quote its first line in the question text and make option 1 "Use the saved brand
   safety instruction (Recommended)". Never call `set_brand_instruction` from this flow.
-- Name the saved `red_line` and `competitor` records in V3's and V4's question text, so the
+- Name the brand red lines (**Atlas tools**, Calibration kinds) and saved `competitor` records in V3's and V4's question text, so the
   user sees they already apply and only adds to them.
 - Confirm the batch once with `AskUserQuestion` ("Save this vetting setup for {brand}? Every
   teammate's vetting will use it."), then write the records. A `key-exists` follows the
@@ -113,20 +129,25 @@ main thread may offer V2 alone; it is not required. Otherwise it asks the missin
 to V4, one `AskUserQuestion` each, in order, then confirms the batch once and writes the records.
 
 **Keys starting `vetting:` belong to creator vetting only**, like `review:` keys belong to
-content review. Every other flow drops them.
+content review. Every other flow drops them. Keys starting `applicantreview:` belong to the
+applicant review; vetting reads them only for the review R2 named (**Applicant reviews**).
 
 ## Getting the list
 
-The main thread gets the list; the agent never asks for it. Three sources, offered in R1:
+The main thread gets the list; the agent never asks for it. The sources, offered in R1:
 
 1. **Upload a CSV export from Aspire** (Recommended). The user attaches the file, or gives its
-   path. Read it with the `Read` tool. Find the handle columns by header, case-insensitive:
+   path. Read it with the **Applicant CSV snippet**, which cuts no
+   long line and leaves out payment and tax data; the import reuses its rows. With no Python, read
+   it with the `Read` tool, and an applicant export is not imported. Find the handle columns by header, case-insensitive:
    `instagram`, `instagram handle`, `instagram username`, `tiktok`, `tiktok handle`,
    `tiktok username`, `handle`, `username`, `social`, `profile url`, or a column whose values
-   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display only.
-   An Excel file: ask for it saved as CSV. Show what was found before going on ("42 rows:
-   38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and which columns were
-   used.
+   are profile URLs. Take the name column (`name`, `creator`, `full name`) for display. Keep
+   the file and every other column: when the list is a campaign's applicants (**Applicant
+   reviews**), the contact details and form answers are imported with each applicant (**Applicant
+   review**, **Importing applicants**). An Excel file: ask for it saved as CSV. Show what was found
+   before going on ("42 rows: 38 Instagram handles, 11 TikTok handles, 3 rows with no handle") and
+   which columns were used; an applicant export's full found-and-missing report comes at the import.
 2. **Paste handles.** One per line or comma separated, `@handle`, a bare handle, or a profile
    URL. A bare handle with no network asks the network once for the whole list (Instagram /
    TikTok / Both).
@@ -138,6 +159,8 @@ The main thread gets the list; the agent never asks for it. Three sources, offer
    off the table, page by page. Read only: never change a creator's status, send a message, or
    click anything that writes. No browser tool, or the sign in fails: say so in one line and
    offer options 1 and 2, with the steps to export the list as CSV from the Aspire app.
+4. **The applicant review's Sheet.** Offered, read, and turned into the list per **Reading the
+   review Sheet**.
 
 Normalizing, for every source:
 
@@ -154,7 +177,7 @@ Normalizing, for every source:
   (part {n} of {k})" and `{slug}-part-{n}`, so each run has its own `runKey`, idempotency keys, page
   title, and `listName`.
 - Give the list a short name for the run and the page (the file name, the Aspire list name,
-  or "pasted list"), and a slug from it, lowercase and hyphenated.
+  the review Sheet's title, or "pasted list"), and a slug from it, lowercase and hyphenated.
 
 ## Per-run questions
 
@@ -163,16 +186,32 @@ takes up to four questions), skipping any the user already answered.
 
 | # | Question | Options |
 | - | -------- | ------- |
-| R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available) |
-| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two) |
+| R1 | Where's the list of creators? | 1) Upload a CSV export from Aspire (Recommended); 2) Paste the handles; 3) Pull it from the Aspire app (you'll sign in yourself) (only when a browser tool is available); 4) The applicant review's Sheet (only when the review's Sheet has applicant rows, and then Recommended in place of option 1) |
+| R2 | Vet them against what? | 1) {brand}'s vetting criteria (Recommended); 2) The {campaign} campaign's criteria (one option per saved `campaign:*-criteria`, up to two); 3) The {campaign} applicant review (one option per applicant review saved for this profile). Ordered per **R2 options** |
 | R3 | {n} of these creators aren't in Atlas yet. Fetch them? | 1) Fetch them (Recommended) (description: "Atlas looks up each account and its recent posts. A TikTok account Atlas doesn't hold costs one paid lookup; {t} are TikTok."); 2) Only vet the creators Atlas already holds |
 | R4 | Save the recommendations to {brand}'s Atlas insights? | 1) Save (Recommended); 2) Page only |
 | R5 | Run a visual check on each creator's videos? Type what to look for, or pick a saved check. (Over 25 creators, the question adds: "A visual check splits this list into {k} runs of 25, each with its own page.") | 1) No visual check (Recommended); 2) Product on screen (description: "{product} from the criteria you pick, visible in frame"); 3) and 4) the two newest active `vetting:visual-*` checks, each labelled with its name and described with its "look for" line. Every check option's description ends "Adds a few minutes to each run of 25." |
 
+**R2 options.** Four at most, two at least:
+
+1. When vetting setup is missing and R2 has anything besides {brand}'s vetting criteria to offer
+   (a saved `campaign:*-criteria`, an applicant review, or a list read at R1 that is a campaign's
+   applicants, **Applicant reviews**), ask R2 before V1 to V4, and run V1 to V4 only if R2 picks
+   {brand}'s vetting criteria.
+2. When the list is a campaign's applicants, that campaign's review comes first, marked
+   (Recommended), the other reviews follow, and option 1 is left out.
+3. When that campaign has no review yet, "Set up an applicant review for {campaign} first
+   (Recommended)" takes the first place; picking it runs **Applicant review**, then this run goes
+   on with the new review as the criteria source.
+4. When nothing else is left to offer, option 1 stays as the second option.
+5. When the reviews do not fit, the last option is "An applicant review (pick which next)", listed
+   per **Applicant review**, Reading the setup back, step 1.
+
 R3 is asked only after the main thread has checked which handles Atlas holds
-(`search_creators` filtered on the username field, one call per network with a `terms`
-filter on the whole list), and only when some are missing. R3 option 1 is the approval for
-`lookup_creators` on exactly those handles, and the agent does not ask again. R4 is the write
+(**Main thread: the run**, step 2), and only when some on the list are missing. R3 option 1 is the approval for
+`lookup_creators` on exactly those handles, and the agent does not ask again. When the setup
+reply asks the Credits question (**Orchestration contract** **2**), Credits is R3: R3 is not asked
+again, and its cap is the approval. R4 is the write
 confirmation for the recommendation findings; the feedback answers carry their own.
 
 R5 picks the visual check (**4. Visual check**). An option picked is a **named** check; words typed
@@ -184,7 +223,7 @@ asked for a creator-ads lane run, which runs no visual check.
 
 **What a visual check may look for.** Things on screen (a product, a pet, a setting, a prop), and a
 person's appearance only when the look is one the casting needs, named in the criteria the run uses
-(`vetting:criteria`, or the campaign's `-criteria` or `-brief`) or in the user's own ask (grey hair
+(`vetting:criteria`, the campaign's `-criteria` or `-brief`, or an applicant review's criteria) or in the user's own ask (grey hair
 for a campaign cast for older adults). Never a protected or sensitive trait: race or ethnicity,
 national origin, religion, sex or gender, sexuality, health or disability, pregnancy, body size or
 weight, or any other trait the law protects. Age itself is never judged, only a visible feature the
@@ -215,16 +254,41 @@ What the **Creator vetting** section of SKILL.md does around the agent.
 1. **Get the list** per **Getting the list**, from the R1 answer (skip R1 when the user already
    attached a file or pasted handles). Show what was found and the list name.
 2. **Check what Atlas holds**: `search_creators` with a `terms` filter on the username field,
-   one call per network.
-3. Ask R2 to R5 in `AskUserQuestion` calls of at most four questions, with the **Reading the ask**
-   confirmation (SKILL.md) in the first. R2, R3, and R5 change what the agent reads, so they go with
-   that confirmation, before the storyline draft. On a new page, R4 is answered by the storyline
-   call's Save (**Orchestration contract**, **2**); on a rerun to a page already published, it joins
-   this call when there is room. The confirmation sets the recipient (`team` by default; `brand` for
-   "are these safe"; `campaign` when the list is a launch lineup). Skip R3 when Atlas holds every
-   creator. When the first call would need five questions (the confirmation, a credit cap, R2, R3,
-   and R5), R2 folds into the confirmation's own text the way Scope does ("Vetting against {brand}'s
-   vetting criteria unless you say otherwise"), and a typed answer naming a campaign switches it.
+   per network, at most 100 handles per call (a review Sheet's decided rows count toward the
+   handles). For a review Sheet, also read the saved findings per **Reading it back** (**State
+   written to Atlas**), then finish the list: the findings settle a duplicate creator's applicant
+   id, which blank rows stay off the list, which Sheet calls are new, which rows are reopened,
+   and each Sheet call's `agentVerdict`. A review Sheet that leaves the list empty goes from here to
+   **Reading the review Sheet**, When the list is empty.
+2b. **Vetting setup missing:** when R2 has nothing but {brand}'s vetting criteria to offer, ask V1
+   to V4 now (**Setup**). Otherwise (rule 1 of **R2 options**) ask them only once R2 picks
+   {brand}'s vetting criteria, before 3c; a campaign or a review picked at R2 needs no vetting
+   setup.
+3. Ask R2 to R4 in one `AskUserQuestion` call with the **Reading the ask** confirmation (SKILL.md).
+   R2 and R3 change what the agent reads, so they go with that confirmation, before the storyline
+   draft. On a new page, R4 is answered by the storyline call's Save (**Orchestration contract**,
+   **2**); on a rerun to a page already published, it joins this call when there is room. The
+   confirmation sets the recipient (`team` by default; `brand` for "are these safe"; `campaign` when
+   the list is a launch lineup). Skip R3 when Atlas holds every creator.
+3b. **An applicant review named in R2** is read back per **Applicant review**, **Reading the setup
+   back (screening)**, before the launch: any missing setup question asked first, and its pointers
+   resolved. Then find the review's saved criteria map as **Scheduled screening**, step 1, does,
+   and leave out of the list every applicant whose newest `applicant_screening` record is a
+   scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
+   line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
+   This run writes no claims, so a scheduled run that starts while it is open can screen an
+   applicant it is screening too; the newer result then decides the applicant's status.
+3c. **Ask R5 once, in its own call, after the criteria source is settled** (after R2, and after 3b
+   for a review), still before the storyline draft, so its options come from the source the run
+   uses: a review's saved visual checks (**Applicant review**, **How screening applies a review**), otherwise R5's own options.
+3d. **Import a campaign's applicant export** when R2 named an applicant review and the list came
+   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
+   report and confirmation, before the launch. From then on the run's list is this file's
+   applicants as read back (the ids after **Check what Atlas and the Sheet hold**), never the review's other applicants, so the
+   handles R3 approved are the ones looked up. Each list entry carries its `aspireApplicantId`, so
+   the agent finds the applicant's answers (**Applicant review**, **Applying the form rules**,
+   step 1). "Not now", or an import that stops, leaves the list
+   as it was.
 4. Launch `atlas-creator-vetting` with: tool prefix, `profile_id`, `profile_slug`, brand handles and
    networks, the normalized list, the list name, slug and source, the criteria source, the approved
    fetches, the R4 answer, `visual_check` (from R5 or the ask: `none`, or `{name, kind: "named" |
@@ -233,10 +297,13 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    Product on screen and for a free-text check), the built-in definition for Product on screen, or,
    for a free-text check, the definition the main thread words once from the user's words before the
    first launch: what to look for, what counts, what does not), `visual_check_refused` (the one-line
-   reason, when a check was refused), and `recipient`. A list over 100 creators runs in batches of
+   reason, when a check was refused), `sheet_calls` (**Reading the review Sheet**; else none), and
+   `recipient`. A list over 100 creators runs in batches of
    100, and a run with a visual check in batches of 25, since each creator's frames take room in the
    agent's context; say how many and launch them one at a time, every batch with the same
-   `visual_check`.
+   `visual_check`, and every batch after the first with the `fit_map` the first one returned
+   (**How criteria become points**). A run on an applicant review passes the review's saved map,
+   when step 3b finds one, to every batch, the first included.
 5. Answer in text: the counts, up to three points naming the approved creators and top maybes
    with their page numbers, the next step, and the page link. Keep the agent's `creator-cards`
    block; the cards appear only when the user asks to see them (**Creator card**, **Cards in
@@ -244,6 +311,11 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    campaign, offer to add the approved creators to its shortlist per SKILL.md **Creator card
    actions**, "Add @handle on {network} to a campaign shortlist", with one confirmation for the
    batch.
+6. **Write the review Sheet**, when R2 named an applicant review and R4 was "Save": after the last
+   batch's feedback (F1 to F4), per **Applicant review**, **Writing the review Sheet**, with its own
+   confirmation. It writes what Atlas now holds for the review's applicants (each applicant's
+   status record, **Applicant review**, **Applicant status**), so it covers every batch of the run
+   at once and any row an earlier run left.
 
 ## The checks
 
@@ -261,12 +333,10 @@ theme, not a keyword: count the posts that are about it, whatever words they use
 posts that contain its name.
 
 **What to read per creator.** `search_creators` for the account (followers, bio, country,
-verification, contact fields, `analysis` fields the creator census lists). `search_posts` filtered
+verification, contact fields, the fields **Atlas search** lists). `search_posts` filtered
 on the author username field, the last 90 days, sorted by posted date desc, limit 50, projecting
-`postedAt`, `text`, `url`, `mediaKind`, `instagram.mediaProductType`, the metrics, the partnership
-marker, `media` (container), the network's `account` container, and `analysis.brandSafety`,
-`analysis.commentSentimentBreakdown`, `analysis.transcript`, `analysis.overlayText` when the census
-lists them, and `analysis.narration` too when a visual check runs. Fewer than 5 indexed posts in 90
+`postedAt`, `text`, `url`, `mediaKind`, `instagram.mediaProductType`, the metrics, `media` (container), the network's `account` container, and `analysis.brandSafety`,
+`analysis.commentSentimentBreakdown`, `analysis.transcript`, `analysis.overlayText`, and `analysis.narration` too when a visual check runs. Fewer than 5 indexed posts in 90
 days: widen to 180 days once.
 
 **The creator's usual views.** The median `viewCount` of the 90-day posts read above that carry
@@ -279,9 +349,10 @@ their newest 50; the page's key says so.
 
 ### 1. Brand fit (the fit score, out of 100)
 
-Scored against `vetting:criteria`, or the chosen campaign's `campaign:{slug}-brief` and
-`-criteria` when R2 named one. Weights follow creator discovery's **Scoring** so a creator
-scores the same in both flows:
+Scored against `vetting:criteria`, the chosen campaign's `campaign:{slug}-brief` and
+`-criteria` when R2 named one, or the applicant review's resolved criteria when R2 named a review. Creator discovery
+(**Scoring**) uses the same weights and the same criteria map below, over the same posts, so a
+creator gets the same fit score in both flows:
 
 | Component | Weight | Source |
 | --------- | ------ | ------ |
@@ -297,6 +368,136 @@ available: {reason}", never as 0 (**Page standard**, section 8). Also report, un
 that mention the brand (a warm lead), the estimated fee per **Fee calculator**, **Applying the rates**,
 and the contact route Atlas holds.
 
+The points come from **How criteria become points** below, never from a split worked out per
+creator, so two runs on the same creators and the same Atlas data give the same score. A creator-ads
+lane scores with the campaign's match score instead (**Creator-ads lanes**).
+
+#### How criteria become points
+
+**1. The criteria map, built once per run.** Before vetting any creator, split the criteria
+record (the one this section names above) into numbered criteria, `c1`, `c2`, …, in the order the
+record states them, each quoting the record's own words. Split at line breaks and semicolons, and
+within a line wherever "and", "who", "whose", or a comma joins two things that would be checked
+apart ("dog owners whose dog is overweight" is two: owns a dog, the dog is overweight). Never add a
+criterion the record does not state, and never drop one. A criterion that restates an earlier one,
+the same thing to check in other words or as a must ("must own and live with a dog" after "dog
+owners"), is listed as a repeat of it (`c4 = c1`) and scored once, so one post can't count twice. Give each criterion one
+component and one measure:
+
+| The criterion is about | Component | Measure |
+| ---------------------- | --------- | ------- |
+| Who the creator is or what their life shows (owns a dog, is a parent, cooks at home) | Audience and archetype fit | `trait` |
+| Who follows them (an age, gender, or audience country) | Audience and archetype fit | `audience` |
+| A follower range | Audience and archetype fit | `followers` |
+| What their posts are about (features the dog, teaches recipes) | Topic evidence | `topic` |
+| An engagement bar | Engagement quality | `engagement` |
+| How often they post | Cadence and recency | `cadence` |
+| Formats (Reels, TikTok videos, carousels) | Format match | `format` |
+| A country | Market fit | `country` |
+| A language | Market fit | `language` |
+
+Two kinds of criterion carry no points, and the map lists them apart: an **exclusion** ("no dog
+food ads in 6 months", "never promoted a competitor") is checked under **2. Brand safety**,
+**Criteria exclusions**; a criterion posts cannot show (**not from posts**: willing to do a 60-day
+challenge, available in March) is listed on the page under what posts can't tell, and an applicant
+review run's form answers speak to it. Neither changes a score.
+
+The map is the same for every creator in the run. A run in several batches builds it in the first
+batch and returns it in the `fit-map` output line; the main thread passes it unchanged to every
+later batch as `fit_map`, which the agent uses as given. A run on an applicant review, interactive
+or scheduled, reuses the map of the review's last run for every batch, the first included, until
+the criteria change, so applicants screened in different runs are scored alike: the main thread
+finds it as **Scheduled screening**, step 1, says, before the launch.
+
+**2. Each component's weight splits evenly across its criteria.** A component with n scored
+criteria gives each one its weight ÷ n. A criterion earns that share times its credit: **Met** 1,
+**Partly met** ½, **Not met** 0. A criterion with no data is "not available", earns 0, and is listed
+as missing. Criterion points are kept to one decimal; a component's points are its weight × (the sum
+of its credits ÷ n), rounded to the nearest whole point, a half rounding up; the fit score is the
+sum of the components' points, then the dormant cap. When a component is not available for the
+whole run because the criteria name nothing for it and it has no default (Audience and archetype
+fit, step 4), the fit score is that sum × 100 ÷ the weight left (70 without Audience and archetype
+fit), rounded the same way, so every threshold stays reachable; the page says so ("scored out of 70,
+scaled to 100: the criteria name no audience or archetype"). A component that is not available for
+one creator only (no audience census, too few posts with a like count) still earns 0 for that
+creator. The dormant cap applies in every run, whether cadence comes from the criteria or the
+default: a creator with no post in the last 30 days is dormant, and the fit score is capped at 50
+after any scaling. Example: Audience and archetype fit (30) with
+`c1` owns a dog (Met) and `c2` the dog is overweight (Partly met) scores 15 + 7.5 = 22.5, so 23.
+
+**3. Credit by measure.** Counts are over the posts read for the creator (**What to read per
+creator**: the last 90 days, newest 50, or 180 days when widened), never a new search. The page and
+the finding name the window and the count ("4 of 31 posts, 90 days").
+
+| Measure | Met | Partly met | Not met |
+| ------- | --- | ---------- | ------- |
+| `trait` | 3 or more posts show it | 1 or 2 posts show it | No post shows it (a bio claim alone is a lead, never a match) |
+| `topic` | 3 or more matching posts, and at least 20% of the posts read | 2 or more matching posts, short of Met | 0 or 1 matching post |
+| `audience` | The named group is the largest in the audience fields the census lists | The named group is 25% or more, but not the largest | Under 25% |
+| `followers` | Inside the range | Within 20% outside it (a 10K floor: 8,000 to 9,999) | Further outside |
+| `engagement` | At or above the bar | Half the bar or more | Under half the bar |
+| `cadence` | At or above the named rate over the last 30 days | Half the rate or more | Under half |
+| `format` | 50% or more of the posts read are in the named formats | 20% to 49% | Under 20% |
+| `country` | The country on record is a named one | n/a | The country on record is another (none on record: not available) |
+| `language` | More than half the posts read are in it | Some, but half or fewer | None |
+
+**The engagement rate** for an `engagement` criterion is the one step 4 defines: the median of
+(likes + comments) ÷ followers over the posts read with a like count. When the criterion names its
+own basis ("6% of views"), views replace followers; the finding names the basis either way.
+
+**What counts as a match.** A post counts for a `trait` or `topic` criterion only when its words
+(caption, hashtags, transcript, or overlay text) show it on their own, with nothing guessed. It
+counts when the words:
+
+- state it about the creator in a sentence of their own ("my dog Milo is 12 pounds over", "our pup's
+  breakfast"), even inside a post about something else ("we have two dogs" in a grocery-budget
+  video counts for owning a dog), or
+- are mostly about it: the post's main subject is the thing the criterion names.
+
+It does not count when:
+
+- the thing is only implied, never said: a photobomb, a background, a tag among many, or a line
+  that names it without saying what it is ("…and Milo turned 9" in a monthly recap);
+- a name or an emoji stands alone, with no word saying what it is ("Louie", "🐶", "squish 🐶");
+- only the bio says it (a lead, never a match).
+
+A word whose everyday meaning is the criterion says it, in a joke or caption alike ("chonky",
+"chubby", or "needs to lose a few pounds" about the creator's dog says the dog is overweight); a
+word that only might ("big boy", "fluffy") does not. When in doubt, it does not count. A niche fandom or subculture is a
+theme, not a keyword (**The checks**). A visual check never adds a match. One post may count for
+several criteria, and once per criterion.
+
+**An application answer** (a run that reads applicants' answers, **Applicant review**) counts only
+for the criteria its question names in its own words: "How many pounds overweight is your dog?"
+speaks to "the dog is overweight", not to "owns a dog". Where the posts don't show that criterion
+either way, an answer that says it is met earns Partly met, never Met; one that says it is not met
+earns Not met. The finding marks the credit as from the answer (`count: "answer"`).
+
+**4. The defaults when the criteria are silent.** A component with no scored criterion uses one
+default criterion, so it scores the same way every run:
+
+- **Audience and archetype fit**: none; the component is "not available: the criteria name no
+  audience or archetype".
+- **Topic evidence**: the brand's subject as `brand:summary` states it, as one `topic` criterion.
+- **Engagement quality**: the creator's median engagement rate, (likes + comments) ÷ followers over
+  the posts read with a like count (at least 5, else not available), against the bar for their size
+  band. Bars, Instagram / TikTok: under 10K followers 3.0% / 6.0%; 10K to under 50K 2.0% / 5.0%; 50K
+  to under 250K 1.5% / 4.0%; 250K to under 1M 1.0% / 3.0%; 1M and up 0.7% / 2.0%. A creator at exactly
+  50K, 250K, or 1M is in the higher band.
+- **Cadence and recency**: posts in the last 30 days: 8 or more Met, 2 to 7 Partly met, 0 or 1 Not
+  met. The dormant cap (step 2) applies here too. "The last 30 days", here and in the dormant cap
+  and a `cadence` criterion, is posts whose `postedAt` is on or after midnight UTC 30 days before
+  today's UTC date from the shell clock, so a post on the boundary counts the same in every run.
+- **Format match**: Met for every creator ("no format named").
+- **Market fit**: Met for every creator ("no market named").
+
+**5. What each finding records.** Every creator's `fitBreakdown` (**State written to Atlas**)
+holds each component's weight, points, basis (`criteria`, `default`, or `not-available` with the
+reason), and each criterion's id, credit, points, count, and the permalinks it rests on. The run
+summary holds the criteria map. Compare two runs line by line: the same map, then per creator the
+same credit per criterion. With the same data the scores match exactly; a post read differently on
+a borderline match moves one criterion by one step, which the line-by-line view shows.
+
 ### 2. Brand safety (every creator, every run)
 
 - **Industry categories**, one line each: adult and explicit content; arms and ammunition;
@@ -307,7 +508,8 @@ and the contact route Atlas holds.
   on one post is a Flag, on three or more posts a Fail. Add your own read of captions and
   transcripts; cite the post. Fewer than 3 analyzed posts: the category screen is "Can't
   check" and says so.
-- **Red lines.** Every `red_line` calibration, except `review:` keys, with its `action`:
+- **Red lines.** Every brand red line (an applicant review run adds its own review's red lines
+  from the launch), with its `action`:
   `block` fails the creator, `flag` flags it, `escalate` flags it and names the primary
   contact (`user:primary-contact`). One `search_posts` over the 90 days with `queryText` set
   to each `block` or `escalate` red line's body, limit 5, filtered to the creator. Each red
@@ -316,14 +518,21 @@ and the contact route Atlas holds.
   present, each line its own check.
 - **Competitors.** Every `competitor` handle and its `spellingVariants` in captions and
   mentions. A paid partnership with a competitor in the last 90 days is a Fail when
-  `vetting:hard-rejects` lists it, a Flag otherwise; an organic mention is a note.
-- **Disclosure habits.** Posts with the partnership marker, or that tag a brand with
+  `vetting:hard-rejects` lists it, or, in an applicant review run, the review's `reject:` line
+  does; a Flag otherwise. A mention with no paid label is a note.
+- **Disclosure habits.** Posts that tag a brand with
   `#ad`, `#sponsored`, or "paid partnership", against posts that read as paid without one. A
-  paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it).
+  paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it, or, in an
+  applicant review run, the review's `reject:` line does).
 - **Audience signals.** A negative comment share over 30% across analyzed posts is a Flag.
   A follower-to-engagement pattern that looks bought (a large account with engagement far
   under its size band, or sudden follower jumps the census shows) is a Flag, a Fail when
   `vetting:hard-rejects` lists it.
+- **Criteria exclusions.** Each exclusion in the criteria map (**How criteria become points**) is
+  its own check over the posts read: a post that shows what it rules out (a paid post for the
+  category it names, a partnership it names) is a Flag citing the post. None in a window at least
+  as long as the criterion asks for is a Pass. None in a shorter window is a Pass that says how much
+  was checked ("checked 90 of 180 days"), never a plain Pass. Never points.
 - **Earlier verdicts.** `search_insights` for `brand_safety` role findings on the creator's
   posts, and earlier content reviews of the creator (`content-review-{profile}` prefix,
   `detail.creator`). Cite them; never contradict one silently.
@@ -488,15 +697,23 @@ In this order; the first rule that applies decides, and the page names it:
 1. **Saved team call.** A `creator:*` record with stance `reject` → **Reject** ("Rejected
    under the team's saved call: …"). Stance `approve` → **Approve**, unless a check below
    fails that the saved call predates: then **Maybe**, naming what is new since.
-2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, or a
-   `vetting:hard-rejects` rule that fails → **Reject**.
+2. **Hard stops.** A saved `competitor` handle, a `block` red line that fails, a
+   `vetting:hard-rejects` rule that fails, or, in an applicant review run, a check the review's
+   `reject:` line lists that fails, a form `stop:` rule that matches, or an application answer
+   that plainly says the applicant fails a criterion worded as a must → **Reject**, naming the
+   rule or quoting the answer.
 3. **Not enough to go on.** The handle could not be resolved, or fewer than 5 posts in 180
    days → **Can't vet**, with the reason. Never reject a creator for missing data.
 4. **Safety caps.** Any other Fail, a `flag` or `escalate` red line, or two or more Flags →
-   at most **Maybe**.
+   at most **Maybe**. In an applicant review run, so does a `required:` form rule that is not
+   met, or an application answer too unclear to tell whether a must criterion is met.
 5. **Fit score** against `vetting:thresholds` (default 70 and 50): **Approve** at or above
    the approve line, **Maybe** at or above the maybe line, **Reject** under it. In a creator-ads
-   lane this is the score without Budget vs target (**Creator-ads lanes**).
+   lane this is the score without Budget vs target (**Creator-ads lanes**). In an applicant review
+   run, a matched `boost:` form rule can lift a Maybe.
+
+What each form rule does in rules 2, 4, and 5, exactly, is set out once in **Applicant review**,
+**Applying the form rules**, step 3.
 
 A visual check (**4. Visual check**) is not one of these rules: it never changes a recommendation. A
 `vetting:lesson-*` record can change how a check is judged; mark every call a lesson changed
@@ -533,7 +750,10 @@ Rules:
   so. Write one `feedback` finding per creator the user ruled on (option 1 rules on every
   creator with a recommendation; option 2 on the ones typed plus, when the user says so, the
   rest as recommended). Resolve the numbers against this run's page.
-- **Creator notes.** Every creator the user overturned, and every reason the user gave about
+- **Sheet calls.** When the list came from a review Sheet, F1 also offers its new Sheet calls, per
+  **Reading the review Sheet**, F1 with Sheet calls.
+- **Creator notes.** Every creator the user overturned (a Sheet call whose `agentVerdict` is
+  `none` overturns nothing), and every reason the user gave about
   a creator ("never again, they deleted our post", "great, but only for Reels"), becomes a
   note. Word it yourself: the stance and the reason in one sentence, with the date. Show it in
   F2 before it is saved. Never save a note the user has not seen.
@@ -542,7 +762,8 @@ Rules:
   ("Mild profanity in comedy content is fine; flag it only in family content") and ask F3.
   If the correction targets a red line, a competitor, or a hard reject, write no lesson: say
   the rule itself would have to change, and list it under "Needs the main thread".
-- Skip F2 and F3 when F1 is "Agree" with no reasons given, or "Decide later".
+- Skip F2 and F3 when F1 is "Agree" (or the Sheet-only F1's "Save them") with no reasons given
+  (a Sheet call's Note is a reason given), or "Decide later".
 - **F4** is asked once after a free-text check, by the main thread after the last batch (never by
   the agent), whatever F1 was, and is its own write confirmation. The definition saved is the one
   the run used, worded per **Visual check records**, with any correction the user typed. When a
@@ -563,6 +784,19 @@ worded before the first launch, and offer each "Needs the main thread" change, t
 to the criteria among them, through its own Destructive tools confirmation (`supersede_calibration`
 or `retract_calibration`), one per call. A proposal the user declines stays unsaved.
 
+**Copy decisions.** The team's calls for this list as text the user can copy: one **call line**
+(**Reading the review Sheet**) per creator, without notes, grouped Approve, Maybe, Reject. Each
+creator's call is the team's call (**Reading it back**); a Sheet call is used only where Atlas holds
+none. It leaves out creators left to decide in the Sheet, Sheet calls on creators Atlas doesn't
+hold yet, and a reopened creator (**Reading the review Sheet**) until F1 saves a new call for
+them. With no team call in Atlas and no Sheet call
+for any creator, it is the recommendations, headed "Recommendations, not yet the team's calls". The main thread gives it in
+chat after the last batch's F1, covering the whole list and, for a review Sheet, every row with
+a call (in the Sheet or in Atlas), with "(Sheet only)" after a Sheet call Atlas
+holds no call for and **Rows to fix** under it. The page carries it as a button (**The
+page**, Decisions) with neither, covering the creators on that page and the Sheet calls it was
+passed; the chat version is the full one.
+
 **Feedback outside a run.** Feedback about a creator outside a run ("never use @handle again",
 "@handle was great to work with") is saved the same way: word the note, confirm it with
 `AskUserQuestion` ("Save this about @handle for future vetting and discovery?"), then write the
@@ -573,7 +807,8 @@ or `retract_calibration`), one per call. A proposal the user declines stays unsa
 One record per creator per network, organization-wide, read by vetting and creator discovery.
 
 - kind `guideline`, key `creator:{ig|tt}-{handle}`: the handle lowercase with every
-  character outside `a-z0-9` turned into `-`, the whole slug 48 characters at most. The exact
+  character outside `a-z0-9` turned into `-`, the whole slug (`ig-` or `tt-` and the handle) 45
+  characters at most before any `-2` suffix, so a suffix up to `-99` still fits in 48. The exact
   handle is always in `statement` and `body`, because two handles can share a slug; on a
   `key-exists` whose body names a different handle, add `-2`.
 - `statement`: "@{handle} ({network}): {stance}. {reason}", under 280 characters.
@@ -627,7 +862,9 @@ F1 feedback findings, which F1 confirms. Instagram and TikTok only.
 | The team's call (F1) | `went_well` for approve, `needs_improvement` for reject, `action_item` `medium` for maybe | as the kind needs | `feedback` |
 | Run summary | `action_item` | `low` | `summary` |
 
-The run summary is anchored to the brand's own account on the first linked network and
+The run summary is anchored to the brand's own account on the first linked network, or, when the
+profile has no linked channel, to the account of the first creator on the list Atlas holds, so it
+is saved either way (with neither, the applicant statuses and the page are the record). It
 carries the list name and source, the counts per recommendation, the handles that could not
 be resolved or were not vetted, the visual check run (name, kind, and the count per result and
 confidence, with no counts for a check on a person's appearance, **What a visual check may look
@@ -636,12 +873,22 @@ still on record. It also carries `detail.findings` (**The findings behind the ch
 `{viewFloor, measured, working: [{label, medianLift, measured, total, examples[]}], sentiment:
 {positive, neutral, mixed, negative, posts}, challenges: [{n, title, evidence[]}], brandsNamed:
 [{brand, posts, competitor}], reach: {totalViews, topPostShare, paidPosts, restAverage}, supply:
-{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`.
+{market, posts, authors, total}, checks: [{component, label, finding}], proposedCriteria[]}`, and
+`detail.criteriaMap` (**How criteria become points**): `{source, criteria: [{id, text, component,
+measure, share}], unscored: [{id, text, why: "exclusion" | "not-from-posts"}], defaults:
+[component]}`, where `source` is the criteria record's key and `share` the criterion's points at Met.
+
+In an applicant review run, the same `append_insights` call that holds an applicant's
+recommendation finding also holds its `applicant_screening` record (**Applicant review**,
+**Applicant status**), so the applicant's status moves on with the call and the review Sheet can
+show it.
 
 `detail` carries `findingType`, `vettedAt` (full UTC timestamp from the shell clock, the same on
 every finding of one run), `handle`, `network`, `name` (from the list, when given),
-`recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`, the
-component breakdown, `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
+`recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`,
+`fitBreakdown` (**How criteria become points**: `[{component, weight, points, basis: "criteria" |
+"default" | "not-available", reason, criteria: [{id, credit: 1 | 0.5 | 0 | null, points, count,
+evidence[]}]}]`, `credit` null for a criterion with no data), `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
 and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
 (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`, `estFee` when the calculator
 gives one, `visualCheck` when the run had a visual check and it ran on the creator (left out for a
@@ -650,15 +897,29 @@ gives one, `visualCheck` when the run had a visual check and it ran on the creat
 | null, frame: {postUrl, at}, videosRead, framesViewed, coversOnly, reason}`, `frame` and
 `confidence` null for Can't check), `usualViews` (or the reason it is not available), `checks`
 (`{component: 1 | 0.5 | 0 | null}`, `null` for a component with no data; the finding each check
-comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`, `aspire-app`, or
-`cas-lane`), `campaign` when R2 named one, `reviewPage`, and `recipient` (**Recipient lens**). A
-`feedback` finding adds `userVerdict`, `agentVerdict`, and the user's words verbatim. Supply an
-`idempotencyKey` per finding (`vet-{list-slug}-{entityId}-{findingType}`).
+comes from is on the run summary), `listName`, `listSource` (`csv`, `pasted`,
+`aspire-app`, `review-sheet`, `cas-lane`, or `schedule`), `campaign` when R2 named one, `applicantReview`
+when the criteria source is an applicant review (**Applicant reviews**), and with it
+`aspireApplicantId`, `formRules[]`, `responsesUsed[]`, and `priorityKeys` (**Applicant review**,
+**Applying the form rules**), `reviewPage`, and `recipient` (**Recipient lens**). A
+`feedback` finding adds `userVerdict` (`approve`, `maybe`, or `reject`), `agentVerdict`, and the
+user's words verbatim; one for a creator whose list came from a review Sheet also adds
+the row's `applicantId`. One saved from an offered Sheet call also adds `sheetValue`, the Sheet's
+call at that moment. Its `agentVerdict` is the row's Recommendation, or else the newest saved
+`recommendation` finding for the creator, or else `none` when there is neither (a row the team
+added by hand to a creator never vetted). Its words are the row's Note when the call saved is that Sheet call as it
+stands (`userVerdict` equals `sheetValue`), and the user's own when they changed it in F1 option 2. Supply an
+`idempotencyKey` per finding, `vet-{list-slug}-{entityId}-{findingType}-{vettedAt}`, so a retry
+in one run is written once and a later run on the same list (a review Sheet is read again every
+run) is still written. Whoever writes the F1 findings uses the run's `vettedAt`: the agent's
+own, or the one its feedback packet carries.
 
 **Reading it back.** `search_insights` with a `prefix` filter on
 `detail.account_review.runKey` = `creator-vetting-{profile}`, newest first, paged; the newest
 record per `entityId` wins, and a `feedback` finding outranks a `recommendation` from the same
-run.
+run. The newest `feedback` finding per `entityId` is the team's call on that creator. For a review
+Sheet row vetted on two channels, the team's call is under the row's account id (**Reading the
+review Sheet**); the other channel's id holds only its recommendation.
 
 ## The page
 
@@ -705,7 +966,10 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    any brand rule the team must settle before a verdict holds (for example, a red line a creator
    sits on the edge of), each proposed change to the criteria with the finding behind it, and,
    after a visual check, the creators whose read is Low confidence, to confirm by eye.
-   Questions that settle one creator stay on that creator's card.
+   Questions that settle one creator stay on that creator's card. Below them, a **Copy
+   decisions** button with the page's text from **Copy decisions** (**The feedback loop**). The
+   button and the cards' Team chips show the calls as they stood when the page was published;
+   calls F1 saves afterwards show on the list's next republish.
 8. **Next steps** (3.6): in order, each with its week, the creators it covers by number, and
    what it should change: contact the approvals, settle the Maybes, line up the backups, and,
    when the list came up short, where a second search should look given the findings, and,
@@ -722,13 +986,16 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
    across the whole page in the order shown, because those numbers are what the user replies with.
    When the criteria name audiences, the Approve grid is grouped by audience with a subtotal per
    group; when they also set how many creators each audience needs, a group short of it names the
-   open slot. On each card: the fit score in the ring; flow chips `#{number}` and the
-   recommendation; safety results in the brand safety tile per the card's **Brand safety** rule;
+   open slot. On each card: the fit score in the ring; flow chips `#{number}`, the
+   recommendation, and "Team: {call}" when the team has a call on the creator (**Reading it
+   back**), or "Team: reopened" for a reopened review Sheet row (**Reading the review Sheet**);
+   safety results in the brand safety tile per the card's **Brand safety** rule;
    three proof posts in the thumbnails; when a visual check ran, a line under the thumbnails with
    the check's name, the result, the confidence word, and the post and timestamp, linked to the
    creator's still in the visual check section (the still itself is not repeated); `{DETAILS}` with
    the two reasons, each check's mark with the post or number behind it (a lift as "3.0× usual
-   views"), a watch line (the one thing to keep an eye on), what would settle a Maybe (a Maybe that
+   views"), the points per criterion as `c1 Met 15 · c2 Partly 7.5 (2 of 31 posts)`, each count
+   linked to its posts, a watch line (the one thing to keep an eye on), what would settle a Maybe (a Maybe that
    only fills a gap says "Backup: take if {creator} declines" instead; it stays a Maybe in the
    findings), the calibrations and lessons applied, an earlier vetting or discovery state, the
    contact route, "Est. fee {open} to {max}, target {target}" when the calculator gives one with
@@ -752,7 +1019,11 @@ the same path. Title "<Brand> Creator Vetting: {list name}". Sections:
 12. **Launch clock** (3.17), when the criteria name a launch date: the weeks from today to that
    date, with each next step placed in its week and the launch marked. No stage gets a date the
    next steps did not set.
-13. **How the verdict was made** (3.11): the fit score's components and weights, the safety
+13. **How the verdict was made** (3.11): the fit score's components and weights, the criteria
+   map as a table (each criterion's id, words, component, measure, and points at Met; the
+   exclusions and the criteria posts can't show listed apart; the components on their defaults
+   named, and the scaling when a component had no criterion in the run), the credit rules in one line ("Met 1, Partly met ½, Not met 0; posts counted over the
+   posts read"), the safety
    results, the recommendation order and the thresholds, the hard rejects, every saved call or
    lesson that changed a verdict, which posts the findings used, how a lift is worked out (the
    post's views divided by the creator's 90-day median) and the view floor, the platform counts

@@ -18,7 +18,7 @@ campaign slug for an on-demand launch pulse, optionally `meta_request` (the user
 `advertiser_request`, verbatim from the main thread; never compose one), and `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`; a pulse
 uses the lenses saved on its `campaign:{slug}-pulse` record). Every Atlas
-tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds
 the calibration keys, metric definitions, page structure, delivery rules, and the unattended
@@ -69,8 +69,7 @@ run rules. Follow it exactly.
 3. Pull data per the **Data pull** section of the reference: yesterday's posts, the 28-day
    baseline aggregation, current follower count, the last daily readout's insights (`runKey`
    prefix `readout-daily-{profile}`), yesterday's content reviews (`content-review-{profile}`,
-   step 6b of the data pull), and one semantic red-line scan per `red_line`
-   (skipping `review:` keys, per the data pull).
+   step 6b of the data pull), and one semantic red-line scan per brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds).
 3b. **Launch pulse.** Keep every `campaign:*-pulse` record from the calibration read whose
    window covers the target date, plus the campaign the caller passed. For each, run the four
    pulse reads in **Daily launch pulse** in the reference. None open: skip.

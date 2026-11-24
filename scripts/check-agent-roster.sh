@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks, for every plugin with agents (plugins/<name>/agents/), that every agent
 # is listed where agents are listed by hand:
-#   - the plugin's agent hand-off table, in one of its skills' SKILL.md
+#   - the plugin's agent hand-off table, in one of its skills' SKILL.md or references/agents-menu.md
 #   - the Model tiers table in the same skills, whose model must match each
 #     agent's frontmatter `model:`
 #   - the plugin README's agent table (plugins/<name>/README.md)
@@ -22,19 +22,23 @@ err() { echo "FAIL $*"; fail=1; }
 check_plugin() { # plugin name
   local p=$1 P
   P=$(plugin_src "$1")
-  local agents skills_text tiers_section skill readme tiers roster costumes a fm want
+  local agents skill_files tiers_section skill readme tiers roster costumes a fm want
   agents=$(for f in "$P"/agents/*.md; do basename "$f" .md; done | sort)
   for a in $agents; do
     [[ "$a" == atlas-* ]] || err "$p: agent $a must be named atlas-<name>"
   done
 
-  # Every skill in the plugin, as one text; the tables may sit in any of them.
-  skills_text=$(cat "$P"/skills/*/SKILL.md 2>/dev/null || true)
+  # Every skill in the plugin and its agents menu; the tables may sit in any of them. Each file is read
+  # on its own, and the Model tiers section ends at the next "## " heading or the end of its file, so
+  # the order the files come in never decides which rows count.
+  skill_files=$(ls "$P"/skills/*/SKILL.md "$P"/skills/*/references/agents-menu.md 2>/dev/null || true)
 
   # One list per place: the names it carries, sorted.
   # The Model tiers section has its own rows in the same shape; keep them out of the hand-off list.
-  tiers_section=$(awk '/^## Model tiers/{f=1;next} f&&/^---$/{f=0} f' <<<"$skills_text")
-  skill=$(awk '/^## Model tiers/{f=1} !f{print} f&&/^---$/{f=0}' <<<"$skills_text" | grep -oE '^ *\| `atlas-[a-z-]+` \|' | grep -oE 'atlas-[a-z-]+' | sort -u || true)
+  # shellcheck disable=SC2086
+  tiers_section=$([ -z "$skill_files" ] || awk 'FNR==1{f=0} /^## /{f=0} /^## Model tiers/{f=1;next} f' $skill_files)
+  # shellcheck disable=SC2086
+  skill=$([ -z "$skill_files" ] || awk 'FNR==1{f=0} /^## /{f=0} /^## Model tiers/{f=1} !f' $skill_files | grep -oE '^ *\| `atlas-[a-z-]+` \|' | grep -oE 'atlas-[a-z-]+' | sort -u || true)
   readme=$(grep -oE '^\| Agent \| `atlas-[a-z-]+`' "$P/README.md" 2>/dev/null | grep -oE 'atlas-[a-z-]+' | sort -u || true)
 
   compare() { # label, names in that place; the skill's table also names retired aliases
@@ -47,7 +51,7 @@ check_plugin() { # plugin name
     done
   }
 
-  compare "the skill's agent hand-off table (SKILL.md)" "$skill"
+  compare "the skill's agent hand-off table (SKILL.md or references/agents-menu.md)" "$skill"
 
   # Model tiers: every agent has a row, and the row's model is the file's `model:`.
   [ -n "$tiers_section" ] || err "$p: no SKILL.md has a '## Model tiers' section"

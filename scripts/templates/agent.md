@@ -15,7 +15,7 @@ the flow's own inputs, each with its default. Every Atlas tool needs a `context`
 `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass
 `asProfileId` (the profile id, never the slug) to every tool whose schema takes it. If no profile id
 was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read these before starting:
 
@@ -32,7 +32,7 @@ Read these before starting:
    TODO(new-agent): add the other tools the flow reads.
 2. **Read the brand's calibrations.** `get_brand_context` with `includeSuperseded: true`
    (`truncated` true: page the rest with `search_calibrations`). Take `theme:brand` for page styling
-   only. Drop every `orchestrator:` and `lastrun:` key. TODO(new-agent): name the keys this flow
+   only. Drop every `orchestrator:`, `applicantreview:` and `lastrun:` key. TODO(new-agent): name the keys this flow
    reads and the ones it drops.
 3. **Name the metrics.** Take the required-metrics row for the launch block's `question` from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, and request the fields that row

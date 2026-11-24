@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # Checks the orchestration contract (plugins/aspire/skills/aspire/references/orchestration.md):
-#   - every agent in every plugin carries the contract's packet block verbatim, under
+#   - every agent in every plugin carries the contract's packet block (section 11, kept in
+#     skills/aspire/agent-block.md, which no run loads) verbatim, under
 #     '## Orchestration contract', and a plugin other than aspire links the contract file
 #   - every agent has exactly one row in the permission level table, with a level of
 #     read, write, send, or spend, and the table names no agent without a file
-#   - every agent the question codes and shortcuts route to has a file
+#   - every agent the question codes (section 3) and shortcuts (references/shortcuts.md) route to
+#     has a file
 #   - every section 8 row the setup reply's connections table cites exists in the page standard
-#   - every shortcut in the contract is named in SKILL.md's Arguments table
-#   - the result packet and launch block examples parse as JSON and carry every field
-#   - every agent carries the checkpoint paragraph (section 11) exactly once, verbatim
-#   - every list of keys a flow drops from brand memory (a paragraph, list item, or table row that
-#     drops or ignores `orchestrator:` keys) drops `lastrun:` keys too: they are saved setup answers
-#     (section 2, Saved answers), kind guideline, and would otherwise read as brand guidelines
+#   - every shortcut in references/shortcuts.md is named in SKILL.md's Arguments table
+#   - the result packet and launch block examples parse as JSON and carry every field, and both
+#     carry the spend unit the Credits table (section 2) names
+#   - every agent carries the checkpoint paragraph (section 11, kept in skills/aspire/agent-block.md)
+#     exactly once, verbatim
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -21,20 +22,23 @@ cd "$(dirname "$0")/.."
 
 P=plugins/aspire
 REF=$P/skills/aspire/references/orchestration.md
+BLOCK=$P/skills/aspire/agent-block.md
+SHORTCUTS=$P/skills/aspire/references/shortcuts.md
 SKILL=$P/skills/aspire/SKILL.md
 fail=0
 err() { echo "FAIL $*"; fail=1; }
 
 [ -f "$REF" ] || { echo "FAIL $REF is missing"; exit 1; }
+[ -f "$BLOCK" ] || { echo "FAIL $BLOCK is missing"; exit 1; }
 
 # One numbered section of the contract, by its heading number.
 section() { awk -v n="$1" '$0 ~ "^## "n"\\. "{f=1;next} f&&/^## /{f=0} f' "$REF"; }
 
-ckpt=$(awk '/<!-- checkpoint-block -->/{f=1;next} /<!-- \/checkpoint-block -->/{f=0} f' "$REF" | sed '/^$/d')
-[ "$(wc -l <<<"$ckpt" | tr -d ' ')" = 1 ] && [ -n "$ckpt" ] || err "the contract has no one-line <!-- checkpoint-block --> section"
+ckpt=$(awk '/<!-- checkpoint-block -->/{f=1;next} /<!-- \/checkpoint-block -->/{f=0} f' "$BLOCK" | sed '/^$/d')
+[ "$(wc -l <<<"$ckpt" | tr -d ' ')" = 1 ] && [ -n "$ckpt" ] || err "$BLOCK has no one-line <!-- checkpoint-block --> section"
 
-canon=$(awk '/<!-- packet-block -->/{f=1;next} /<!-- \/packet-block -->/{f=0} f' "$REF" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
-[ -n "$canon" ] || err "the contract has no <!-- packet-block --> section"
+canon=$(awk '/<!-- packet-block -->/{f=1;next} /<!-- \/packet-block -->/{f=0} f' "$BLOCK" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+[ -n "$canon" ] || err "$BLOCK has no <!-- packet-block --> section"
 
 levels=$(section 7 | grep -oE '^\| `atlas-[a-z-]+` \| [a-z]+ \|' | sed -E 's/^\| `(atlas-[a-z-]+)` \| ([a-z]+) \|$/\1 \2/' || true)
 [ -n "$levels" ] || err "the contract's section 7 has no agent level table"
@@ -53,10 +57,10 @@ for p in $(plugin_names); do
     name=$(basename "$f" .md)
     all_agents+="$name"$'\n'
     mine=$(awk '/^## Orchestration contract$/{f=1;next} f&&/^## /{f=0} f' "$f" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}')
-    [ -n "$mine" ] || { err "$p: $name has no '## Orchestration contract' section (copy the block from orchestration.md, section 11)"; continue; }
-    [ "$mine" = "$canon" ] || err "$p: $name's Orchestration contract block differs from the one in orchestration.md"
+    [ -n "$mine" ] || { err "$p: $name has no '## Orchestration contract' section (copy the block from skills/aspire/agent-block.md)"; continue; }
+    [ "$mine" = "$canon" ] || err "$p: $name's Orchestration contract block differs from the one in skills/aspire/agent-block.md"
     n=$(grep -cxF -- "$ckpt" "$f" || true)
-    [ "$n" = 1 ] || err "$p: $name carries the checkpoint paragraph $n times; want it once, verbatim from orchestration.md, section 11"
+    [ "$n" = 1 ] || err "$p: $name carries the checkpoint paragraph $n times; want it once, verbatim from skills/aspire/agent-block.md"
     grep -q '`report_checkpoint`' "$f" || err "$p: $name does not load report_checkpoint"
     n=$(awk -v a="$name" '$1==a' <<<"$levels" | wc -l | tr -d ' ')
     [ "$n" = 1 ] || err "$p: $name has $n rows in the permission level table (orchestration.md, section 7); want 1"
@@ -80,19 +84,21 @@ while IFS= read -r row; do
   grep -qF "| $row | " <<<"$sec8" || err "orchestration.md section 2 cites the section 8 row '$row', which section 8 of $PAGE does not have"
 done <<<"$cited"
 
-# Agents the question codes (3) and shortcuts (4) route to.
-for s in 3 4; do
-  for a in $(section "$s" | grep -oE '`atlas-[a-z-]+`' | tr -d '`' | sort -u); do
-    grep -qxF "$a" <<<"$all_agents" || err "orchestration.md section $s routes to $a, which has no agent file"
-  done
+# Agents the question codes (3) and shortcuts (4, kept in references/shortcuts.md) route to.
+[ -f "$SHORTCUTS" ] || err "$SHORTCUTS is missing"
+for a in $(section 3 | grep -oE '`atlas-[a-z-]+`' | tr -d '`' | sort -u); do
+  grep -qxF "$a" <<<"$all_agents" || err "orchestration.md section 3 routes to $a, which has no agent file"
+done
+for a in $(grep -oE '`atlas-[a-z-]+`' "$SHORTCUTS" | tr -d '`' | sort -u); do
+  grep -qxF "$a" <<<"$all_agents" || err "$SHORTCUTS routes to $a, which has no agent file"
 done
 
 # Every shortcut is named in SKILL.md's Arguments table row for shortcuts.
 args_row=$(grep -E '^\| A shortcut:' "$SKILL" || true)
 [ -n "$args_row" ] || err "SKILL.md's Arguments table has no 'A shortcut:' row"
-for s in $(section 4 | grep -oE '^\| `[a-z ]+` \|' | sed -E 's/^\| `([a-z ]+)` \|$/\1/' | tr ' ' '_'); do
+for s in $(grep -oE '^\| `[a-z ]+` \|' "$SHORTCUTS" | sed -E 's/^\| `([a-z ]+)` \|$/\1/' | tr ' ' '_'); do
   s=${s//_/ }
-  grep -qF "\`$s\`" <<<"$args_row" || err "shortcut '$s' is in orchestration.md section 4 but not in SKILL.md's Arguments row"
+  grep -qF "\`$s\`" <<<"$args_row" || err "shortcut '$s' is in $SHORTCUTS but not in SKILL.md's Arguments row"
 done
 
 # The examples parse and carry every field the contract names.
@@ -102,11 +108,16 @@ import json, re, sys
 text = open(sys.argv[1]).read()
 want = {
     "result-packet": ["runId", "agent", "question", "reader", "page", "findings", "proposals",
-                      "questions", "next", "cost", "coverage", "selfCheck", "storyline"],
+                      "questions", "next", "cost", "coverage", "selfCheck", "storyline", "openItems"],
     "launch": ["from", "runId", "agent", "mode", "run", "question", "persona", "reader",
-               "shortcut", "scope", "approved", "examples", "storyline"],
+               "shortcut", "scope", "approved", "examples", "storyline", "since"],
 }
 bad = 0
+# The spend units are the Unit column of the Credits table in section 2.
+credits = re.search(r"^   \| Unit \| Agents \|.*?\n(?:   \|.*\n)+", text, re.M)
+units = set(re.findall(r"^   \| `([a-z]+)` \| ", credits.group(0) if credits else "", re.M))
+if units != {"fetches", "candidates"}:
+    print(f"FAIL the Credits table names the units {sorted(units)}; want candidates and fetches"); bad = 1
 for tag, keys in want.items():
     m = re.search(r"```" + tag + r"\n(.*?)\n```", text, re.S)
     if not m:
@@ -118,23 +129,20 @@ for tag, keys in want.items():
     for k in keys:
         if k not in obj:
             print(f"FAIL the {tag} example has no '{k}' field"); bad = 1
+    # The spend cap carries its unit in both examples (section 2, Credits).
+    if tag == "launch":
+        spend = obj.get("approved", {}).get("spend", {})
+        where = "launch example's approved.spend"
+    else:
+        spend = obj.get("cost", {})
+        where = "result-packet example's cost"
+    for k in (["cap", "unit"] if tag == "launch" else ["unit", "used"]):
+        if k not in spend:
+            print(f"FAIL the {where} has no '{k}' field"); bad = 1
+    if spend.get("unit") not in units:
+        print(f"FAIL the {where} unit {spend.get('unit')!r} is not one of {sorted(units)}"); bad = 1
 sys.exit(bad)
 PY
 
-# A drop list that leaves out `lastrun:` hands a flow's saved setup answers to the agent as brand
-# guidelines. Every drop list names `orchestrator:`, so that is the anchor.
-drops=$(for f in plugins/*/agents/*.md $(find plugins -path '*/skills/*' -name '*.md' | sort); do
-  awk -v F="$f" '
-    function flush() {
-      if (blk ~ /`orchestrator:/ && blk ~ /([Dd]rop|[Ii]gnore|[Ss]kipping|[Ll]eave out)/ && blk !~ /`lastrun:/)
-        print "FAIL " F ":" start ": drops `orchestrator:` keys but not `lastrun:` keys (orchestration.md, section 2, Saved answers)"
-      blk = ""
-    }
-    /^$/ || /^ *([0-9]+[a-z]?\.|-|\|) / { flush() }
-    { if (blk == "") start = NR; blk = blk " " $0 }
-    END { flush() }' "$f"
-done)
-if [ -n "$drops" ]; then echo "$drops"; fail=1; fi
-
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve; every drop list drops lastrun: keys"
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve"
 exit "$fail"

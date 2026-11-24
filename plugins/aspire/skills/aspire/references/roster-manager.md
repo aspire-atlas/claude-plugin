@@ -114,23 +114,23 @@ newest first, paged to the end), the newest finding per identity:
 - `draft` and `reply`: `sentAt`, `receivedAt`, `channel`, `class`.
 - The newest `roster-health` (the last review, for "changed since").
 
-From Atlas (`list_post_search_fields` and `list_creator_search_fields` once each; use only
-paths they return):
+From Atlas (field paths from **Atlas search**; a `list_*_search_fields` census only for a path it does
+not list):
 
 - `search_creators` for the account: followers (for the tier and the band), bio.
 - `search_posts` on the creator's author username, the review window plus the 90 days before
   it, newest first, projecting the fields of the "Program tracking" row of the required metrics
   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8), plus `instagram.permalink`, `text`,
-  `instagram.mediaProductType`, the partnership marker, `analysis.brandSafety`,
-  `analysis.commentSentimentBreakdown`, and `analysis.transcript` when the census lists them.
-- Once per `red_line` (not `review:` keys): one semantic `search_posts` with `queryText` the
+  `instagram.mediaProductType`, `analysis.brandSafety`,
+  `analysis.commentSentimentBreakdown`, and `analysis.transcript`.
+- Once per brand red line (**Atlas tools**, Calibration kinds): one semantic `search_posts` with `queryText` the
   red line's wording, filtered to the reviewed creators' usernames and the window.
 
 Work in batches of ten creators.
 
 **Program posts** are the posts named by `postId` or `postUrl` on the creator's posted
 `deliverable` findings. With no deliverable tracker records yet, add posts in the window that
-carry the partnership marker with the brand, or tag or mention the brand's handles, and label
+tag or mention the brand's handles, and label
 them "matched by mention". **Own posts** are the creator's other posts in the 90 days before
 the window's end.
 
@@ -215,6 +215,15 @@ A creator new to the deal (fewer than 30 days since `agreedAt`, nothing due) is
 | `dormant` | Re-engage; if there is no reply inside the reply window, it becomes your call | `roster-reengage` |
 | `retire` | Your call: drop, pause, or keep | None |
 | `insufficient` | Review again when there is data; say what is missing | None |
+
+**What each recommendation costs.** Every recommendation and your-call item ends with its cost
+line (**Page standard**, `recommendations.md`). A check-in, a re-engagement note, a pause, and a
+drop are "No spend". A rebook, a renewal as is, a raise, or a promotion gives the cost per month
+or per post from the creator's agreed terms or the ledger's last period, as an estimate with its
+basis; on this page amounts live in the team data, so the line reads "Cost: in the team view"
+and the amount with its arithmetic sits there. The agent never prices a new term, so a raise or
+a change of deal type with no fee on record reads "Cannot be priced: next term's fee is not set,
+and the person who approves the renewal has it".
 
 **Changed since the last review.** When a newer `roster-health` exists from an earlier run,
 show the old segment beside the new one and say what moved.
@@ -509,7 +518,7 @@ to 25 findings per call.
 | `roster-health`, slipping, dormant, retire | `needs_improvement` | same |
 | `roster-health`, insufficient | `action_item` `low` | same |
 | `draft`, unsent | `action_item` `low` | `rm-draft-{slug}-{net}-{handle}-{template}-{channel}-{recordedAt}` |
-| `page` | `went_well` `low` | `rm-page-{slug}-roster` |
+| `page` | `went_well` | `rm-page-{slug}-roster` |
 
 `{net}` is `ig` or `tt`.
 

@@ -26,7 +26,7 @@ user's answers to N1 to N4 per creator. Every Atlas tool needs a `context` argum
 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose
 schema takes it; `list_*_search_fields` and `list_my_*` take no attribution. If no profile id
 was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/negotiation.md` before starting. It holds
 the modes, the price ladder, the performance read, the move rule, the levers, what becomes
@@ -87,7 +87,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    only, `append_insights`. In `record` with N4 approvals, load the mailbox's draft tool named in
    `connections`.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per
-   creator**; drop `review:`, `vetting:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, and `campaign:` keys and other programs' keys. Parse
+   creator**; drop `review:`, `vetting:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, and `campaign:` keys and other programs' keys. Parse
    every `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the `page` finding with key `negotiation`, the newest `roster`, `terms`, `reply`,
@@ -103,8 +103,8 @@ step needs one of those, skip that step and name it in your output as needing a 
    block's recommendation when passed, else the newest `roster-health`. For `change`, the
    creator needs an agreed `terms`; one without it is listed and skipped. In `counter`, a yes to our offer
    is a reply classed `accepted`; never infer one from `interested`. A pasted reply is summarized in one line and classed per `program.md`.
-2. **Read each creator** (`list_creator_search_fields` and `list_post_search_fields` once each;
-   use only paths they return). `search_creators` for the account, `search_posts` for the last
+2. **Read each creator** (field paths from `atlas-search.md`; the census only
+   for a path it does not list). `search_creators` for the account, `search_posts` for the last
    10 posts per format priced and the last 180 days for the paid track record, and the newest
    vetting or discovery finding for the fit score (`search_insights` on the
    `creator-vetting-{profile}` and `creator-discovery-{profile}` prefixes). Work in batches of

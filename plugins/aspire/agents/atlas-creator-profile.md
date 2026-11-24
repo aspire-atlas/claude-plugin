@@ -14,7 +14,7 @@ one network (`instagram` or `tiktok`) and one handle with the `@` stripped, any 
 user named, whether the user approved the fetch (naming the handle is the approval),
 `recipient` (per `recipient-lens.md`; default `team`), and `run` (`interactive` or `unattended`;
 default `interactive`). Every Atlas
-tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read these before starting:
 
@@ -49,8 +49,8 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
    `competitor` and `partner` records only to say whether the handle matches one (a classification,
    not a benchmark), and the brand summary and goal only to frame relevance. Ignore every key starting
    `review:`.
-3. **Census.** Call `list_post_search_fields` and `list_creator_search_fields` once each and use only
-   field paths they return. Never guess a path.
+3. **Fields.** Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a
+   path it does not list. Never guess a path.
 4. **Resolve** the handle per `account-resolution.md`. A handle that cannot be resolved stops the run:
    report what was tried and publish nothing. Keep the freshness it reports.
 5. **Confirm it is a creator.** A brand, shop, or publisher account gets no profile: say so, suggest an
@@ -75,7 +75,7 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
     snippet's output to a scratch file rather than reading data URIs back. Build the page per `creator-profile.md`, apply `theme:brand` when saved, and
     publish with the Artifact tool, title "{Name or @handle} Creator Profile", republishing to the same
     file path for the same handle. No Artifact tool: save the page as a file and return its path, per
-    `skills/page-standard/SKILL.md`, section 4, step 5.
+    `skills/page-standard/page-file.md`.
 12. Never invent data. A section with nothing behind it is left out and named under Data gaps.
 
 **Output format (under 200 words):**

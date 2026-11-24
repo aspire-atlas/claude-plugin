@@ -439,13 +439,13 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `round` | round | The brand's account | `action_item` `medium` while planned, in production or in market; `went_well` when done | `round`, `label`, `month`, `build` `{start, end}`, `inMarket` `{start, end}`, `launchDate`, `state` (planned, in production, in market, done), `steps` (`{"1": {plannedAt, dueAt}, …}` for steps 1 to 4), `plan` (every step of the round, the four approvals included, **Round steps** below), `closedAt` (set when the CM closes the round early), `startedFrom` (the round it was started from, empty for the first), `creators` (`new`, `same`, or `same-and-new`: how the round was started) |
 | `roster` | the creator's account + round | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while a candidate; `went_well` approved; `needs_improvement` rejected | `handle`, `network`, `name`, `descriptor`, `location` (the last three only when edited on the page), `lane`, `persona` (the persona's name in the round's brief, **1d**, **Creator Selection**, **Concept and persona**), `slate` (candidate, approved, maybe, rejected), `priority` (true for a Priority Yes), `clientReason` (the reason on a Priority Yes or Yes against the recommendation), `rejectReason`, `clientQuestion`, `pickNote` (why we picked them), `rate` (offered, countered, agreed, declined), `offer` `{open, target, max}`, `counter`, `agreed`, `currency` (the ISO code every amount on the row is in, never converted; USD when left out), `replyWindow` (how long the creator has to reply, in words, per **Rates and terms**, **Reply window**), `deliverables`, `usage`, `exclusivity`, `termNotes`, `contact` `{email, phone, manager}`, `tier`, `decidedBy` (`{writer, name, at, score, band}`: the page account whose call was recorded, their name, when, and the match score and band they saw), `surprise` (`{kind, reason, text, at}`: the client's surprise reason on that call, `kind` `pass` or `pick`, **1d**, **Creator Selection**, **Deciding**), `lastContactAt`, `waitingOn` (client, agency, creator), `yourCall` (the question to the client, while one is open), `adPermissions` (granted, pending), `details` `{status, address, pickup, visitDate, product, options, availability, deliveryNote}` (`address` being `{line1, line2, city, region, postal, country}`), `shipping` `{status, item, carrier, tracking, shippedAt, deliveredAt, eta}` (`status` not shipped, shipped, delivered, returned or kept), `contract` `{status, signedAt}`, `payment` `{status, at, paidPct}`, `rates` `{ugc, reel, usage90}` (the round's rates per deliverable), `footage` `{counts, at}`, `briefState` (sent, accepted, changed, approved, locked), `variantPlan` (the creator's overrides of the concept's variant plan for the round, one entry per overridden field, `[{variant, field, lane, value, by, at}]`, `field` being framework, length, hook, cta or post (the variant's live post, `{url, igMediaId}`) and `by` and `at` that field's own writer and time, **1d**, **Selected Creators**, **Concept and variant plan**), `shipDate`, `vetting` (the four figures and the recommendation), `returning` (true when carried from an earlier round), `fromRound` (the round it was carried from), `source` (chat, reply, page, or carried) |
 | `draft` | the creator + the template | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `template` (offer, counter, accept, chase, details, brief, brief-notes), `subject`, `body`, `sentAt` |
-| `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
+| `reply` | one per exchange, never replaced | The creator's account | `went_well` | `handle`, `receivedAt`, `summary` (one plain line), `record` (what it wrote to the roster), `nextMove` |
 | `brief` | lane + round | The brand's account | `action_item` `medium` while a draft; `went_well` when locked | `lane`, `locked`, `briefPage`, `version`, `edits` (the edits pulled from the page, one plain line each: the part, from, to, and who), `added` (true for a concept added on the page), `removed` (true for a concept taken out of this round's brief), `deferred` (true for a concept deferred to the next round), `carriedForward` (the round a deferred concept came from), `importedFrom` (`{label, url, kind}` of the document an import read), `startedFrom` (the round whose signed off brief it started from), `reopened` (`{reason, name, at}` when the agency reopened a signed off brief), `fromResults` (the lines applied from Ad Performance, one plain line each with the round they came from, **1d**, **Ad Performance**, **Changes for round {t}**), `agencyEdits` (the `edits` lines about the variant plan, kept apart so a client never reads them), `agencyFromResults` (the `fromResults` lines read from `agency/brief-round-r{round}`), `content` (the lane's whole brief, **The brief's content** below) |
 | `brief-revision` | the creator + round | The creator's account | `action_item` `medium` while waiting on the client; `went_well` once approved | `handle`, `lane`, `basedOn` (the locked lane brief's version), `changes` (one plain line each: what, from, to), `text` (the creator's version), `status` (waiting, approved, notes sent), `locked` |
 | `cut` | the cut (`{net}-{handle}-r{round}-{variant}`) | The creator's account | `action_item` `medium` while With Aspire QA, Needs client review or Changes requested; `went_well` when Approved | `cut` (the page's cut id), `handle`, `network`, `lane` (the concept it was cut for), `variant` (1 to 5), `title`, `version` (the newest version sent to {brand}, `null` while none is), `link` (that version's address for a linked version, empty for an upload), `asset` (that version's upload asset id, empty for a link), `reviewLink` (the campaign page's address with `#review/r{round}/{cut}/v{version}`), `sentAt`, `status` (`qa`, `client-review`, `changes` or `approved`: With Aspire QA, Needs client review, Changes requested, Approved), `verdict` (`approved`, `changes`, or `null` while no call counts on `version`), `verdictBy` (`{writer, name, at, confirmed}`: the page account whose call counts, its name, when, and true once the CM confirmed it as {brand}'s), `openComments` (open client readable threads on `version`), `check` (`{hook, brand, product, cta, captions, safezone, disclosure, runtime}`, each pass, fail or `null`, the brief check on `version`), `latestVersion` (the newest version, sent or in Aspire QA), `versions` (how many), `firstAddedAt` (the `addedAt:` of its first version) |
-| `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` `low` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
+| `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
-| `page-sides` | the campaign | The brand's account | `went_well` `low` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, gates, confirmedAt}}`, the page accounts the CM confirmed as a step's approver: `gate` the first step it was confirmed for and `gates` every step since, a record with no `gates` reading as `[gate]`), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions and cut calls), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record, `{writer}/fees-r{round}` for a fee approval, whose value is the refused item's `at`, so a later item from that writer isn't refused, `{writer}/decisions` for an account whose creator decisions don't count, and `{writer}/cut-calls` for one whose cut calls don't). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions**, **The cut calls**, **The fee approval** and **The brief sign off**) |
+| `page-sides` | the campaign | The brand's account | `went_well` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, gates, confirmedAt}}`, the page accounts the CM confirmed as a step's approver: `gate` the first step it was confirmed for and `gates` every step since, a record with no `gates` reading as `[gate]`), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions and cut calls), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record, `{writer}/fees-r{round}` for a fee approval, whose value is the refused item's `at`, so a later item from that writer isn't refused, `{writer}/decisions` for an account whose creator decisions don't count, and `{writer}/cut-calls` for one whose cut calls don't). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions**, **The cut calls**, **The fee approval** and **The brief sign off**) |
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `round`, `handle` (Gate 4b only), `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
 A roster finding carries the whole row, not only what changed: copy the newest finding's
@@ -459,22 +459,41 @@ finding is the whole row. It takes the brief agent's data block shape (**Creator
 **Creator-ads mode**, **The data block**), cut to the one lane:
 
 ```json
-{"schema": 1, "version": 3, "title": "…", "summary": "…", "tone": "…", "dos": ["…"],
+{"schema": 2, "version": 3, "title": "…", "summary": "…", "tone": "…", "dos": ["…"],
  "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
  "concept": {"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
    "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
    "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
    "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
-   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
-   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "…", "moment": "…", "why": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…",
+     "promo": false}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "…", "moment": "…", "why": "…",
+     "promo": true}],
    "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
    "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "proofPoint": {"line": "…", "moment": "…"},
+   "bridges": [{"from": "hook", "to": "body", "n": 1, "line": "…"},
+     {"from": "body", "to": "cta", "n": 1, "line": "…"}],
+   "claims": [{"claim": "…", "source": "…"}],
+   "pronunciation": [{"term": "…", "say": "…"}],
    "product": {"id": "…", "name": "…", "sku": "…"},
    "coverage": {"passed": 3, "of": 3, "failed": []}},
  "variants": [{"n": 1, "framework": {"code": "PAS", "name": "…"}, "length": "30 seconds",
-   "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}],
+   "funnelJob": "conversion", "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}],
  "variantCheck": {"passed": true, "failed": []}}
 ```
+
+The schema-2 parts, each written per **Creator brief**, **Creator-ads mode**:
+
+| Part | Where | Shape | Who reads it |
+| ---- | ----- | ----- | ------------ |
+| Proof point | `concept.proofPoint` | `{line, moment}`, one per concept | Client and creator |
+| Bridges | `concept.bridges` | `[{from: "hook" or "body", to: "body" or "cta", n, line}]`, `n` the hook's or CTA's number | Client and creator |
+| Promo flag | `concept.hooks[].promo`, `concept.ctas[].promo` | `true` when the line names a price, a code or an offer | Client and creator |
+| Claims | `concept.claims` | `[{claim, source}]`, `source` the product-page line the claim came from | `claim` for the client and creator; `source` for the agency only |
+| Pronunciation | `concept.pronunciation` | `[{term, say}]` | Client and creator |
+| Funnel job | `variants[].funnelJob` | `reach`, `consideration` or `conversion` | Agency only, with the variant plan |
+| Length | `variants[].length` | Required on every variant | Agency only, with the variant plan |
 
 - **What it holds.** The brief as its writer last saw it: the brief agent's data block for its
   run (**Creator brief**, **Writes**), the page's parts after the edits a pull records (**Pulling
@@ -501,6 +520,10 @@ finding is the whole row. It takes the brief agent's data block shape (**Creator
   brief doesn't have yet is an empty string or an empty list, never left out. A removed or
   deferred concept keeps the content it had. The **Casting** part and the `change-r{n}-{id}` notes
   are not parts of the brief and stay out, as they stay out of the data block.
+- **A schema-1 brief.** `content` with `schema` 1 was written before the schema-2 parts: every
+  reader takes those parts as empty (no proof point, no bridges, claims or pronunciation, every
+  promo flag `false`, no funnel job), never as an error. The next `brief` finding for that lane
+  and round is written as schema 2, with a bracketed blank where the brief has no value yet.
 - **A finding from before.** A `brief` finding with no `content` was written before this field:
   a reader takes the full brief from its `briefPage`, read with the Artifact tool's `read`, and
   the next `brief` finding for that lane and round carries `content`.
@@ -520,7 +543,7 @@ widgets use, so a field is renamed only here and in the same change on the serve
 
 | Record | Fields the agency only reads | A client caller gets |
 | ------ | ---------------------------- | -------------------- |
-| `brief` | `briefPage`, `content.variants`, `content.variantCheck`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
+| `brief` | `briefPage`, `content.variants` (each variant's `funnelJob` and `length` included), `content.variantCheck`, `content.concept.claims[].source`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
 | `cut` | `verdictBy.writer` (a page account id) and `verdictBy.confirmed` (the agency's "Aspire to confirm") | Every other field, `verdictBy.name` and `verdictBy.at` included. A version in Aspire QA is a view, not a secret (**1d**, **Content Review**), so `latestVersion` reads as "Aspire is checking version {k}"; a cut with no version sent has no file to show |
 
 Every other record type (`round`, `gate`, `roster`, `draft`, `reply`, `brief-revision`, `hook`,
@@ -871,8 +894,7 @@ Rules:
   all the concepts".
 - **The shared criteria** come from the lanes and the brand's records, not a new question:
   networks are Instagram and TikTok unless a casting filter names one, market comes from
-  `brand:business-context`, and exclusions fold in every `competitor` and `red_line` record
-  (not `review:` keys). Show them in the C7 summary so the user can correct them.
+  `brand:business-context`, and exclusions fold in every `competitor` record and brand red line (**Atlas tools**, Calibration kinds). Show them in the C7 summary so the user can correct them.
 - **C5 is the standing approval to deliver.** Say so plainly: "Step updates, reminders and the
   weekly call agenda will post to {channel} and email {recipients} without asking each time."
   The page and chat summary always ship.

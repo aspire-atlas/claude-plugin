@@ -19,7 +19,11 @@ does not apply.
 - [6. Reviews](#6-reviews)
 - [7. Questions](#7-questions)
 - [8. Proof](#8-proof)
+- [9. Comparisons](#9-comparisons)
+- [10. Explanations](#10-explanations)
+- [11. Recommendations](#11-recommendations)
 - [The eval on a pull request](#the-eval-on-a-pull-request)
+- [Adding a client example](#adding-a-client-example)
 - [How to write a rule](#how-to-write-a-rule)
 - [The judgment review](#the-judgment-review)
 - [Rules that still apply](#rules-that-still-apply)
@@ -87,7 +91,8 @@ that changes an agent or flow).
 | -- | ---- | ------ | ---------- | ---- | --- |
 | S1 | A new page goes through the storyline step before it is built: three short bullets, each with the size of its evidence, asked as one `AskUserQuestion` with Build, Change, and Widen. A repeat run of the same page skips it. | ASP-5297 | reviewer; eval (E1, E8) | "Gift framing drives saves (14 posts, 6 creators, 410K views). Build?" | A holiday plan built on the first guess at the argument, which took five rounds to reach an approved page. |
 | S2 | A scheduled or unattended run asks nothing and states its storyline at the top of the page and in the delivery message. | ASP-5297 | reviewer; judgment review | A daily insights page whose answer block opens with its three storyline bullets and their evidence sizes. | A scheduled run that waits on a question nobody is there to answer. |
-| S3 | Saved answers go to the right record: a person's own defaults under their `user:usr-<id>` `user_fact` key, a flow's reader, scope, save choice and last run on the flow's organization-wide `applied_config` record. Never another person's key. | ASP-5298, ASP-5299 | reviewer | "Reader: leadership, as the weekly readout was last run. Right?", saved on the readout's own record. | A teammate's reader choice written to the first person's key, so a scheduled run follows one person's preference. |
+| S3 | Saved answers go to the right record: a person's own defaults under their `user:usr-<id>` `user_fact` key, a flow's reader, scope, save choice and last run on the flow's own `guideline` record (`lastrun:{flow}`), which every teammate and scheduled run on the brand profile reads. Never another person's key. | ASP-5298, ASP-5299 | reviewer | "Reader: leadership, as the weekly readout was last run. Right?", saved on the readout's own record. | A teammate's reader choice written to the first person's key, so a scheduled run follows one person's preference. |
+| S4 | A repeat run of the same question follows up, not sets up: its reply opens with "Last time ({date}) you asked …", asks one question about what happened to the decisions and next steps the last page left open, and repeats no setup question. The new page leads with what changed since that run, then the items still open. A scheduled run asks nothing and carries them over as "not confirmed". | ASP-5848 | eval: the repeat pair (`bun run eval:pages --repeat`), FU1 from the transcript and FU2 from the two pages; reviewer | "Last time (12 Nov) you asked which creator posts to run as ads. What has happened since on these? 1. License the three unboxing videos (you, by 19 Nov)." Then a page headed "Two of three steps are done since 12 Nov, and saves are up by half." | A second run that asks the reader, the scope and the save again, then publishes last time's page with new numbers. |
 
 ## 6. Reviews
 
@@ -102,7 +107,7 @@ that changes an agent or flow).
 | -- | ---- | ------ | ---------- | ---- | --- |
 | Q1 | Every question, routine ones included, is an `AskUserQuestion` picker: the suggested answer first as the (Recommended) option, 2 to 4 options in all, and the tool's free text field as the blank. Never a question in chat text, a `wrap_up` button, or a template to fill in. | ASP-4093 (decided 2026-11-09) | reviewer; script (lands with ASP-5382) | "Which launch is this for?" with "Holiday gift sets (Recommended)" from the brand's site, "Spring refresh", and the free text field for anything else. | "What's the product and launch date? Reply with: Product: [ ] Date: [ ]" |
 | Q2 | A new flow's questions live in its own `references/<flow>.md` (L1), with the option set each one ships with. | ASP-4093 | reviewer | Each question in the flow file lists its options and which one is recommended. | A question whose options the flow makes up at run time, different on every run. |
-| Q3 | The setup reply says what the run is for before it asks: it opens with the lines in **Orchestration contract** 2, **Before the questions**, shows no question code, and every approval asked later was named there or is called out as an extra one. | ASP-5835 | reviewer, who also reads the first message and each approval in the eval transcripts (`scripts/eval/.runs/`) once the harness can answer the picker (ASP-5921); judgment review | Opens with the need, the decision and the result, then any missing connection and the approvals line; the full example is the good opening in **Orchestration contract** 2, **Before the questions**. | "I heard P1. Before I start, please answer the questions below.", then four questions, and a save question and a credits prompt that first appear mid-run. |
+| Q3 | The setup reply says what the run is for before it asks: it opens with the lines in **Orchestration contract** 2, **Before the questions**, shows no question code, and every approval asked later was named there or is called out as an extra one. | ASP-5835 | eval (the Q3 row: every approval the run asked for was named in the setup reply; it reports and does not block); reviewer, who also reads the first message and each approval in the run's `asks.json` (`scripts/eval/.runs/`); judgment review | Opens with the need, the decision and the result, then any missing connection and the approvals line; the full example is the good opening in **Orchestration contract** 2, **Before the questions**. | "I heard P1. Before I start, please answer the questions below.", then four questions, and a save question and a credits prompt that first appear mid-run. |
 
 ## 8. Proof
 
@@ -111,6 +116,55 @@ that changes an agent or flow).
 | P1 | A new agent ships with its spec in `docs/agent-specs/agents/`, its roster rows, and its orchestration block. | ASP-4101, ASP-5381 | script: `check-agent-specs.sh`, `check-agent-roster.sh`, `check-orchestration.sh`; presence of the spec lands with ASP-5382 | A new agent PR with its spec, its hand-off row, and its section 11 block. | An agent file with no spec, so nobody can say which questions it answers or who reads its page. |
 | P2 | Each question code the agent answers has an eval question in `scripts/eval/questions.json`, and once it has an approved page, the spec's **Approved example** names the ticket that holds it. | ASP-5302 | reviewer; eval (the `eval` job on the PR) | The I4 question, with its reader and its approved plan named by ticket. | An agent whose page has never been rerun, so a rule change cannot show it helped. |
 | P3 | A PR that adds or changes a rule carries the before-and-after table from `bun run eval:pages`, and the gap the rule closes. A PR with no new rule says "no new rule". | ASP-5302 | reviewer; the PR template; eval (the `eval` job's comment on the PR) | The table for the question the rule is about, with the check that failed before and passes after. | A new rule with no rerun, so nobody knows whether the page already got it right. |
+
+## 9. Comparisons
+
+A comparison is any place a page sets two groups, two periods or two brands side by side, or states
+a share. Every comparison passes these four checks, or says in one plain line which one it fails.
+The checks, their markup and the 20-post line are in
+`plugins/aspire/skills/page-standard/comparisons.md`; the examples are from a competitive read and
+an affiliate report. "The English read" in **Checked by** is the separate read every page gets
+before it publishes (V1), which marks a page against rule 8 of `references/english-rules.md`. It
+checks pages, not pull requests, so these items are not in the judgment review.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| K1 | Same kind: both sides hold one kind of post (paid label, TikTok Shop selling, or no paid label). A mixed side is split, or the comparison is dropped. | ASP-5974 | script: page check R15; the English read (rule 8) | "{brand}'s TikTok Shop posts drew 3.6 engagements per 1,000 views (18 posts, directional), against 14.7 across its 212 other posts. Shop posts are left out of the comparison with {competitor}." | "{brand} trails {competitor} on engagement", from an average that mixed the Shop posts in. Split by kind, the comparison said the opposite. |
+| K2 | Every mention counted: a count of posts about a brand or creator includes the posts that name it without the "@", and the method says how the mentions were found. | ASP-5974 | script: page check R15 (the method sentence); the English read (rule 8) | "{competitor}: 20 posts, directional. Mentions were found by tag, by @handle, and by the name written without the @." | "{competitor}: 2 posts", counted from "@" mentions only, when 18 more named it in plain text. |
+| K3 | Enough posts: a figure that rests on posts at or under the directional line set in `comparisons.md` is marked "directional" beside the number, with the post count. | ASP-5974 | script: page check R15; the English read (rule 8) | "3.6 engagements per 1,000 views (18 posts, directional)" | "Shop posts earn a quarter of the engagement", from 18 posts, with no post count and no mark. |
+| K4 | Share against size: a share is shown next to its group's share of the whole. When the two are as close as `comparisons.md` sets, the page says the share matches the group's size and draws no finding from it. | ASP-5974 | the English read (rule 8); script: page check R15 on the shares the page marks | "87% of revenue came from 88% of affiliates, so the share is in line with the group's size." | "87% of revenue comes from this group", as the headline finding, with no word that the group is 88% of affiliates. |
+
+## 10. Explanations
+
+An explanation is any place a page says why something happened: a sales spike, a top seller, a
+drop. The rule, its markup and the saved-evidence block are in
+`plugins/aspire/skills/page-standard/explanations.md`. The examples are from an affiliate report
+whose first run put the top sellers down to coupon sites; a wider search of Atlas found an older
+TikTok, a code in a YouTube description, and the brand's own site.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| X1 | Before a page says why something happened, it searches everything Atlas holds on the people involved: every network, no date limit, captions, transcripts and descriptions, and the brand's own site where the run can read it. Outside sources come last. | ASP-5978 | reviewer; the page check's `explanations` lists what was searched; eval (lands with ASP-5986) | "@handle's code sold through her own posts: a TikTok from Mar 3 that still names the code, and the code in her YouTube video's description (Sep 18). A coupon site lists it too (saved Oct 30)." | "Most of @handle's sales came through coupon sites", written after reading only this month's Instagram posts. |
+| X2 | Every post an explanation cites is a link to the post, and the explanation names the evidence it rests on. With no evidence in Atlas it says "Not explained yet" and what was searched. | ASP-5978 | script: page check R7 | "@handle's orders on Oct 9: not explained yet. Searched: Instagram, TikTok and YouTube posts at any date, with captions, transcripts and descriptions, and the brand's site." | "Driven by her older TikTok content", with no link to any post. |
+| X3 | Outside evidence that can disappear (a coupon-site listing, a store page, an expiring post) is saved the moment it is read: the link, the date and time, the exact words, and a screenshot or "Screenshot not taken". The next run shows the saved capture with its date, marked "No longer visible" when the source now blocks the check. | ASP-5978 | script: page check R7 (the saved block); reviewer | A saved block with the coupon site's link, "saved Oct 30, 3:20 PM UTC", the quoted listing "{CODE}: 15% off sitewide", and its screenshot; a week later the same block with "No longer visible on Nov 6". | "Listed on several coupon sites", with no link or date, which nobody could check a week later when the sites blocked it. |
+
+## 11. Recommendations
+
+A recommendation is anything a page asks its reader to do or approve: a decision, a next step, or
+a recommendation in a flow's own section. The cost rule, the trend to watch, and their markup are
+in `plugins/aspire/skills/page-standard/recommendations.md`; the tiers are in
+`references/affiliate.md` (**Commission tiers**) and the message test in
+`references/market-signal.md` (**Where the brand wins, and how to stand apart**). The examples are
+from an affiliate report and a competitive read. "The English read" is the separate read every
+page gets before it publishes (V1), which marks a page against rule 9 of
+`references/english-rules.md`, so these items are not in the judgment review.
+
+| Id | Item | Ticket | Checked by | Good | Bad |
+| -- | ---- | ------ | ---------- | ---- | --- |
+| N1 | Every recommendation states its cost: the amount with its arithmetic in one line; per month, from the last period's figures and labelled an estimate, for a raise, a promotion or a recurring deal; "no spend" when it costs time only; or "cannot be priced" with the missing figure and who has it. Costs keep their currency. | ASP-5982 | script: page check R5; the English read (rule 9); eval (AR1 A4) | "Move @handle from 10% to 15%. Cost: +5 points on USD 3,240 a month is about USD 162 a month (estimate, from October's revenue)." | "Raise commission 5 points for the top affiliates", with no amount, period or basis. |
+| N2 | An affiliate report shows each commission tier with its rate, threshold and members, an invite list (who meets the next tier, the figure that qualifies them, the monthly cost) and a hold list (who is close or should wait, and what would move them up). An empty invite list names the nearest affiliate and what they still need. | ASP-5982 | eval (AR1 A3); the English read (rule 9) | "Invite to Tier 3: @handle, USD 3,240 in October and USD 2,870 in September, about USD 162 a month. Hold: @other, USD 520 short; a second month above USD 2,500 moves them up." | "0 affiliates newly qualified for Tier 3." |
+| N3 | A finding that could plausibly help or hurt the brand is labelled "Trend to watch", with both readings in one line each and one to three signals that would settle it, each with where Atlas would see it and by when. It is not a decision, and its only next step is to watch the signals. | ASP-5982 | script: page check R5 on the trends the page marks; the English read (rule 9) | "Trend to watch: creators call the starter kit 'the cheap one' in 14 of 61 posts. If it helps: the price brings new buyers. If it hurts: 'cheap' sticks to the whole brand. Watch: comments that mention quality, in the weekly report, by Nov 25." | "Creators love the low price: lean into 'the cheap one' in the next brief." |
+| N4 | A positioning recommendation gives engagement per 1,000 views on the brand's posts that carry the message and on those that do not, with both post counts and a strength word. When the comparison is flat, negative or thin, the page offers only "run it as a test" and writes the test. | ASP-5982 | script: page check R15 on the comparison's sides; the English read (rule 9) | "Posts that carry it drew 16.2 engagements per 1,000 views over 34 posts, against 11.8 over 212 that do not (strong)." | "Own 'the professional's choice': no competitor is described that way", when the 9 posts that carry it drew less than the rest. |
 
 ## The eval on a pull request
 
@@ -123,7 +177,9 @@ How to read the comment:
 1. **The first line** says whether anything regressed. A regression is a check the approved page passes that
    the new page fails; it blocks the merge. Fix the change, or, when the check itself is wrong, say so in the
    PR and fix the check in the same change.
-2. **The table** has one row per check: E1 to E8 (the Evals tab), then R1 onward (the reader standard). New
+2. **The table** has one row per check: a client case's own assertions first (see
+   [Adding a client example](#adding-a-client-example)), then E1 to E8 (the Evals tab), Q3 (the approvals the run asked for,
+   with no approved result), then R1 onward (the reader standard). New
    page and Approved page are `pass`, `fail`, `n/a`, or `–` when the check did not run. **Sets the bar** marks
    the checks this question's approved page is the example for: those are the rows this standard's items
    above are proven on (E1 and E8 for S1, E4 for M3, E6 and E7 for V1).
@@ -138,9 +194,57 @@ How to read the comment:
    regression and blocks the merge. The line says which message broke which rule, or that a message was
    not sent; the words themselves stay in the run's folder.
 
+6. **An assertion row** names its ticket. While the ticket is open a `fail` is expected, and a line under the
+   table lists it as waiting. Once the ticket's pull request sets the assertion's `landed` flag, anything but a
+   `pass` is a regression and blocks the merge, with or without an approved page.
+
 The comment is edited in place on every push. `skipped: <reason>` means the PR carries the `skip-eval` label
 (the reason is the PR body's `skip-eval:` line), or that nothing the questions answer differs from the base
 branch any more.
+
+## Adding a client example
+
+A client example is a page for a real brand that a reviewer found drew a wrong conclusion. It is evidence
+for a rule the plugin already has or is getting. It is not a reason for a new rule.
+
+Each fix in the plugin update doc is one rule or one check, with a "What it covers" column that lists the
+examples it was written from. The eval holds the same list: a **client case** in `scripts/eval/questions.json`
+is a question with `assertions`, one per behaviour the reviewed page got wrong, each naming the ticket that
+fixes it.
+
+| Fix in the doc | Its rule or check | Case and assertions |
+| -------------- | ----------------- | ------------------- |
+| 2. Compare like with like | The like-for-like check (ASP-5974), fed by the paid and shop split (ASP-5976) and the mention count (ASP-5977) | CR1 A1, A2, A3; AR1 A1 |
+| 3. Look at all the evidence | The full search before an explanation (ASP-5978); engagement on the affiliate timeline (ASP-5979) | AR1 A2, A5 |
+| 4. Priced recommendations | Commission tiers with an invite list and a hold list, and a cost on every recommendation (both ASP-5982) | AR1 A3, A4 |
+
+A case can also be written before its agent exists, from a project plan's reference outputs (P7, P8 and
+I13). Its assertions name the tickets that build the agent and carry no `fix`, since no fix in the doc
+covers them.
+
+To add an example:
+
+1. **Find the fix it falls under.** Read the example against the rules above. Most examples are a new
+   instance of a behaviour an assertion already states.
+2. **Add a row to the eval case.** Put one sentence in that assertion's `examples`: what the page showed and
+   what was true, with the figures kept and every brand, competitor and handle replaced by a placeholder.
+   When the example shows a behaviour that no assertion states but the fix's rule covers, add an assertion to
+   the case instead, with the ticket that will make it pass and `"landed": false`.
+3. **Add the same row to the doc.** Put the example in the "What it covers" column of that fix.
+4. **Show it on the fixture pages.** Add the wrong reading to the case's `-wrong.html` page and the corrected
+   one to its `-corrected.html` page in `scripts/fixtures/eval-cases/`, then run
+   `bun run eval:pages --fixtures`. Every assertion must fail on the first page and pass on the second.
+5. **Change no rule.** The pull request says "no new rule". The rule's own ticket makes the assertion pass
+   and sets `landed` to `true` in the same pull request.
+
+Good: a second brand's report states "92% of sales" from 90% of its creators. It becomes a second entry in
+AR1 A1's `examples` and a second line in fix 2's "What it covers".
+
+Bad: the same report becomes a new line in `references/affiliate.md`, "never lead with a share of sales
+above 90%". That is a special case of the rule fix 2 already has.
+
+An example that no fix covers is a gap. It goes through [How to write a rule](#how-to-write-a-rule): prove
+the gap with a rerun first, then add the rule, and a new case or assertion with it.
 
 ## How to write a rule
 

@@ -156,7 +156,7 @@ Rules:
 
 - Parse every JSON body with a JSON parser. A body that does not parse counts as missing.
 - **Keys `orchestrator:*` belong to the Orchestrator.** Every other flow drops them, as it drops
-  `program:`, `lastrun:` and the CAS keys. They are never brand guidelines.
+  `program:`, `applicantreview:`, `lastrun:` and the CAS keys. They are never brand guidelines.
 - A change to any of them goes through the supersede rule with its own confirmation, in an
   interactive session only.
 
@@ -173,11 +173,11 @@ Read it back with `search_insights` with a `prefix` filter on `detail.account_re
 
 | recordType | Identity | kind | detail adds | Written by |
 | ---------- | -------- | ---- | ----------- | ---------- |
-| `plan` | the run | `went_well` `low` | `actions` (one entry per action: `id`, `stage`, `bucket`, `due`, `fingerprint`, `class`), `postedAt` (when the run posted to Slack), `dmed` (action ids already sent to someone by DM) | The cycle, only when the action set, a bucket, or a due date changed |
-| `run` | the run's start time | `action_item` `low` while running; `went_well` `low` when finished | `startedAt`, `finishedAt`, `status` (running, finished, stopped), `reason` | The cycle, at the start and the end of every run that takes the lock |
+| `plan` | the run | `went_well` | `actions` (one entry per action: `id`, `stage`, `bucket`, `due`, `fingerprint`, `class`), `postedAt` (when the run posted to Slack), `dmed` (action ids already sent to someone by DM) | The cycle, only when the action set, a bucket, or a due date changed |
+| `run` | the run's start time | `action_item` `low` while running; `went_well` when finished | `startedAt`, `finishedAt`, `status` (running, finished, stopped), `reason` | The cycle, at the start and the end of every run that takes the lock |
 | `packet` | the action id + the fingerprint | `action_item` `low` | `actionId`, `fingerprint`, `agent`, `launch` (the agent's mode, inputs, and the answers chosen before the propose pass), `packet` (the agent's returned packet), `questions` (**Questions**), `held` (the approvals that need a session), `proposedAt`, `expiresAt` | The cycle, after a propose pass |
 | `execution` | the action id + the decision's `updatedAt` | `went_well` done; `needs_improvement` failed; `action_item` `low` running, stale, or revise | `actionId`, `fingerprint`, `status` (running, done, failed, stale, revise), `approvedBy` (the decider's page user id, from the decision's path), `approvedAt`, `answers`, `agent`, `wrote` (one line per record kind and count), `reason` (for failed, stale, revise), `ranAt` | The cycle, when it acts on a decision, and before each launch it makes for one (`running`) |
-| `page` | the page key `orchestrator` | `went_well` `low` | `key`, `url`, `title` | The first interactive publish |
+| `page` | the page key `orchestrator` | `went_well` | `key`, `url`, `title` | The first interactive publish |
 
 A packet lives in Atlas, not on the page, so nothing an Editor types can change what the record
 pass writes. The page shows a copy for reading.

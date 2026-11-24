@@ -9,8 +9,15 @@
 #                  ALLOW below
 #   - contents:    every Markdown file over 100 lines under skills/ has a "## Contents" section
 #                  with at least one link, and each of its links resolves to a heading in the file
+#   - budget:      a word cap on what each run loads before it starts: the files every run that
+#                  launches an agent reads (COMMON, together), each file under references/
+#                  (REF_MAX, or its own ceiling in BIG), and the page standard every agent reads
+#                  (PAGE_STD). Words are tokens between ASCII whitespace, counted by words()
+#                  the same on every machine; at about 1.35 tokens a word, COMMON_MAX words is
+#                  the common path's token budget
 # The fixtures in scripts/fixtures/skill-layout/ hold one skills/ tree each: a pass*/ tree fails
-# nothing, and a fail-<rule>*/ tree fails that rule and no other.
+# nothing, and a fail-<rule>*/ tree fails that rule and no other. A fixture's budget.env, beside
+# its skills/ folder, sets lower caps so a small tree can exceed them.
 #
 #   scripts/check-skill-layout.sh             # the fixtures, then every plugin's skills
 #   scripts/check-skill-layout.sh --fixtures  # only the fixtures
@@ -22,6 +29,29 @@ cd "$(dirname "$0")/.."
 MAX_LINES=500
 MAX_DESC=1024
 TOC_OVER=100
+
+# The load budget. COMMON lists, from a plugin's skills/ folder, the files every run that launches an
+# agent loads before it starts; their words together stay at most COMMON_MAX (14,800 words, about
+# 20,000 tokens). Every other reference a run loads is read only when its flow or step is due, so it
+# stays out of COMMON: never add a file there to make room, and move a section out instead of
+# raising the cap. COMMON_MAX is the agreed target itself, so its margin comes from the files: keep
+# them a section's worth under it (about 150 words), so a small fix does not need a move first.
+# PAGE_STD_MAX leaves about 200 words over today's page standard; its 500-line cap binds first.
+COMMON='aspire/SKILL.md aspire/references/orchestration.md aspire/references/running-agents.md'
+COMMON_MAX=14800
+REF_MAX=12000
+PAGE_STD=page-standard/SKILL.md
+PAGE_STD_MAX=7300
+# References over REF_MAX, each with its own ceiling. Shrink-only: lower a ceiling when its file
+# shrinks, remove a line once its file is under REF_MAX, and never add one (split the file by
+# section instead). One per line: <file, from the skills/ folder>|<most words>
+BIG='aspire/references/cas-campaign.md|26446
+aspire/references/cas-campaign-data.md|19166
+aspire/references/cas-campaign-page.md|21724
+aspire/references/cas-campaign-page-brief.md|25587
+aspire/references/cas-campaign-page-creators.md|24061
+aspire/references/cas-campaign-page-results.md|27358
+aspire/references/creator-vetting.md|14707'
 FX=scripts/fixtures/skill-layout
 
 # Reference citations allowed besides SKILL.md and page-standard. Shrink-only: never add a line to
@@ -180,6 +210,32 @@ chain() {
   done <<< "$hits"
 }
 
+# The words in a file: tokens between ASCII whitespace, a standalone "→" or "·" included. Not wc -w:
+# GNU wc skips a token with no printable character in the C locale, and versions disagree on it.
+words() { LC_ALL=C awk '{n+=NF} END{print n+0}' "$1"; }
+
+# Prints "budget|<what is over>" for each cap a skills/ folder ($1) exceeds.
+budget() {
+  local S=$1 f rel n total=0 found= cap
+  for rel in $COMMON; do
+    [ -f "$S/$rel" ] || continue
+    n=$(words "$S/$rel") || return 1; total=$((total + n)); found=1
+  done
+  [ -z "$found" ] || [ "$total" -le "$COMMON_MAX" ] ||
+    echo "budget|$S: the files every run loads ($COMMON) hold $total words, over $COMMON_MAX (about $((COMMON_MAX * 135 / 100)) tokens); move a section a run needs only sometimes into its own reference"
+  if [ -f "$S/$PAGE_STD" ]; then
+    n=$(words "$S/$PAGE_STD") || return 1
+    [ "$n" -le "$PAGE_STD_MAX" ] || echo "budget|$S/$PAGE_STD: $n words, over $PAGE_STD_MAX; every agent loads it, so move detail into a file beside it"
+  fi
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    rel=${f#"$S"/}
+    cap=$(awk -F'|' -v r="$rel" '$1 == r { print $2 }' <<< "$BIG")
+    n=$(words "$f") || return 1
+    [ "$n" -le "${cap:-$REF_MAX}" ] || echo "budget|$f: $n words, over ${cap:-$REF_MAX}; split it by section"
+  done < <(find "$S" -path "$S/*/references/*" -name '*.md' -type f | sort)
+}
+
 # Every finding in one skills/ folder, one per line: <rule>|<message>[|<citing file>|<cited file>].
 # Returns 1 when a file could not be read or checked, so a broken run never looks like a pass.
 check_tree() {
@@ -209,6 +265,7 @@ check_tree() {
     [ -n "$f" ] || continue
     contents "$f" || return 1
   done <<< "$list"
+  budget "$S" || return 1
 }
 
 fail=0
@@ -221,14 +278,14 @@ if [ "$mode" != --tree ]; then
     [ -d "$d" ] || continue
     d=${d%/}; name=${d##*/}; cases=$((cases + 1))
     [ -d "$d/skills" ] || { err "$d has no skills/ folder"; continue; }
-    out=$(check_tree "$d/skills") || { err "could not check fixture $d: $out"; continue; }
+    out=$(if [ -f "$d/budget.env" ]; then . "$d/budget.env"; fi; check_tree "$d/skills") || { err "could not check fixture $d: $out"; continue; }
     got=$(cut -d'|' -f1 <<< "$out" | sort -u | tr '\n' ' ' | sed 's/^ *//; s/ *$//')
     case $name in
       pass*) [ -z "$got" ] || err "fixture $d should pass and fails '$got': $out" ;;
-      fail-lines*|fail-description*|fail-chain*|fail-contents*)
+      fail-lines*|fail-description*|fail-chain*|fail-contents*|fail-budget*)
         want=$(sed -E 's/^fail-([a-z]+).*/\1/' <<< "$name")
         [ "$got" = "$want" ] || err "fixture $d should fail only '$want' and fails '${got:-nothing}': $out" ;;
-      *) err "$d is named neither pass* nor fail-<lines|description|chain|contents>*" ;;
+      *) err "$d is named neither pass* nor fail-<lines|description|chain|contents|budget>*" ;;
     esac
   done
   [ "$cases" -gt 0 ] || err "no fixtures in $FX"
@@ -265,9 +322,17 @@ $from|$to|"?*)
 $from|$to
 "*) ;; *) err "ALLOW line $from|$to matches no citation; remove it" ;; esac
   done <<< "$ALLOW"
-  ran="${ran:+$ran; }$files skill files are within the layout"
+  # Every BIG line names a reference still over REF_MAX, so the list only shrinks.
+  big_src=$(plugin_src aspire)/skills
+  while IFS='|' read -r rel cap; do
+    [ -n "$rel" ] || continue
+    if [ ! -f "$big_src/$rel" ]; then err "BIG line $rel matches no file; remove it"; continue; fi
+    n=$(words "$big_src/$rel")
+    [ "$n" -gt "$REF_MAX" ] || err "BIG line $rel: the file is down to $n words, under $REF_MAX; remove its line"
+  done <<< "$BIG"
+  ran="${ran:+$ran; }$files skill files are within the layout and the load budget"
 fi
 
 [ "$fail" -eq 0 ] && echo "OK   $ran" ||
-  echo "     Skill layout: SKILL.md at most $MAX_LINES lines, description at most $MAX_DESC characters, no reference citing another reference, a linked \"## Contents\" in every file over $TOC_OVER lines."
+  echo "     Skill layout: SKILL.md at most $MAX_LINES lines, description at most $MAX_DESC characters, no reference citing another reference, a linked \"## Contents\" in every file over $TOC_OVER lines, and the load budget (the files every run loads at most $COMMON_MAX words together, a reference at most $REF_MAX, the page standard at most $PAGE_STD_MAX)."
 exit "$fail"

@@ -31,7 +31,7 @@ Show the page when all of these hold:
    ("get started with Atlas", "onboard my brand", "connect Atlas", "connect my Instagram",
    "first time with Atlas"), or the user replied "connected" to resume Phase 1. Never when the
    argument routes elsewhere (`agents`, `sample`, `fee calculator`, `program`, `next`,
-   `cas campaign`, `shops`, `quality review`), and never when the ask names a flow ("vet these creators"): that
+   `cas campaign`, `shops`, `brand report`, `quality review`), and never when the ask names a flow ("vet these creators"): that
    flow runs as it does today.
 2. **Atlas answered.** Phase 1 found the connection live and `get_status` returned without an
    auth error (**2**).
@@ -39,6 +39,8 @@ Show the page when all of these hold:
 4. **Not shown yet for this organization in this session.** Keep `first_run_shown` in working
    state, keyed by the organization `id`.
 5. **Someone is present.** Never in an unattended or scheduled run.
+6. **Invited first turn** does not apply. An invited person's organization was set up on
+   atlas.aspire.io, so that turn opens the brand report instead of this page.
 
 There is no separate "first /aspire" record. Plugin content keeps no local state, and the
 organization's Atlas state stands in for it: a first run on a new or half set up organization
@@ -75,8 +77,9 @@ limit 100 per page, paged to the end, `includeSuperseded: true`, `asProfileId` =
 for each profile with a connected channel, in `get_status` order, and stop at the first
 profile with brand context. A profile has brand context when the read holds any record of kind
 `brand_fact`, `user_fact`, `competitor`, `red_line`, `partner`, or `decline`: those are the kinds
-the Phase 5 core set writes, including its skips and "not sure yet" answers. Keep the result,
-so the Phase 5 gap check reuses it and never reads twice.
+the Phase 5 core set writes, including its skips and "not sure yet" answers. Records whose keys
+start `applicantreview:` don't count, so an applicant review set up first leaves a profile
+unonboarded. Keep the result, so the Phase 5 gap check reuses it and never reads twice. <!-- red-line-check: counts record kinds for brand context, not red-line rules -->
 
 ## 4. What the page may use from `get_status`
 
@@ -109,8 +112,8 @@ without a connection (**7**), use none of them.
    - **Next up.** Remove `hidden` from the one `<span class="next" hidden>` in the step the route
      continues at: `step-profile` (new org), `step-accounts` (profile only), `step-context`
      (existing, no brand context). On request, leave every one hidden.
-3. The header carries the full animated Aspire Atlas mark (pasted from `assets/aspire-animated.svg`
-   into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
+3. The header carries the full animated Aspire Atlas mark (the `<svg>` inside the fence in
+   `assets/aspire-animated.svg.md`, pasted into the template, 40px, with its `role` and `aria-label`, a 1px `var(--border)` outline, never
    recolored). **Deliberate variant:** on this page the mark sits at the upper left, at the start of
    the header, because the page has no brand logo to take that corner and was asked for this
    placement; **Artifact standard** puts it at the top right on every other
@@ -160,7 +163,8 @@ Text fallback, when there is no page:
   (same path), with the `On request` status line when Atlas is connected and no status line
   when it is not. No Atlas connection or Phase 1 is needed for this. Then make the **Sample
   artifacts** offer for Atlas as a whole. The arguments `getting started` and `help` show it the
-  same way.
+  same way, and say in their one line that the page's "Seeing results" section lists "show cards",
+  "always show cards", and "show the palettes".
 - Never in the middle of a running flow's questions, and never in an unattended run.
 - Never blocks onboarding: whatever happens to the page, the next phase still starts.
 

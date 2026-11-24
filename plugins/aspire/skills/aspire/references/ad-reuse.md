@@ -40,7 +40,7 @@ both are passed by default. Detail lives in this file. For one post, use
 2. Launch `atlas-ad-reuse` with the tool prefix, `profile_id`, `profile_slug`,
    the linked handles and networks, `reuse_scope`, the window, any placements named,
    `recipient`, a digest of the brand's calibrations (competitors, red lines, partners, and the
-   `ad-reuse:account-map` record when saved), and whether the user approved the write. It reads
+   `adreuse:account-map` record when saved), and whether the user approved the write. It reads
    only what Atlas holds, and returns the found and briefed paths as two lists.
    When its result packet carries an `approve-account-map` proposal (it returns one only when the
    user chose Save in step 1; never ask it after Page only), ask once with
@@ -73,14 +73,14 @@ the Meta Ads connector, so it also follows **Meta Ads**.
 - **Sources**, per the `reuse_scope` input:
   - `own`: the brand's linked handles.
   - `creators`: posts by other accounts that mention or tag the brand's handles, or carry a
-    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. The partnership
-    marker the census exposes is read for the path (**Two paths**), never as a rank boost.
+    tracked hashtag (`list_hashtag_posts`), excluding the brand's own handles. Atlas holds no
+    paid-partnership field, so neither the path (**Two paths**) nor the rank rests on one.
   - **Who posted (account map).** Before ranking, sort the authors into creators and the rest:
     the brand's own and regional accounts (excluded), retailers and resellers, deal and news
     pages, team or sponsorship accounts (a sports team, league, event or venue account posting
     the brand as its sponsor), and accounts posting another brand's sponsored content. Keep only creators unless the
     person asked otherwise, and name how many of each were set aside. When an
-    `ad-reuse:account-map` record is saved (**Account map record**), follow its labels and sort
+    `adreuse:account-map` record is saved (**Account map record**), follow its labels and sort
     only the authors it doesn't list.
   - **Competitors on screen.** Judge a post that also shows a `competitor` by which brand is the
     subject, never by whether one appears: count the brand's products against all products the
@@ -128,9 +128,9 @@ the Meta Ads connector, so it also follows **Meta Ads**.
 ## What to read per candidate
 
 Project `postedAt`, `text`, `url`, `author.username`, `author.followersCount`, the metrics,
-`mediaKind`, `media` (container), `instagram.mediaProductType`, the partnership marker, and
-`analysis.transcript`, `analysis.overlayText`, `analysis.brandSafety` when the census lists
-them. Duration comes from the census when it exposes one; otherwise from the downloaded file.
+`mediaKind`, `media` (container), `instagram.mediaProductType`, and
+`analysis.transcript`, `analysis.overlayText`, `analysis.brandSafety`.
+Duration comes from the census when it exposes one; otherwise from the downloaded file.
 
 Also project the retention fields below, each only when the census lists it. This list is what
 to look for, not a licence to skip the census.
@@ -168,7 +168,7 @@ components "Can't check" and say so; never infer the opening from a cover.
 ## Hook score (out of 100)
 
 **Verdict bands.** 70 and up: **run**. 50 to 69: **cut first** (it works only as a cut of its
-strongest segment). Under 50: **leave**. One override: a `red_line` hit, or a competitor in
+strongest segment). Under 50: **leave**. One override: a hit on a brand red line (**Atlas tools**, Calibration kinds), or a competitor in
 frame on a post that isn't brand-led (**Candidate pool**, **Competitors on screen**), makes it
 **leave** at any score, with the reason. A brand-led post keeps its band. The page's method shows
 these bands as they are here.
@@ -185,7 +185,7 @@ section 8).
 | Works without sound | 15 | On-screen text or captions carry the point; `analysis.overlayText` or frames show it |
 | Retention | 20 | Scored from the first level in **Retention levels** that has data |
 | Standalone segment | 10 | A self-contained 6 to 15 second stretch that makes sense without the rest |
-| Ready for paid | 10 | Disclosure present where paid, no competitor in frame (a brand-led post's co-featured competitor doesn't count against it), no `red_line` hit, no third-party music flagged in the caption. The brand's own partnership disclosure (its partner hashtag, a paid partnership label naming the brand) is what a partnership ad needs, so it never costs points; only another brand's disclosure does |
+| Ready for paid | 10 | Disclosure present where paid, no competitor in frame (a brand-led post's co-featured competitor doesn't count against it), no brand red line hit, no third-party music flagged in the caption. The brand's own partnership disclosure (its partner hashtag, a paid partnership label naming the brand) is what a partnership ad needs, so it never costs points; only another brand's disclosure does |
 
 ### Retention levels
 
@@ -269,7 +269,7 @@ One row per recommended cut, at most three cuts per candidate:
 | Post | Permalink, author handle, posted date |
 | Pattern | From the list above |
 | In and out | Timestamps from transcript timing when present; from frames otherwise, marked "±1.5s" |
-| Moment | One line naming what happens, in plain words; never write new ad copy when a `red_line` blocks AI-written copy |
+| Moment | One line naming what happens, in plain words; never write new ad copy when a brand red line blocks AI-written copy |
 | Lengths | The cut lengths the segment supports: 6s bumper, 15s, 30s |
 | Placements and specs | 9:16 at 1080x1920 for Reels, Stories and TikTok; 4:5 at 1080x1350 for feed; 1:1 at 1080x1080 where the framing allows. Note when key text sits outside the safe zone |
 | Sound | Original audio, voiceover, or music; "music rights unknown" when music is present |
@@ -496,7 +496,7 @@ result packet's `proposals` (level `write`, gate `approve-account-map`).
 | Field | Value |
 | ----- | ----- |
 | `kind` | `guideline` |
-| `key` | `ad-reuse:account-map` |
+| `key` | `adreuse:account-map` |
 | `statement` | "Who counts as a creator for {brand}'s ad reuse: {n} accounts labelled." (under 280 characters) |
 | `detail` | `{concern: "preference", appliesTo: ["ad-reuse"], accounts: [{handle, platform: instagram\|tiktok, label, evidence}], includeNonCreators: false, sourceRunKey}` |
 | `provenance` | `interview`: the person confirmed it |
@@ -509,7 +509,7 @@ An interactive run's reader, scope, and save choice go on `lastrun:ad-reuse`, ap
 account map (**Orchestration contract**, **2**, Saved answers).
 
 **Reading it back.** The launch digest carries it when saved; without a digest, the agent's own
-`search_calibrations` read keeps the `ad-reuse:account-map` key. Follow its labels as saved and
+`search_calibrations` read keeps the `adreuse:account-map` key. Follow its labels as saved and
 sort only authors it doesn't list. When those new authors exist, propose only them, as an update
 to the saved record; the main thread then writes the merged map with `supersede_calibration` and
 the record's `ifVersion`, never a second `append_calibration`. With nothing new, propose nothing.

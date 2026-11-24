@@ -413,7 +413,7 @@ often a contrast. Numbers are exact and sourced.
   shows ("new to partnership ads; two creator collabs ran in August and September").
 - Product claims are quoted as the brand words them on its own site, never paraphrased into a
   stronger claim.
-- A `red_line` that blocks AI-written copy makes the deck strategy only: lane names, screens, and
+- A brand red line (**Atlas tools**, Calibration kinds) that blocks AI-written copy makes the deck strategy only: lane names, screens, and
   structure stay; tension lines, variant names, and rationales are bracketed blanks for the team
   to write, and a banner on the cover says so.
 
@@ -438,9 +438,10 @@ is retyped.
 
 **Pulls.**
 
-- Accounts: `search_creators`, `terms` on `username`, `fields: ["username","followersCount",
-  "country","instagram","tiktok"]`, `exclude: ["instagram.audienceDemographics",
-  "instagram.followerDemographics"]`.
+- Accounts: `search_creators`, `terms` on `username`, `fields: ["username","instagram.email",
+  "instagram.reelsHookRate","instagram.creatorEngagedAccounts","instagram.creatorMarketplaceReach",
+  "instagram.creatorEngagedAccountsBreakdowns","tiktok.audienceAges"]`;
+  the card fields come back without being listed.
 - Posts for metrics: `search_posts`, `terms` on `author.username` for up to four creators, `exists
   mediaKind`, sort `postedAt` desc, limit 100 (no paging); a creator with fewer than 25 posts in
   the batch is fetched alone with `term` and limit 25. `fields: ["author.username","postedAt","mediaKind","viewCount","likeCount",
@@ -799,7 +800,7 @@ Atlas** after the build. Without a brand profile, I is not asked and nothing is 
 
 With a brand profile, read every calibration (paged, `includeSuperseded: true`) and these
 insights before asking B, passing the profile's id on every call. Drop `review:`, `vetting:`, `program:`, `library:`,
-`orchestrator:`, `ad-reuse:` and `lastrun:` keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
+`orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` keys, `theme:` and `fees:` keys, and a creator ad campaign's own keys (`campaign:{slug}-cas`,
 `-lane-*`, `-terms`, `-decision-defaults`) from anything treated as a brand rule.
 
 **No brand profile for this brand:** read no calibrations and no insights at all (the tools would
@@ -811,7 +812,7 @@ recommended rates, and use the `neutral` look unless the presenter picked `aspir
 | ------ | ------ |
 | `brand:summary`, `brand:business-context` | Buyer, category, products, market (B3, B4, D3) |
 | `guideline:voice`, `brand_fact` voice section | Tension lines, rationales, headline tone |
-| `red_line`, `guideline` | Claim cautions, off-limits lanes, the strategy-only rule |
+| Brand red lines, `guideline` | Claim cautions, off-limits lanes, the strategy-only rule |
 | `competitor` | Never cast; marked among a creator's partners |
 | `partner`, and any creator whose `pastBrandPartnershipPartners` names the brand | Offered first in F, labelled "worked with {brand}" |
 | `creator:*` | `reject` never cast; `approve` ranked first |
@@ -968,8 +969,8 @@ findings share its `runKey`.
 
 - `search_posts` returns `media` and `instagram.account` even when `fields` leaves them out, and
   a 25-post page with media runs 30 to 300KB per creator. Exclude both for metric pulls.
-- On `search_creators`, project the `instagram` container, not leaf paths; leaf paths come back
-  null (**Creator brief**, **Atlas quirks**).
+- On `search_creators`, project leaf paths only; the card fields come back on every hit
+  (**Creator brief**, **Atlas quirks**).
 - `instagram.creatorEngagedAccountsBreakdowns` is often empty, even for Meta-connected creators.
   `instagram.ageBucket` is the creator's own age, never the audience's.
 - `reelsHookRate` and `reelsInteractionRate` are often empty for accounts not connected to Meta

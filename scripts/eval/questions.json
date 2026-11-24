@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder. CAS1 to CAS4 are the paid side of a creator ad campaign: the creative baseline, the weekly paid review, the wave diagnosis and the wave readout. Their approved pages are reference outputs from a live account with customer names removed, linked from local.json like every other. P7, P8 and I13 are client cases written before their agents exist, from reference outputs of a live creator ad campaign with customer names removed: the pitch deck, the creative packet and the camera screen. Each assertion names the ticket whose agent makes it pass.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -39,6 +39,43 @@
     }
   },
   "defaultReply": "Yes, that is right. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+  "answers": [
+    {
+      "pick": "^Build with the gaps noted"
+    },
+    {
+      "header": "Storyline",
+      "pick": "^Build"
+    },
+    {
+      "header": "Save",
+      "pick": "^Page only"
+    }
+  ],
+  "repeat": {
+    "what": "The repeat pair (docs/STANDARD.md, S4). With --repeat, each question in codes is asked a second time in the same session once its first page is published and its close-out is answered with closeOutReply. Reruns refuse every Atlas write, so the second run follows up from the session's own first run, not from a record kept in Atlas.",
+    "codes": [
+      "I4"
+    ],
+    "closeOutReply": "Not this time: keep nothing for next time, save nothing to Atlas, send nothing, and start nothing else. That is all for this page.",
+    "reply": "All of them are still open; nothing else has changed. Go ahead with what you proposed and your recommended options. Save nothing to Atlas and send nothing.",
+    "checks": [
+      {
+        "id": "FU1",
+        "name": "Repeat run asks what changed",
+        "judgedBy": "script",
+        "passesWhen": "The second run's first message opens with \"Last time ({date}) you asked ...\", asks one question about what has happened since to the decisions and next steps the first page left open, and repeats none of the first run's setup questions (the question heard, the reader, the scope, the save, the storyline).",
+        "failsWhen": "A second run that confirms the reader and the scope again, or asks the storyline again, and never mentions the first run's next steps."
+      },
+      {
+        "id": "FU2",
+        "name": "Repeat page leads with what changed",
+        "judgedBy": "judge",
+        "passesWhen": "The second page's first section after its reader and scope line says what changed since the first page: its headline is a conclusion about the change, and a short list under it gives each decision and next step the first page left open with its status (done, still open, dropped, or not confirmed). Items still open are then carried into the decisions and next steps with their owner and date, ahead of new ones. A page that says plainly that nothing has changed passes.",
+        "failsWhen": "A second page that reads like the first with new numbers and never mentions it; a topic title such as \"What changed since 12 Nov\" with no conclusion; an open item from the first page that the second page drops without a word."
+      }
+    ]
+  },
   "sharedPaths": [
     "plugins/aspire/skills/aspire/SKILL.md",
     "plugins/aspire/skills/page-standard/",
@@ -46,8 +83,21 @@
     "plugins/aspire/skills/aspire/references/reader-standard.md",
     "plugins/aspire/skills/aspire/references/english-rules.md",
     "plugins/aspire/skills/aspire/references/orchestration.md",
+    "plugins/aspire/skills/aspire/references/repeat-run.md",
     "plugins/aspire/skills/aspire/references/recipient-lens.md",
     "plugins/aspire/skills/aspire/references/running-agents.md"
+  ],
+  "fixturePaths": [
+    "package.json",
+    ".github/workflows/validate.yml",
+    "scripts/eval/questions.json",
+    "scripts/eval/run.ts",
+    "scripts/eval/lib.ts",
+    "scripts/eval/session.ts",
+    "scripts/eval/approvals.ts",
+    "scripts/eval/answers.ts",
+    "scripts/render-page.ts",
+    "scripts/fixtures/eval-cases/"
   ],
   "questions": [
     {
@@ -162,6 +212,556 @@
       "paths": [
         "plugins/aspire/agents/atlas-ad-reuse.md",
         "plugins/aspire/skills/aspire/references/ad-reuse.md"
+      ]
+    },
+    {
+      "code": "CR1",
+      "question": "O3",
+      "example": "Competitive read with shop posts and untagged mentions",
+      "kind": "Readout",
+      "reader": "leadership",
+      "readerInWords": "marketing leadership",
+      "ask": "For {brand}: leadership wants to know where we stand against competitors in what creators post, and what to do.",
+      "setsBarFor": [],
+      "paths": [
+        "plugins/aspire/agents/atlas-market-signal.md",
+        "plugins/aspire/skills/aspire/references/market-signal.md"
+      ],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/cr1-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/cr1-corrected.html",
+        "values": {
+          "competitor": "Lumen Kids",
+          "competitorPosts": "20"
+        }
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "Shop posts are their own group",
+          "fix": 2,
+          "ticket": "ASP-5976",
+          "landed": false,
+          "passesWhen": "Every engagement rate on the page is over posts of one kind: posts with a paid label, TikTok Shop selling posts, or posts with no paid label. Shop posts have their own row or group with their own engagements per 1,000 views. A page whose data holds no shop posts says so in one line.",
+          "failsWhen": "One rate is given over shop posts and other posts together, or a brand-against-competitor rate is compared without saying which kind of post each side holds.",
+          "examples": [
+            "A consumer brand's competitive read: TikTok Shop posts drew 3.6 engagements per 1,000 views against 14.7 for the rest, and the page showed one mixed rate, which turned the comparison around."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "Mentions count with or without the @",
+          "fix": 2,
+          "ticket": "ASP-5977",
+          "landed": false,
+          "passesWhen": "Each count of posts about a brand or a competitor includes posts that name it in the caption, on screen or aloud without tagging it, and says how the posts were found: how many tagged it and how many named it.",
+          "whenNamed": "The count for {competitor} is at least {competitorPosts} posts.",
+          "failsWhen": "A count comes from tags or @handles alone, or the page does not say how its mentions were found.",
+          "examples": [
+            "A consumer brand's competitive read: a competitor was shown with 2 posts. It had 20: 2 tagged it and 18 named it in the caption or aloud."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "A figure from 20 posts or fewer is marked directional",
+          "fix": 2,
+          "ticket": "ASP-5974",
+          "landed": false,
+          "passesWhen": "Every rate, median or share that rests on 20 posts or fewer carries the word directional beside the number, with the post count.",
+          "failsWhen": "A figure from 20 posts or fewer is stated as plainly as one from hundreds, or the page gives no post count for a side of a comparison.",
+          "examples": [
+            "A consumer brand's competitive read: a competitor's rate came from 20 posts and was set beside the brand's rate from several hundred with no mark."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "AR1",
+      "question": null,
+      "example": "Affiliate report",
+      "kind": "Readout",
+      "reader": "growth",
+      "readerInWords": "the person who runs the affiliate program and holds its budget",
+      "ask": "For {brand}: here is last month's affiliate sales export. Who is driving sales, what do we owe in commission, and what should we change? I run the affiliate program and hold its budget.",
+      "setsBarFor": [],
+      "paths": [
+        "plugins/aspire/agents/atlas-affiliate-manager.md",
+        "plugins/aspire/skills/aspire/references/affiliate.md"
+      ],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/ar1-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/ar1-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "A share is shown against the group's size",
+          "fix": 2,
+          "ticket": "ASP-5974",
+          "landed": false,
+          "passesWhen": "Every share of revenue or orders that the page gives for a group of affiliates sits beside that group's share of all affiliates. When the two are within a few points, the page says the share is in line with the group's size.",
+          "failsWhen": "A share is given as a finding with no group size beside it.",
+          "examples": [
+            "A consumer brand's affiliate report: \"87% of revenue\" came from 88% of affiliates, so the share said nothing, and the page led with it."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "The top sellers' explanation cites linked Atlas evidence first",
+          "fix": 3,
+          "ticket": "ASP-5978",
+          "landed": false,
+          "passesWhen": "Where the page explains why the top sellers sold, it first cites what Atlas holds about them on any network and at any date, each cited post as a link to the post. Coupon sites come after that evidence, or the page says no evidence was found and what was searched.",
+          "failsWhen": "The sales are put down to coupon sites, or to any cause, with no linked post or page behind the explanation, or coupon sites are named before the creator's own posts were searched.",
+          "examples": [
+            "A consumer brand's affiliate report: the top sellers were put down to coupon sites. Atlas held an older TikTok, a code in a YouTube description and the shop's own website."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "Commission tiers show an invite list and a hold list",
+          "fix": 4,
+          "ticket": "ASP-5982",
+          "landed": false,
+          "passesWhen": "The page shows each commission tier with its rate and the threshold to reach it, a list of affiliates to invite to the next tier with the figure that qualifies each, and a list of affiliates to hold with the reason and what would move each one up. An empty invite list names the nearest affiliate and what they still need.",
+          "failsWhen": "The page says nobody newly qualified and stops there, or recommends a raise with no tier, no named affiliates to move up and none to hold.",
+          "examples": [
+            "A consumer brand's affiliate report: \"0 affiliates newly qualified for Tier 3\" and \"raise commission 5 points\", with nobody named to move up or to hold."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Every recommendation shows a cost",
+          "fix": 4,
+          "ticket": "ASP-5982",
+          "landed": false,
+          "passesWhen": "Every recommendation that spends money or changes what the brand pays states its cost with the arithmetic in one line, per month for a raise or a promotion, labelled as an estimate. One that costs no money says so. One that cannot be priced says which figure is missing.",
+          "failsWhen": "A recommendation to raise commission, promote, pay or move a creator to another deal has no cost beside it.",
+          "examples": [
+            "A consumer brand's affiliate report: \"raise commission 5 points\" with no cost. The priced line is \"+5 points on USD 3,240 a month is about USD 162 a month\"."
+          ]
+        },
+        {
+          "id": "A5",
+          "name": "Every timeline post shows engagement",
+          "fix": 3,
+          "ticket": "ASP-5979",
+          "landed": false,
+          "passesWhen": "Every post on the sales and posts timeline, on its marker or in the list under the chart, shows its views and its engagement, or a note saying why one is missing.",
+          "failsWhen": "A timeline post shows only its date, link or format.",
+          "examples": [
+            "A consumer brand's affiliate report: the timeline marked each post by date and format, so nobody could tell whether a post had reached anyone."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "CAS1",
+      "question": null,
+      "example": "CAS creative baseline",
+      "kind": "Plan",
+      "reader": "performance",
+      "readerInWords": "the paid social lead, who hands the notes to creative",
+      "ask": "For {brand}: before we put spend behind the wave 1 cuts, give me a creative baseline for each one, and what to fix first. I run paid social for this creator ad campaign.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS2",
+      "question": null,
+      "example": "CAS weekly paid review",
+      "kind": "Readout",
+      "reader": "performance",
+      "readerInWords": "the paid social lead, who makes the calls",
+      "ask": "For {brand}: weekly review of the creator ad campaign. After 7 and 14 days, which named ads do we scale, fix or pause, and why? I run paid social and will make the calls.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS3",
+      "question": null,
+      "example": "CAS wave diagnosis",
+      "kind": "Readout",
+      "reader": "creative",
+      "readerInWords": "the creative team, who re-cut the ads",
+      "ask": "For {brand}: where does each wave 2 ad lose people, and what should the next cut change? Creative will re-cut from this.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS4",
+      "question": null,
+      "example": "CAS wave review",
+      "kind": "Readout",
+      "reader": "team",
+      "readerInWords": "the campaign team, with a version the client reads",
+      "ask": "For {brand}: the wave 2 readout for our team and the client. What worked, what did not, and what we do in wave 3.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "P7",
+      "example": "Creator ad pitch deck",
+      "kind": "Plan",
+      "reader": "leadership",
+      "readerInWords": "the client's budget owner, who decides whether the campaign goes ahead",
+      "ask": "For {brand}: pitch a creator ad campaign from this one prompt, for the client's budget owner to decide on.",
+      "setsBarFor": [],
+      "paths": [],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/p7-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/p7-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "Two options per concept, each with a weakness",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every concept shows two creator options, and each option has a sentence starting \"Weakness:\". A figure Atlas does not hold shows \"—\" (or \"not enough analysed posts\" for a talks to camera score) and the creator stays on the page.",
+          "failsWhen": "A concept has one creator option, an option has no \"Weakness:\" sentence, or a creator with a missing figure is dropped or given a guessed number.",
+          "examples": [
+            "A study app's creator ad pitch deck: each concept showed one creator, and a creator with no Reels hook rate was shown at a made-up 50%."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "Every number and copy line has its source on the slide",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every statistic, view count and quoted line names where it came from on the same slide: the survey and its date, the brand's own page, the client's email, or Atlas with the date it was read.",
+          "failsWhen": "A statistic, view count or quoted line has no source on its slide.",
+          "examples": [
+            "A study app's creator ad pitch deck: \"80% of buyers are students\" sat on the market slide with no source."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "What the client said, beside what their posts show",
+          "ticket": "ASP-5934",
+          "landed": false,
+          "passesWhen": "One slide quotes the client's own words verbatim, in quotation marks, next to the pattern in the brand's top posts, with each post's views.",
+          "failsWhen": "The client's ask is paraphrased with no quote, or it is not tied to the brand's own posts.",
+          "examples": [
+            "A study app's creator ad pitch deck: the client's brief was paraphrased as \"they want more students\", with no quote and no link to the brand's own posts."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Claims set before filming",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "The deck has a \"will say\" list, each line traced to the brand's own page, and a \"won't say or show\" list.",
+          "failsWhen": "There is no claims slide, or a \"will say\" line has no source.",
+          "examples": [
+            "A study app's creator ad pitch deck: there was no claims slide, so nothing said what creators may claim before filming."
+          ]
+        },
+        {
+          "id": "A5",
+          "name": "Every variant is fully specified",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Each variant states its length, hook, body, b-roll and CTA. A part a variant leaves out on purpose reads \"None\", which counts as stated.",
+          "failsWhen": "A variant has no length, or its hook, body, b-roll or CTA is blank or missing.",
+          "examples": [
+            "A study app's creator ad pitch deck: the variant grid gave hooks and CTAs but no length for any variant."
+          ]
+        },
+        {
+          "id": "A6",
+          "name": "The variant scheme has a reason",
+          "ticket": "ASP-5934",
+          "landed": false,
+          "passesWhen": "The deck says why this variant scheme was picked for this brand.",
+          "failsWhen": "The deck shows a variant scheme with no reason for it.",
+          "examples": [
+            "A study app's creator ad pitch deck: five variants per creator, with nothing saying why that scheme suits the brand."
+          ]
+        },
+        {
+          "id": "A7",
+          "name": "Storyboard frames are labelled illustrations",
+          "ticket": "ASP-5936",
+          "landed": false,
+          "passesWhen": "Every storyboard has four acts (hook, body, b-roll, CTA), each with its spoken line and its shot, and any image says it is an illustration, not the finished look.",
+          "failsWhen": "A storyboard frame is shown as if it were the real creator or the real cut, or a storyboard is missing an act.",
+          "examples": [
+            "A study app's creator ad pitch deck: a storyboard frame was captioned as a still from the creator's real shoot."
+          ]
+        },
+        {
+          "id": "A8",
+          "name": "Every concept has one job",
+          "ticket": "ASP-5934",
+          "landed": false,
+          "passesWhen": "Each concept names exactly one job: stop the scroll, convert, build trust, or explain.",
+          "failsWhen": "A concept names no job, or names two.",
+          "examples": [
+            "A study app's creator ad pitch deck: one concept had no job and another was \"stop the scroll and convert\"."
+          ]
+        },
+        {
+          "id": "A9",
+          "name": "The variant table traces to the shot list",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every hook, CTA and b-roll number the variant table names exists in the one-shoot shot list (3 hooks, 1 body, 2 CTAs, 15 b-roll).",
+          "failsWhen": "The variant table names a hook, CTA or b-roll number the shot list does not have.",
+          "examples": [
+            "A study app's creator ad pitch deck: V3 named \"Hook D\" and \"B-roll 18\" when the shot list had 3 hooks and 15 b-roll clips."
+          ]
+        },
+        {
+          "id": "A10",
+          "name": "Atlas figures are dated and \"—\" is explained",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "Every Atlas figure carries the date it was read, and the page says \"—\" means Atlas holds no data for it.",
+          "failsWhen": "An Atlas figure has no date, or \"—\" appears with no explanation.",
+          "examples": [
+            "A study app's creator ad pitch deck: hook rates from Atlas carried no date, and a \"—\" in the paid history column was never explained."
+          ]
+        },
+        {
+          "id": "A11",
+          "name": "Questions for the client close the deck",
+          "ticket": "ASP-5935",
+          "landed": false,
+          "passesWhen": "The deck ends with the questions the client must answer before filming, with the ones that shape the scripts most marked.",
+          "failsWhen": "The deck has no questions for the client, or none of them is marked as shaping the scripts.",
+          "examples": [
+            "A study app's creator ad pitch deck: the deck ended on the casting slide, with no questions for the client before filming."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "P8",
+      "example": "Creative packet",
+      "kind": "Plan",
+      "reader": "campaign",
+      "readerInWords": "the campaign manager, the client contact and the creators who film from it",
+      "ask": "For {brand}: build the creative packet for the creator ad campaign, with the package doc, the master brief and a concept doc for each creator. I manage the campaign.",
+      "setsBarFor": [],
+      "paths": [],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/p8-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/p8-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "No internal words in a creator doc",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "No concept doc uses \"raw footage\", \"hero cut\", \"shared b-roll\", \"the pool\" or \"any shoe\", or refers to a doc that does not exist.",
+          "failsWhen": "A concept doc uses any of those words, or refers to a doc that does not exist.",
+          "examples": [
+            "A footwear brand's creative packet: a concept doc told the creator to \"film raw footage for the hero cut, plus shared b-roll from the pool\"."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "One product on camera",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "No shot or direction puts a second item from the same category in frame, and every concept doc's MUST NOT says so.",
+          "failsWhen": "A shot or direction puts another item from the category in frame, or a concept doc's MUST NOT does not say only one product is on camera.",
+          "examples": [
+            "A footwear brand's creative packet: a shot read \"reach past the other pairs on the shelf\"."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "The body is one paragraph",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "Each lane's body is one paragraph, followed by numbered script rows.",
+          "failsWhen": "A body is split into named beats, such as \"the admission\" or \"the reveal\".",
+          "examples": [
+            "A footwear brand's creative packet: the body was split into \"the admission\", \"the reveal\" and \"the verdict\"."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Hooks and CTAs in tables, with bridges",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "Hooks and CTAs are table rows; each hook has a bridge into the body and each CTA a bridge out of it.",
+          "failsWhen": "Hooks or CTAs are block quotes, or a hook or CTA has no bridge.",
+          "examples": [
+            "A footwear brand's creative packet: the hooks were block quotes with no bridge into the body."
+          ]
+        },
+        {
+          "id": "A5",
+          "name": "One proof point, dropped mid-action",
+          "ticket": "ASP-5939",
+          "landed": false,
+          "passesWhen": "Each lane has exactly one proof point, said while the creator is doing something.",
+          "failsWhen": "A lane reads a list of product specs to camera, or has more than one proof point.",
+          "examples": [
+            "A footwear brand's creative packet: the creator read three proof points to camera, one after another."
+          ]
+        },
+        {
+          "id": "A6",
+          "name": "No framework names in a concept doc",
+          "ticket": "ASP-5940",
+          "landed": false,
+          "passesWhen": "Concept docs script each variant with no framework name (PAS, BAB, HSO, SSS, 4Ps). The master may name them.",
+          "failsWhen": "A framework name appears in a concept doc.",
+          "examples": [
+            "A footwear brand's creative packet: a concept doc's variant row read \"V2 · BAB\"."
+          ]
+        },
+        {
+          "id": "A7",
+          "name": "Master and concept doc use the same wording",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Every hook, CTA, bridge, length and body paragraph is word for word the same in the master and in the concept doc.",
+          "failsWhen": "Any hook, CTA, bridge, length or body paragraph differs between the master and the concept doc, even by one word.",
+          "examples": [
+            "A footwear brand's creative packet: the master's hook 2 differed by one word from the concept doc's hook 2."
+          ]
+        },
+        {
+          "id": "A8",
+          "name": "Names agree across docs",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Persona, product and concept names are the same in every doc.",
+          "failsWhen": "A persona, product or concept name differs between docs.",
+          "examples": [
+            "A footwear brand's creative packet: the persona was \"The Realist\" in the master and \"The Pragmatist\" in the concept doc."
+          ]
+        },
+        {
+          "id": "A9",
+          "name": "No template leakage",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "No client or creator doc holds \"$XXX\", \"[TBD]\", a placeholder or a build note.",
+          "failsWhen": "A client or creator doc holds any of those.",
+          "examples": [
+            "A footwear brand's creative packet: the package doc still read \"Rate: $XXX [TBD]\"."
+          ]
+        },
+        {
+          "id": "A10",
+          "name": "Each script matches its variant row",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Every scripted variant uses the hook, CTA, length and body rows its variant table row names.",
+          "failsWhen": "A script uses a different hook, CTA or length from its variant row.",
+          "examples": [
+            "A footwear brand's creative packet: the V4 script opened on Hook A when its row said Hook C."
+          ]
+        },
+        {
+          "id": "A11",
+          "name": "The structure adds up",
+          "ticket": "ASP-5941",
+          "landed": false,
+          "passesWhen": "Each lane has 3 hooks, 2 CTAs and 5 variants, and every variant is scripted.",
+          "failsWhen": "A lane is missing a hook, a CTA, a variant or a script.",
+          "examples": [
+            "A footwear brand's creative packet: lane 3 had two hooks, and its V5 was never scripted."
+          ]
+        },
+        {
+          "id": "A12",
+          "name": "Changed concepts are named as decisions",
+          "ticket": "ASP-5940",
+          "landed": false,
+          "passesWhen": "A concept changed after the client approved it is listed as a decision in the package doc, saying what changed.",
+          "failsWhen": "A concept changed after approval is swapped in with no decision listed.",
+          "examples": [
+            "A footwear brand's creative packet: lane 2's concept was rewritten after the client approved it, and the package doc listed no decision."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I13",
+      "example": "Camera screen",
+      "kind": "Shortlist",
+      "reader": "team",
+      "readerInWords": "the agency team casting the creator ad campaign",
+      "ask": "For {brand}: which creators on this slate talk to camera? I am casting the creator ad campaign.",
+      "setsBarFor": [],
+      "paths": [],
+      "fixtures": {
+        "wrong": "scripts/fixtures/eval-cases/i13-wrong.html",
+        "corrected": "scripts/fixtures/eval-cases/i13-corrected.html"
+      },
+      "assertions": [
+        {
+          "id": "A1",
+          "name": "The score shows what it's made of",
+          "ticket": "ASP-5929",
+          "landed": false,
+          "passesWhen": "Each talks to camera score sits beside its speech, to-camera and explainer shares and the number of analysed video posts.",
+          "failsWhen": "A score is shown on its own, with no shares or no analysed post count.",
+          "examples": [
+            "A study app's creator slate: each creator showed a talks to camera score and nothing else."
+          ]
+        },
+        {
+          "id": "A2",
+          "name": "No number under the minimum",
+          "ticket": "ASP-5929",
+          "landed": false,
+          "passesWhen": "A creator with fewer analysed video posts than the minimum (20 unless the campaign sets another) shows \"not enough analysed posts\" and no score, and stays on the slate.",
+          "failsWhen": "A score is shown on fewer analysed posts than the minimum, or that creator is dropped from the slate.",
+          "examples": [
+            "A study app's creator slate: a creator was scored 30 on 15 analysed posts, under the minimum of 20."
+          ]
+        },
+        {
+          "id": "A3",
+          "name": "Says which shares are upper bounds",
+          "ticket": "ASP-5929",
+          "landed": false,
+          "passesWhen": "The page says the speech share is exact and the to-camera and explainer shares are upper bounds.",
+          "failsWhen": "The page has no such line.",
+          "examples": [
+            "A study app's creator slate: nothing said that a post can carry two matching labels, so the to-camera and explainer shares read as exact."
+          ]
+        },
+        {
+          "id": "A4",
+          "name": "Changed weights are named",
+          "ticket": "ASP-5931",
+          "landed": false,
+          "passesWhen": "Where a campaign's weights differ from 45 / 35 / 20, the weights used are named beside the score.",
+          "failsWhen": "A score worked out on changed weights has no mention of them.",
+          "examples": [
+            "A study app's creator slate: one creator was re-scored on 60 / 20 / 20 with nothing saying so."
+          ]
+        }
       ]
     }
   ]

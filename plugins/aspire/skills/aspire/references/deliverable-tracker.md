@@ -63,9 +63,8 @@ It reuses the checks of other flows rather than defining its own:
 | What | Defined in |
 | ---- | ---------- |
 | Disclosure: present, visible without tapping "more", buried in a hashtag block is not enough | **Content review**, **3. Brand safety** (Disclosure) and **Verdict** (a paid post with no disclosure is always the worst outcome) |
-| The paid partnership label is not held in Atlas: a gap, never "absent"; trackers treat it as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
+| The paid partnership label: found from the `partnershipAds` overlay where it is available; without the `partnershipAds` overlay (not Instagram, no explicit `asProfileId`, or the Profile lacks its Meta links), or with an overlay that holds no `BRANDED_CONTENT` entry, a gap, never "absent", which trackers treat as unclear, never missing | **Post analysis**, **The page**, section 9; **Influencer program**, the terms object |
 | Spoken and on-screen words: `analysis.transcript` and `analysis.overlayText`, never inferred from visuals | **Content review**, **Media**, Atlas analysis fields |
-| The partnership marker the field census exposes | **Creator vetting** (Disclosure habits) and **Creator outreach** (Pick the post) |
 | Templates, channels, voice, and what never goes in a draft | **Creator outreach**, **Channels** and **Templates**; **Influencer program** **5** |
 | The deal for each creator | **Influencer program**, **Who owns a deal**; **Creator negotiation**, **Records written** |
 | The posting date after product arrives | **Product fulfillment**, **Tracking**, On delivery (`postDueAt`) |
@@ -133,9 +132,11 @@ decision-audit line.
    one option per match, with the agent's description (the caption's first words and why it is
    unsure); more than four, the first four, then the rest in the next call. T5: one per open
    item, exactly as the agent worded it, the recommended answer first, then the alternatives
-   and "Decide later". Posts whose only unclear part is the paid partnership label come as one
-   multiSelect for the run ("Which of these posts carry it?"); Atlas can't see the label, so it
-   is never treated as missing. When T2 or T5 answers change a status, relaunch
+   and "Decide later". Posts whose only unclear part is the paid partnership label come as
+   multiSelect questions ("Which of these posts carry it?"), two to four posts per question, split
+   so none is left alone (five posts: three, then two); a single such post in the run is asked as a yes/no question instead ("Does @a's {format}
+   {date} carry it?"). Only posts whose overlay is missing or shows no `BRANDED_CONTENT` go in it,
+   and an unseen label is never treated as missing. When T2 or T5 answers change a status, relaunch
    `pass: propose` with them as `overrides` and relay the new counts.
 5. Then ask T1, T3 (only when there are drafts) and T4, at most four questions per call
    (SKILL.md **Guardrails**, Pickers).
@@ -203,15 +204,15 @@ Rules:
 
 ## Matching posts
 
-Read only what Atlas holds. `list_post_search_fields` once; use only the paths it returns.
+Read only what Atlas holds. Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 
 **Find the candidates.** For each creator with rows due or past due, one `search_posts` filtered
 on the creator's author username on their roster network, from the window start to today,
 newest first, limit 50, projecting `postedAt`, `url`, `instagram.permalink`, `text`,
 `mediaKind`, `instagram.mediaProductType`, `instagram.hashtags`, `instagram.mentions` (the
-container), the partnership marker, `analysis.transcript`, `analysis.overlayText`,
+container), `analysis.transcript`, `analysis.overlayText`,
 `analysis.commercialAnalysis.featuredBrands`, `analysis.commercialAnalysis.promoCodes`, and the
-`media` container, when the census lists them.
+`media` container.
 
 **Brand signals** a post can carry, strongest first:
 
@@ -290,9 +291,11 @@ type). It names one or more parts:
 
 Check each part:
 
-- **Label.** Use the partnership marker when the census lists it: true is found. When the
-  census does not list it, or it is empty, the label is "not held in Atlas": unclear, never
-  missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
+- **Label.** On Instagram, with the explicit `asProfileId` and the Profile's Meta Business and
+  Instagram links, the post's `partnershipAds` overlay (**Partnership content**) shows it: an
+  entry whose `contentTypes` holds `BRANDED_CONTENT` is found (`label` `found`). An overlay with no
+  such entry is `not shown`: Meta's data does not show the label. With no overlay to read, it is
+  `not held`. Both are unclear, never missing (**Post analysis**; **Influencer program**, the terms object). The label alone never makes a
   post `missing` or `needs fix`.
 - **Words.** Look in the caption and `instagram.hashtags`. Found when they sit before the
   "more" cut (about the first 125 characters, or the first line); words only in a hashtag block
@@ -312,8 +315,8 @@ Then the post's `disclosure`:
 | `unclear` | Anything else: words found only buried, only vague words, the label not seen (whether or not the words are found), or spoken or on-screen is required and there is no transcript |
 
 When the only unclear part is the label and the deal's words are found, the check line says
-"label: check on the post", and these posts go to the user as one T5 question for the run
-(**Your call**, Label not seen), not one per post.
+"label: check on the post", and these posts go to the user together as T5's label question
+(**Your call**, Label not seen), not one question per post.
 
 With no `disclosure` in the deal: paid and ambassador posts need a clear disclosure word or a
 label found by the marker; gifting needs `#gifted`, "gifted by", or a clear equivalent. Say on
@@ -332,7 +335,7 @@ item on the page, as in content review.
 | `late` | Past due, no match yet, and inside the grace days; or past grace with an open match, a "confirm by hand" Story, or no posts from the creator in Atlas since the due date | `needs_improvement` |
 | `missing` | Past due plus grace days, no match, no open match, not a "confirm by hand" Story, and Atlas holds posts from the creator dated after the due date | `needs_improvement` |
 | `needs fix` | Matched, and disclosure is missing or a required item is missing | `needs_improvement` |
-| `waived` | The user waived it (**Waived**) | `went_well` `low` |
+| `waived` | The user waived it (**Waived**) | `went_well` |
 
 Expected posts (`owed` false) use only `due`, `posted`, `needs fix`, and `missing`, never
 `late`: an expected post stays `due` until its window plus the grace days has passed, then is
@@ -358,7 +361,7 @@ Each is returned as a T5 question, recommended answer first:
 | ---- | -------- | ------- |
 | Format differs | "@a posted a {format} where the deal says {format}. Count it?" | Ask for the agreed format (Recommended); Count it as delivered; Decide later |
 | Disclosure unclear | "@a's post {why unclear}. Is the disclosure fine?" | Ask for a clear disclosure (Recommended); It's fine (I checked the post); Decide later |
-| Label not seen (multiSelect, one per run) | "Atlas can't see the paid partnership label. Which of these posts carry it? Pick the ones you checked." One option per post, "@a: {format} {date}" | Picked: label found, the post can be `posted`. Not picked: stays unclear, shown on the page as "label: check on the post"; never a fix request unless the user asks for one |
+| Label not seen (multiSelect, four posts per question; one post: a yes/no question) | "Atlas can't confirm the paid partnership label on these posts from the brand's Meta data. Which of them carry it? Pick the ones you checked." One option per post, "@a: {format} {date}" | Picked: label found, the post can be `posted`. Not picked: stays unclear, shown on the page as "label: check on the post"; never a fix request unless the user asks for one |
 | Confirm by hand | "Did @a post {deliverable}? Atlas doesn't hold Stories." | Not yet (Recommended); Yes, it went up; Waive it |
 
 "It's fine" and "Count it" set the row `posted` with `checks` noting the user's call.
@@ -461,13 +464,13 @@ since the newest finding.
 | `deliverable` | Per **Status** | `trk-del-{slug}-{entityId}-{deliverableKey}-{status}-{YYYY-MM-DD}` |
 | `draft` | `action_item` `low` | `trk-draft-{slug}-{entityId}-{template}-{channel}-{recordedAt}` |
 | `roster` | `action_item` `medium`; `went_well` at Complete | `trk-roster-{slug}-{entityId}-{stage}-{YYYY-MM-DD}` |
-| `page` | `went_well` `low` | `trk-page-{slug}-tracker` |
+| `page` | `went_well` | `trk-page-{slug}-tracker` |
 
 **Fields this reference adds to `deliverable`** (beyond **Influencer program**'s list): `deliverableKey`,
 `type`, `format`, `network`, `month` (`YYYY-MM`, ambassadors), `count` (this row's number in the
 deliverable, "2 of 3"), `onTime`, `daysLate`, `graceDays`, `graceEndsAt`, `match` (`strong`,
-`confirmed`, `open`), `signals` (the brand signals found), `label` (`found`, `not held`,
-`none`), `fix` (the exact fix, one line each), `waivedBy`, `reason`, `basedOn` (`terms
+`confirmed`, `open`), `signals` (the brand signals found), `label` (`found`, `not shown`,
+`not held`, `none`), `fix` (the exact fix, one line each), `waivedBy`, `reason`, `basedOn` (`terms
 v{version}`, `program terms`, or `fulfillment {orderKey}`), and `source` (`atlas` or
 `pasted`).
 
@@ -558,7 +561,9 @@ actions); render for the primary `recipient` lens. Sections, in order:
    the term to date.
 8. **Disclosure rate**: matched posts with disclosure found over matched posts checked, by
    type and by network, with missing and unclear counted apart. Under 5 posts checked shows the
-   counts and "too few to rate", never a percent.
+   counts and "too few to rate", never a percent. A rate from more posts than that, but at or
+   under the directional line (**Page standard**, `comparisons.md`), is marked "directional" with
+   its post count.
 9. **Expected from gifting**: gifted creators whose post is hoped for, not owed: posted, still
    in the window, and "no post (not owed)". Never shown as late.
 10. **Posted**: each matched post with its creator, format, date, on time or days late, the
@@ -567,8 +572,8 @@ actions); render for the primary `recipient` lens. Sections, in order:
     button, bracketed blanks highlighted, and a chip "In your {mailbox}" when a mailbox draft
     exists. Leave out in an unattended run.
 12. **Footer**: "posts and numbers come from Atlas as of {timestamp}", the grace days used, that
-    the paid partnership label is not held in Atlas, shows as unclear, and is checked on the
-    post itself, that
+    a paid partnership label the brand's Meta partnership data does not show, or that Atlas could
+    not read, shows as unclear and is checked on the post itself, that
     Stories show only when Atlas holds them, and that images are a snapshot. Then the footnote with
     the team audience line (**Artifact standard**).
 
@@ -582,7 +587,8 @@ address, or a street address. More than 12 creators: the headline and section 7 
 - Send a message, or create a mailbox draft without T4. Never a draft in an unattended run.
 - Force a match, count an open match as posted, or mark a row missing inside its grace days,
   while a match is open, or while Atlas holds no posts from the creator since the due date.
-- Call the paid partnership label absent because Atlas does not hold it.
+- Call the paid partnership label absent because Atlas could not read it or Meta's data does not
+  show it.
 - Waive a deliverable, or propose a waiver as the default.
 - Fetch a post the user did not paste, fetch anything in an unattended run, or start discovery
   (`lookup_creators`, `search_creator_marketplace`, `start_business_discovery`).

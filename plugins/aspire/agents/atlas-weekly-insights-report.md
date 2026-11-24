@@ -17,7 +17,7 @@ timezone, computed from the shell clock in Process step 2, never from a date sta
 prompt), optionally `meta_request` (the user's own words for Meta Ads'
 `advertiser_request`, verbatim from the main thread; never compose one), and `recipient` (per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`). A passed lens leads this
-run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds
 the calibration keys, metric definitions, page structure, the lens sections, delivery rules,
@@ -79,7 +79,7 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    (`action_item` findings with `detail.push: true` under the `onboarding-{profile}` and
    `account-review-{profile}-own-` prefixes), last week's content reviews
    (`content-review-{profile}`, step 6b of the data pull), and one semantic red-line scan per
-   `red_line` (skipping `review:` keys, per the data pull). For the `product` and `pmm`
+   brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds). For the `product` and `pmm`
    lenses, the market signal findings covering the week (`market-signal-{profile}` prefix).
    For the `growth` lens, creator posts about the brand in the week, per **Lenses**.
 4. Compute: weekly totals and week-over-week deltas, engagement rate, top 3 and bottom 2 posts

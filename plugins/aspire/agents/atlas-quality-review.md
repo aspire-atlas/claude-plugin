@@ -20,14 +20,14 @@ default, `file:{path}`, or `none`), `log` (`file:{path}`, `docs:{link}`, or `non
 (`interactive`; `unattended` only for the English read and the UX review). Every Atlas tool needs a `context`
 argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward
 them).
-Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it.
+Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read these before starting:
 
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quality-review.md`: how to read the target, which
   checks apply, the rubric, severity and verdict, the writing rules, the page, your output, grade
   mode, and the review log.
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R14 checks for
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/reader-standard.md`: the R1 to R15 checks for
   **4.14**.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/artifact-standard.md`: check **4.12**, and your
   own page's header and footer.
@@ -54,8 +54,8 @@ question was asked before you started, and anything still open goes in your outp
    not-run log row when `log` is not `none` (**10**), and stop without publishing.
 2. **With a brand profile:** load the read tools and `report_checkpoint` with `ToolSearch`
    (`select:` under the given prefix), read the calibrations (no filter, limit 100 per page, paged to the end) for the theme
-   and the category, and call `list_post_search_fields` and `list_creator_search_fields` once each
-   before any search. Use only field paths they return. Without a brand profile, load only
+   and the category, and take field paths from `atlas-search.md`; call a `list_*_search_fields` census only
+   for a path it does not list. Without a brand profile, load only
    `report_checkpoint` the same way.
 3. **Pick the checks** per **3**.
 4. **Run the rubric** per **4**, in order, 4.0 to 4.15 with the reader standard as 4.14: one
@@ -71,7 +71,7 @@ question was asked before you started, and anything still open goes in your outp
    keep the ids of findings that persist, and mark each earlier finding fixed, still open, or no
    longer applies; publish with `url` set to it when it is an artifact link. No Artifact tool and
    `publish` is `artifact`: save the review page as a file and return its path, per
-   `skills/page-standard/SKILL.md`, section 4, step 5.
+   `skills/page-standard/page-file.md`.
 8. **Log** per **10** when `log` is not `none`: one row, after publishing, with the three reviewer
    columns left empty. With no page published, log the verdict all the same.
 9. Never invent data or a fix figure. A suggested number, name, date, or SLA is a highlighted
@@ -80,7 +80,7 @@ question was asked before you started, and anything still open goes in your outp
 **Grade mode** (`mode: grade`): read the target, run the checks `checks` names (**9**), build no
 page, write no log row, and return only the `quality_review_grade` JSON block and the audit trail.
 With `checks: english` it is the English read every page gets before it publishes (**9.1**): read
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md` for its seven checks, take
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/english-rules.md` for its eight checks, take
 only `target`, `reader`, `question`, and `run`, ignore anything else the launch carries, read only
 the text the page check script's `--text` prints, call no Atlas tool (`report_checkpoint` aside),
 and return only the `english_read` JSON block and the audit trail. It runs unattended too.

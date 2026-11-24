@@ -176,7 +176,7 @@ Skip a creator, and list them under "Needs the main thread", when:
 
 - a `creator:*` calibration for them has stance `reject` ("Saved team call: reject");
 - their handle is a saved `competitor`;
-- a `red_line` blocks AI-written outreach: give three talking points instead of a draft, as
+- a brand red line (**Atlas tools**, Calibration kinds) blocks AI-written outreach: give three talking points instead of a draft, as
   **Creator card actions** in SKILL.md does;
 - `yourCall` is open on their row;
 - they have no channel the program uses that has a route (**Channels**).
@@ -192,8 +192,8 @@ line**. Both come from Atlas. Never invent a post, a quote, a number, or a claim
 **Pick the post.** `search_posts` filtered on the creator's author username on their roster
 network, the last 60 days (widen to 90 once when empty), newest first, limit 30, projecting
 `postedAt`, `url`, `instagram.permalink`, `text`, `mediaKind`, `instagram.mediaProductType`,
-the metrics, the partnership marker, `analysis.transcript`, `analysis.overlayText`, and
-`analysis.brandSafety` when the field census lists them. In this order, take the first that
+the metrics, `analysis.transcript`, `analysis.overlayText`, and
+`analysis.brandSafety`. In this order, take the first that
 exists:
 
 1. A post that mentions or tags the brand ("you posted about us": a warm lead).
@@ -202,8 +202,9 @@ exists:
    limit 5.
 3. The creator's strongest recent post against their own median engagement.
 
-Never pick a post with a brand safety category above low risk, a `red_line` hit, a paid
-partnership with a saved `competitor`, or any paid partnership when an organic post qualifies.
+Never pick a post with a brand safety category above low risk, a brand red line hit, a paid
+partnership with a saved `competitor`, or any post with a paid label when one with no paid label
+qualifies.
 Follow-up 2 uses a different post from the first touch when one qualifies.
 
 **Write the post line** from what the post shows: its caption, transcript, or on-screen text.
@@ -512,11 +513,11 @@ Sending mail stays on Needs approval: the reply check sends nothing.
 | ------ | ---- | -------------- |
 | `draft`, unsent | `action_item` `low` | `out-draft-{slug}-{entityId}-{template}-{channel}-{recordedAt}` |
 | `draft`, sent (O3) | `went_well` | `out-sent-{slug}-{entityId}-{template}-{channel}-{sentAt}` |
-| `reply` | `went_well` `low` | `out-reply-{slug}-{entityId}-{channel}-{receivedAt}` |
+| `reply` | `went_well` | `out-reply-{slug}-{entityId}-{channel}-{receivedAt}` |
 | `roster`, active | `action_item` `medium` | `out-roster-{slug}-{entityId}-{recordedAt}` |
 | `roster`, Declined | `needs_improvement` | same |
 | `roster`, No reply | `action_item` `low` | same |
-| `page` | `went_well` `low` | `out-page-{slug}-outreach` |
+| `page` | `went_well` | `out-page-{slug}-outreach` |
 
 **Fields this reference adds.** On `draft`: `to` (`creator` or `manager`), `postUrl` (the post
 the draft cites), `blanks` (the bracketed blanks left), `offerShown` (`invite`, `open-fee`,
@@ -525,7 +526,7 @@ the draft cites), `blanks` (the bracketed blanks left), `offerShown` (`invite`, 
 finding.
 
 **The page link.** On the outreach page's first publish, write one `page` finding: anchored to
-the brand's own account on its first linked network, `kind` `went_well` `low`, `detail.key`
+the brand's own account on its first linked network, `kind` `went_well`, `detail.key`
 `outreach`, `url`, `title`, idempotencyKey `out-page-{slug}-outreach`. It goes in the same
 `append_insights` call as the run's other approved writes (O1 or O4); an unattended run may
 write it on its own. Read the link back from the newest `page` finding with key `outreach`.

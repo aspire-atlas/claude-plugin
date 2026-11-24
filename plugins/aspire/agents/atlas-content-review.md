@@ -18,7 +18,7 @@ silent), the brief source, and the post: for `published`, the network and the UR
 files, and any transcript, and `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), and `run`
 (`interactive` or `unattended`; default `interactive`). Every Atlas
-tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/content-review.md` before starting. It
 holds the checks, the verdict rule, the precedence order, the lesson rules, the state
@@ -63,9 +63,9 @@ check.
    That value is `reviewedAt` on every finding of this review; the date part feeds the
    `runKey`.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): every `review:*`
-   record, including lessons, plus `red_line`, `guideline`, `competitor`, `partner`,
+   record, including lessons, plus brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), `guideline`, `competitor`, `partner`,
    `brand:summary`, the `voice_and_content_ops` brand fact, `user:primary-contact`, and
-   `theme:brand` (page styling only, never a guideline check). Drop every `program:`, `library:`, `orchestrator:`, `ad-reuse:` and `lastrun:` key: a program's terms are never a guideline check. Drop a creator ad campaign's own keys too (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); a CAS brief reaches you only as the normalized deliverable. Use
+   `theme:brand` (page styling only, never a guideline check). Drop every `program:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:` and `lastrun:` key: a program's terms are never a guideline check. Drop a creator ad campaign's own keys too (`campaign:{slug}-cas`, `-lane-*`, `-terms`, `-decision-defaults`); a CAS brief reaches you only as the normalized deliverable. Use
    only active records; superseded ones tell you what changed. Then `get_brand_instruction`
    with `agentType: "brand_safety"`.
 4. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
@@ -74,10 +74,9 @@ check.
    through every result and keep the `edit` and `close` findings: an edit stays open until a
    `close` names it, however old it is.
 5. **Get the post.**
-   - `published`: `list_post_search_fields` once, then `search_posts` filtered on the URL or
-     permalink field the census exposes, projecting `postedAt`, `text`, `url`, `mediaKind`,
-     `media` (container), `instagram` or `tiktok` containers, the metrics, and any
-     transcript or analysis fields the census lists. Nothing found: `lookup_posts` with one
+   - `published`: field paths from `atlas-search.md`, then `search_posts` filtered on `url`, projecting
+     `postedAt`, `text`, `url`, `mediaKind`, `media` (container), the metrics, and the analysis
+     fields `atlas-search.md` lists, with `analysis.transcript` and `analysis.overlayText`. Nothing found: `lookup_posts` with one
      item (`schema` = network, `entityKind` = `post`, `identifier` = the URL). On `fetching`,
      wait 30 seconds and re-call with the same item, up to 4 times; still fetching, return
      one line saying Atlas is still fetching the post, and stop. `unresolvable` on a TikTok

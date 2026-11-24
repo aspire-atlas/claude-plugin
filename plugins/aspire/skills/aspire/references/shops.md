@@ -241,12 +241,12 @@ the source of a platform rule.
 Read only what Atlas holds, plus a connected store's products and stock. Never call
 `lookup_posts`, `lookup_creators`, `search_creator_marketplace`, `start_business_discovery`,
 `append_calibration`, `set_brand_instruction`, or any tool in the Destructive tools table.
-Call `list_post_search_fields` and `list_creator_search_fields` once each and use only the paths
-they return.
+Take field paths from **Atlas search**; call a `list_*_search_fields` census only for a path it does not
+list.
 
 | What | How |
 | ---- | --- |
-| Brand memory | `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep `brand:summary`, `brand:business-context` (website, markets, products), `competitor`, `partner`, `red_line`, `theme:brand`, `creator:*` notes, every active `program:{slug}-program`, `-terms` (affiliate commission and disclosure rule) and `-catalog`, and `campaign:*-brief` names. Drop `review:`, `vetting:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`. |
+| Brand memory | `search_calibrations` (no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep `brand:summary`, `brand:business-context` (website, markets, products), `competitor`, `partner`, brand red lines (**Atlas tools**, Calibration kinds), `theme:brand`, `creator:*` notes, every active `program:{slug}-program`, `-terms` (affiliate commission and disclosure rule) and `-catalog`, and `campaign:*-brief` names. Drop `review:`, `vetting:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, and `fees:` keys, and a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` and `-decision-defaults`. |
 | The brand's own posts | `search_posts` per linked handle, the last 90 days, projecting `postedAt`, `text`, `url`, the metrics, `mediaKind`, `media` (container), `instagram.mediaProductType`, and when the census lists them `analysis.commercialAnalysis.featuredProducts` and `callToActions`. Engagements are likes plus comments, labelled so. |
 | Creators' posts about the brand | `search_posts` where the mentions field names a brand handle, the last 90 days, excluding the brand's handles and every `competitor`; `list_hashtags`, then `list_hashtag_posts` for tracked hashtags. |
 | Creators | `search_creators` once per candidate for followers, profile picture, and the fields the creator card needs. |
@@ -334,7 +334,7 @@ plan says the platform's review time is not in its control.
 - **Formats to make shoppable** (TikTok, and Reels on Instagram): the formats and hook patterns
   that lead among the brand's own posts (and in `ad-reuse` findings when saved), with two or
   three video ideas per lead product, each named after a real post that worked. When a
-  `red_line` blocks AI-written copy, give the angle and the post it comes from, never a script.
+  brand red line blocks AI-written copy, give the angle and the post it comes from, never a script.
 - **LIVE**: only when TikTok is in scope; one pilot idea with the product, a host from the
   creator plan or the brand's team, and "check LIVE eligibility first".
 
@@ -438,7 +438,7 @@ on every finding, an `idempotencyKey` each, `detail.recipient` on each, and `det
 | `plan` | one per run | The brand's own account on its first linked network | `action_item` `low` | `platforms`, `stage`, `headline`, checklist counts per status, the W3 answers, `pageUrl` |
 | `step` | the platform + the step key | The brand's account on that platform's network when linked, else on its first linked network | `action_item` `high` for a readiness fix, `medium` for a setup step, `low` for a running step; `went_well` when done | `platform`, `key`, `phase` (readiness, setup, catalog, content, creators, running), `step`, `where`, `owner`, `order`, `dependsOn`, `due`, `status` (open, done), `notes` |
 | `shop-creator` | the creator + the platform | The creator's account, `entityId` the network's own account id | `action_item` `medium` | `handle`, `network`, `platform`, `role`, `source`, `why`, `evidence`, `rights` |
-| `page` | key `shops` | The brand's own account on its first linked network | `went_well` `low` | `key`, `url`, `title` |
+| `page` | key `shops` | The brand's own account on its first linked network | `went_well` | `key`, `url`, `title` |
 
 | Record | idempotencyKey |
 | ------ | -------------- |

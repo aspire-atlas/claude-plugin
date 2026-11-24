@@ -52,7 +52,6 @@ ADVISORY="description freshness eval"
 # Deliberate exceptions: <item>[:<kind>]|<agent or file>|<reason>. An entry with a kind covers only
 # findings of that kind (metrics:no-code is "publishes a page and answers no question code"). Shrink only.
 ALLOW='
-metrics:no-code|atlas-affiliate-manager|Program operations: codes, commission and sales records; answers no question code in orchestration.md section 3
 metrics:no-code|atlas-campaign-orchestrator|Next actions list across every program; answers no question code in orchestration.md section 3
 metrics:no-code|atlas-content-review|Go or no-go on one draft against a brief; answers no question code in orchestration.md section 3
 metrics:no-code|atlas-content-sourcing|Rights and asset requests tracker; answers no question code in orchestration.md section 3
@@ -69,6 +68,10 @@ run_check() { # $1: repository root, $2: items (space separated), $3: plugin fol
   python3 -I - "$1" "$2" "$WORDS_SRC" "$3" <<'PY'
 import glob, json, os, re, sys
 
+sys.dont_write_bytecode = True
+sys.path.insert(0, "scripts")
+from question_codes import code_rows, section3
+
 root, items, words_src, plugin_dirs = sys.argv[1], set(sys.argv[2].split()), sys.argv[3], sys.argv[4].split()
 P = os.path.join(root, "plugins")
 REFS = os.path.join(P, "aspire/skills/aspire/references")
@@ -83,7 +86,6 @@ FLOW = {"atlas-affiliate-manager": "affiliate", "atlas-campaign-orchestrator": "
         "atlas-daily-insights-report": "readout", "atlas-weekly-insights-report": "readout",
         "atlas-product-fulfillment": "fulfillment", "atlas-profile-analyst": "account-review"}
 CODE = re.compile(r"(?<![A-Za-z0-9])([IPOA][0-9]+)(?![A-Za-z0-9])")
-QUESTION_CODES = {f"{l}{i}" for l in "IPO" for i in range(1, 7)} | {"A1"}
 
 def rel(path):
     return os.path.relpath(path, root)
@@ -108,13 +110,14 @@ def line_of(text, pos):
 
 # --- shared sources ------------------------------------------------------------------------------
 orch = read(ORCH) if os.path.isfile(ORCH) else ""
-sec3 = re.search(r"^## 3\. .*?(?=^## )", orch, re.M | re.S)
+sec3 = section3(orch)
 if not sec3:
     error(f"{rel(ORCH)} has no section 3 (Question codes) to read the routes from")
-routes = {}
-for row in re.findall(r"^\| ([IPOA][0-9]+) \|(.*)$", sec3.group(0) if sec3 else "", re.M):
-    for agent in re.findall(r"`(atlas-[a-z-]+)`", row[1]):
-        routes.setdefault(agent, set()).add(row[0])
+routes, QUESTION_CODES = {}, set()
+for code, rest in code_rows(sec3):
+    QUESTION_CODES.add(code)
+    for agent in re.findall(r"`(atlas-[a-z-]+)`", rest):
+        routes.setdefault(agent, set()).add(code)
 
 ps = read(PS) if os.path.isfile(PS) else ""
 table = re.search(r"<!-- required-metrics -->(.*?)<!-- /required-metrics -->", ps, re.S)
@@ -130,7 +133,7 @@ for path in sorted(glob.glob(os.path.join(SPECS, "*.md"))):
     text = read(path)
     m = re.search(r"^plugin_agents:(.*)$", text, re.M)
     q = re.search(r"^## Questions answered\n(.*?)(?=^## |\Z)", text, re.M | re.S)
-    codes = set(re.findall(r"^\| ([IPOA][0-9]+) \|", q.group(1), re.M)) if q else set()
+    codes = {code for code, _ in code_rows(q.group(1))} if q else set()
     for agent in re.findall(r"atlas-[a-z-]+", m.group(1) if m else ""):
         routes.setdefault(agent, set()).update(codes)
 

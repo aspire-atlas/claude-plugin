@@ -138,11 +138,12 @@ confirmation, one confirmation per key.
 Filter-only path, no `queryText`, unless noted. Every call carries a `context` argument
 (`[<runId>]`, then 15 to 25 words, third person; the run id prefix does not count toward them).
 
-1. `search_calibrations` as above. Extract: readout calibrations, `red_line`, `guideline`,
+1. `search_calibrations` as above. Extract: readout calibrations, brand red lines (**Atlas tools**, Calibration kinds), `guideline`,
    `competitor`, `partner`, `brand:summary`, `target:weekly-health`, `theme:brand`. Drop every
-   `review:` key (content review only; see **Atlas tools**) and every `lastrun:` key (a flow's
+   `review:` key (content review only; see **Atlas tools**), every `applicantreview:` key (one
+   campaign's applicant screening only), and every `lastrun:` key (a flow's
    saved setup answers, never a rule). `theme:brand` styles the page and is never a guideline.
-2. `list_post_search_fields` once. Use only paths it returns.
+2. Take field paths from **Atlas search**; call `list_post_search_fields` only for a path it does not list.
 2b. Freshness (**Page standard**, section 9): `search_creators` on the linked handles, with no
    wildcard `exclude`, for each channel's `freshness`, and the freshness read (section 9.1) per
    handle. An unattended run refreshes nothing: it gives each handle the freshness line and any
@@ -150,7 +151,7 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `approved.refresh` refreshes those before step 3, so steps 3 onward read what the refresh
    brought in, and makes no new offer. An interactive
    run with `approved.refresh` null works out each handle's pace from the freshness read (section
-   9.4) and offers the refresh, with its time and cost, for each handle behind it (section 9.5),
+   9.4) and offers the refresh, with its time and cost, for each handle behind it, up to the refresh limit (section 9.5),
    holding its findings and delivery until the relaunch. The page's source line and the chat
    summary carry the freshness line.
 3. `search_posts` per linked handle: `author.username` = handle, `postedAt` gte the window
@@ -160,8 +161,9 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    `text`, `instagram.hashtags`, `instagram.account` (container, for the profile picture and
    follower count), and `tiktok.account` where present.
 4. Baseline: the same query for the 28 days before the window (daily) or the prior week and
-   the prior 8 weeks (weekly). One `aggs` call per window: `date_histogram` on `postedAt`
-   (day) with sum of likes, comments, saves, shares, views; `terms` on `mediaKind`.
+   the prior 8 weeks (weekly). Per window, the paged hits give the
+   daily or weekly sums of likes, comments, saves, shares and views, and one `limit: 0` call with
+   `aggs` `terms` on `mediaKind` gives the format mix (`aggs` has no sums or date buckets).
 5. `search_creators` filtered on the username for the current follower count. Compare with the
    follower count stored in the last readout's insights, if any.
 6. `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
@@ -183,10 +185,10 @@ Filter-only path, no `queryText`, unless noted. Every call carries a `context` a
    **Content review**, **Feeding the readouts**. Read only; never write a review finding.
    A content review edit is closed only by a later review's `close` finding, never by a
    readout: the readout's own resolving `went_well` applies to readout and brief items only.
-7. Red-line scan: for each `red_line` with `action: block|flag|escalate`, one semantic
+7. Red-line scan: for each brand red line with `action: block|flag|escalate`, one semantic
    `search_posts` with `queryText` = the red-line body, filtered to the window and the brand's
-   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` keys were
-   dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
+   handles, limit 10. Report hits by permalink. Never invent a hit. `review:` and
+   `applicantreview:` keys were dropped in step 1; hits on content review hard rules come from step 6b (`hardRuleHits`).
 
 Metric definitions:
 
@@ -320,8 +322,7 @@ target date. A caller may also pass a campaign slug for an on-demand pulse. For 
 2. **Mentions.** A semantic `search_posts` with `queryText` = the pulse topics, filtered to the
    target date, excluding the brand's handles, limit 50; plus `list_hashtag_posts` for each
    pulse hashtag. Posts and distinct creators, against the day before.
-3. **Reception.** From the posts in 1 and 2: tone (`analysis.emotionalAnalysis.tone` when the
-   census lists it) as counts, and up to five verbatims with permalinks: the praise and the
+3. **Reception.** From the posts in 1 and 2: tone (`analysis.emotionalAnalysis.tone`) as counts, and up to five verbatims with permalinks: the praise and the
    friction creators state. For the `product` lens, group the friction by issue.
 4. **Drafts and verdicts.** The campaign creators' content reviews on the target date (step 6b).
 
@@ -332,6 +333,9 @@ campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five.
 only what Atlas holds: no lookups, no marketplace. In the freshness line (**Page standard**,
 section 9), the campaign's accepted creators are subject accounts with their own entries and no
 refresh; mention posts and verbatims share the one mentions entry, marked `data-mention`.
+Because a readout carries mention evidence, its page is checked for the paid label wording
+(**Page standard**, section 8, **Paid label or none**): a block that gives the brand's own organic
+figures carries `data-own`, and another account's post is never called organic or unpaid.
 
 ## Weekly readout
 
@@ -355,7 +359,9 @@ bullets per other saved lens:
 - Content reviews: reviews run by verdict, the most common failed check, and creators
   reviewed more than once. For reviewed published posts, the lead metric against the
   creator's own median when Atlas holds it.
-- Next steps: 3 ranked bullets, each tied to a number above.
+- Next steps: 3 ranked bullets, each tied to a number above and ending with its cost line. A
+  change that could help or hurt the brand is a trend to watch with both readings, never a next
+  step to act on (**Page standard**, `recommendations.md`).
 - Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - Data gaps and one closing line: findings saved, page link.
 
@@ -375,7 +381,8 @@ section list below. The others:
   partnership-marked posts, and mentions by accounts other than the brand), per creator and per
   format: engagement per post against the creator's own median and the brand's median, and the
   estimated fee from the fee calculator (**Fee calculator**) per 1,000 engagements, labelled as estimated
-  because Atlas holds no spend. End with one recommendation: where the next dollar goes. Each
+  because Atlas holds no spend. End with one recommendation: where the next dollar goes, with
+  its cost line (**Page standard**, `recommendations.md`). Each
   creator that beat both medians gets a `went_well` finding with `detail.creator`,
   `detail.lens: "growth"`, and `detail.seedEligible: true`, which feeds discovery's lookalike tier.
 
@@ -531,8 +538,15 @@ the user asks how a launch is landing:
 
 ## Scheduling (main thread)
 
-The mechanics SKILL.md **Readouts**, Schedule names, which other flows' schedules reuse. After the
-first successful run, or whenever the user asks to schedule, offer with `AskUserQuestion`: "Set up
+The mechanics SKILL.md **Readouts**, Schedule names, which other flows' schedules reuse.
+
+**This skill owns every schedule.** Every scheduled task a section of this skill creates has a
+prompt that starts with `/aspire:aspire ` and then the section's prompt, so each run goes through
+this skill, carries the `launch` block with `run: unattended`, and republishes to the same page
+link. A scheduled task whose prompt does not run `/aspire:aspire` (the hourly "Run /aspire:aspire
+next" prompt already does): offer once, in an interactive session, to update its prompt.
+
+After the first successful run, or whenever the user asks to schedule, offer with `AskUserQuestion`: "Set up
 the recurring schedules now?" Options: "Yes, daily and weekly (Recommended)", "Weekly only",
 "Daily only", "Not now". On yes:
 

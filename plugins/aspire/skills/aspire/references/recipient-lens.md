@@ -109,7 +109,7 @@ a chain, add the other end as a second lens by default and say so in the confirm
    the team's own routine ("run the daily"). Then pass the lens with `confirmed: true` if the
    user named it, `false` otherwise.
 6. Unattended runs never ask. They use the flow's saved readers (`guideline:readout-audience`,
-   `market-signal:lenses`, or the flow's `lastrun:` record), or `team`, and never a person's own
+   `marketsignal:lenses`, or the flow's `lastrun:` record), or `team`, and never a person's own
    default.
 
 Never ask who the output is for in plain text, and never ask more than once per request.

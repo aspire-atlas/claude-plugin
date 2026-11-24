@@ -174,7 +174,11 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
 
 1. **Product.** The product's photo, name and SKU. The agency picks it from the products in
    scope (a Select); a product the brief names that is not in scope shows as text with a warning
-   Badge "Not in products in scope".
+   Badge "Not in products in scope". Under it, **Claims**: what a creator may say about the
+   product, one line each ("Add a claim"), and for the agency only, each claim's source (the
+   product-page line it came from) in `text-xs text-muted-foreground` under the claim, kept in
+   agency data. Then **Pronunciation**: one line per term, "{term}: say {how}" ("Add a term").
+   A bracketed blank stays one until someone fills it.
 2. **The concept.** Name, positioning line, conversion trigger, framework (a Select of the
    campaign's frameworks for the agency, its name as text for the client), personas (one line
    each, "Add a persona"), the story, and the selling points (one line each).
@@ -191,11 +195,17 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
 3. **The hero (V1).** Problem, agitate and solve, one long text each, labelled by the concept's
    framework.
 4. **Hooks.** H1 to H3, one block each: the number, the type as a soft Badge, the line in quotes,
-   "Shown:" and "Overlay:" lines, and the reason in `text-xs text-muted-foreground`.
+   "Shown:" and "Overlay:" lines, and the reason in `text-xs text-muted-foreground`. A hook whose
+   line names a price, a code or an offer carries a warning Badge "Promo"; the agency turns it on
+   or off with a Switch "Promo" beside the type.
 5. **CTAs.** C1 and C2, each with its type, the line, "Sends to:" (a bracketed blank stays a
-   bracketed blank until someone fills it), "Lands at:" and the reason.
+   bracketed blank until someone fills it), "Lands at:" and the reason, and the same "Promo"
+   Badge and Switch as a hook.
 6. **Body.** The body as long text, its length ("30 seconds"), the beats with their seconds,
-   and the runtime per platform.
+   and the runtime per platform. Then the **Proof point**: its line and the moment it lands
+   ("Proof point: … · during {moment}"), one per concept. Then the **Bridges**, one line each,
+   labelled by what they join: "H1 to body", "Body to C2"; a hook or CTA with no bridge shows
+   "No bridge yet" for the agency.
 7. **B-roll.** The numbered shot list, "B01 {what is filmed} · {beat}", with "Add a shot".
 8. **Creators.** The round's approved creators on this concept, as small creator rows with their
    brief state, each linking to their card on Selected Creators.
@@ -210,10 +220,11 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
     **Remove concept** (ghost Button, Lucide `trash-2`), last.
 
 Every part is edited in place (**Editing in place**). Short parts (name, line, trigger, a list
-item, a hook's line, a length) are one line Inputs. The story, problem, agitate, solve, the body, the tone of voice, the summary and each variant's VO are long text with the
+item, a hook's line, a length, the proof point, a bridge, a claim and its source, a
+pronunciation) are one line Inputs. The story, problem, agitate, solve, the body, the tone of voice, the summary and each variant's VO are long text with the
 rich text toolbar. Personas, selling points, do's, don'ts and B-roll shots are lists of one line
-items. Fixed choices (product, framework, hook type, CTA type, a variant's hook and
-CTA) are Selects.
+items. Fixed choices (product, framework, hook type, CTA type, a variant's hook, CTA and funnel
+job) are Selects.
 
 Two people can work on the brief at once. Each concept is its own document and every part its own
 key (**1e**, **Every editable value**), so two people editing two concepts, or two parts of one
@@ -276,8 +287,10 @@ Tab in a list, and Enter on an empty list item work as in any editor, and each h
 For the agency only, at the end of each concept under an "Agency only" rule, and never in the page
 itself (**Who sees what**): a Table of V1 to V{v}, {v} being the program terms' variants per creator
 (**Selected Creators**, **Variants per creator**), at most 5. Columns: Variant, Framework (a Select of the campaign's frameworks; it starts on the
-framework for that slot), Length, Hook (a Select of the concept's hooks, "H1 Question"), CTA (a
-Select of its CTAs), VO (long text, opened below the row with the toolbar), B-roll (the shot
+framework for that slot), Length (required: an empty one shows a warning Badge "Needs a length"),
+Funnel job (a Select of Reach, Consideration and Conversion, what the variant is built to do and
+what Ad Performance judges it against; empty shows "Needs a funnel job"), Hook (a Select of the
+concept's hooks, "H1 Question"), CTA (a Select of its CTAs), VO (long text, opened below the row with the toolbar), B-roll (the shot
 numbers, picked from the concept's numbered list, shown "B02, B05, B09"), and Note. The Table keeps
 its first column and header pinned (**Responsive**, **Tables**) and is a stack of Cards on phone. A
 variant that names a hook, CTA or shot that was removed shows it struck through with a warning
@@ -760,18 +773,28 @@ Selling points
 • {selling point}
 
 Hooks
-H{n} ({type}): "{line}"
+H{n} ({type}): "{line}"{ · Promo, when flagged}
    Shown: {shown}
    Overlay: {overlay}
 
 CTAs
-C{n} ({type}): "{line}"
+C{n} ({type}): "{line}"{ · Promo, when flagged}
    Sends to: {destination}
    Lands at: {moment}
 
 Body ({length})
 {body}
 Runtime: Instagram {instagram}, TikTok {tiktok}
+Proof point: "{line}" ({moment})
+
+Bridges
+{H1 to body / Body to C1}: "{line}"
+
+What you can say
+• {claim}
+
+Say it like this
+{term}: {say}
 
 B-roll
 B{nn} {shot} ({beat})
@@ -788,8 +811,9 @@ File naming: {file naming}
 
 Long text goes in as plain text (**Rich text**, **Everywhere else**). A part with no value
 leaves out its line, and a list with none leaves out its heading. The problem, agitate and solve
-lines take the concept's framework's own names where they differ. It never holds the variant plan,
-the frameworks list, a hook's or CTA's reason, the coverage check, the creators on the concept,
+lines take the concept's framework's own names where they differ. It never holds the variant plan
+(a variant's funnel job included), a claim's source, the frameworks list, a hook's or CTA's
+reason, the coverage check, the creators on the concept,
 comments of either kind, a version, or any id. Before the round is signed off, its first line is
 "Draft: {brand} hasn't signed this off yet." The Button reads "Copied" for two seconds. Where the
 browser refuses the clipboard, a Dialog "Copy creator brief" opens with the text in a read only
@@ -845,8 +869,12 @@ shows what is missing. Nothing the agent writes is dropped:
 | Selling points | Selling points | `point-{id}` |
 | Hero beats | Problem, agitate, solve | `problem`, `agitate`, `solve` |
 | Beat structure, with seconds | Beats | `beat-{n}` |
-| 3 hooks: pattern, said, shown, overlay, reason | H1 to H3: type (the pattern), line (what is said), shown, overlay, why | `hook-{n}` |
-| 2 CTAs: type, action, destination, moment, reason | C1 to C2: type (Direct or Soft), line (the action), sends to, lands at, why | `cta-{n}` |
+| 3 hooks: pattern, said, shown, overlay, reason, promo flag | H1 to H3: type (the pattern), line (what is said), shown, overlay, why, Promo | `hook-{n}` (with `promo`) |
+| 2 CTAs: type, action, destination, moment, reason, promo flag | C1 to C2: type (Direct or Soft), line (the action), sends to, lands at, why, Promo | `cta-{n}` (with `promo`) |
+| Proof point | Proof point | `proofPoint` (`{line, moment}`) |
+| Bridges, each naming the hook or CTA it joins | Bridges | `bridge-{id}` (`{from, to, n, line}`) |
+| Claims, each with its product-page source | Claims; the source for the agency only | `claim-{id}` in `briefs/{lane}-r{round}`; `claimsource-{id}` (the same id) in `agency/brief-{lane}-r{round}` |
+| Pronunciation | Pronunciation | `say-{id}` (`{term, say}`) |
 | 1 body, and its length | Body, length | `body`, `length` |
 | Runtime per platform | Runtime | `runtime` |
 | 10 to 15 B-roll shots, each with its beat | B-roll | `broll-{n}` |
@@ -854,8 +882,13 @@ shows what is missing. Nothing the agent writes is dropped:
 | Editing coverage result (the three checks) | Coverage | `coverage:` |
 | The variant plan's check | Variant check, for the agency only | `variantCheck:` in `agency/brief-{lane}-r{round}` |
 | Creators, from the roster | Creators | Not stored: read from the roster at publish |
-| Variant plan, V1 to V{v}: framework code, length, hook and CTA numbers, VO, shot numbers, note | Variant plan, the framework matched by its code to the campaign's frameworks | `v{n}-*` in `agency/brief-{lane}-r{round}` |
+| Variant plan, V1 to V{v}: framework code, length, funnel job, hook and CTA numbers, VO, shot numbers, note | Variant plan, the framework matched by its code to the campaign's frameworks | `v{n}-*` in `agency/brief-{lane}-r{round}` |
 | Frameworks used | Frameworks | `framework-{slot}` in `agency/frameworks` |
+
+A schema-1 block has no proof point, bridges, claims, pronunciation, promo flags or funnel jobs:
+those parts load empty, every promo flag off, and the status bar counts the concept as needing
+work until the next brief run writes them or the agency fills them. Page edits to any of these
+parts are pulled back into the lane's `content` like every other part (**Pulling decisions**).
 
 A brief written before the agent wrote the data block is read from its page by its section
 headings into the same parts. A part it doesn't have (story, selling points, the hero beats, the
@@ -1406,9 +1439,8 @@ line.
 
 **Where the viewer's fields come from.** Read by Claude at publish, with the card's pulls
 (**Creator card**, **Data: what fills each section**) widened as below, and written into the page
-itself for a creator sent to the client, or `agency/pool-{net}-{handle}` for one not sent yet. Every field path is
-checked against the live census (`list_creator_search_fields`, `list_post_search_fields`) first; one
-the census doesn't list leaves its part out, never guessed.
+itself for a creator sent to the client, or `agency/pool-{net}-{handle}` for one not sent yet. Field paths come from
+**Atlas search** or the live census; one neither lists leaves its part out, never guessed.
 
 | In the viewer | From |
 | ------------- | ---- |

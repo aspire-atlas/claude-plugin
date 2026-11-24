@@ -94,7 +94,7 @@ the reason shows to the client. The agency reads the source on the change note.
   hook or CTA, word for word or in close paraphrase, in any lane or round. A hook logged for the
   same lane in the same round is that brief's own, not a reuse. After the brief is
   saved, append every new hook and CTA as a `hook` finding with its pattern in `detail.pattern`.
-- **Red lines.** A `red_line` that blocks AI-written copy turns each hook and CTA into a
+- **Red lines.** A brand red line (**Atlas tools**, Calibration kinds) that blocks AI-written copy turns each hook and CTA into a
   direction: what the line must do and must not say, with the pattern and the reason, never a
   scripted line.
 - **Coverage.** Every hook's "Shown" part needs footage asked for, and the beats must fit the
@@ -112,7 +112,7 @@ Atlas holds: no lookups, no marketplace, no discovery.
    **Rounds**), so rounds that overlap never score the same post, video only (`exists mediaKind`,
    Reels and TikTok videos), that mention or tag the brand. Project `postedAt`, `text`, `url`,
    `author.username`, the metrics, `media` (container), and `analysis.transcript` and
-   `analysis.overlayText` when the census lists them.
+   `analysis.overlayText`.
 2. **Match each post to a briefed hook.** Compare the post's opening (the transcript's first
    three seconds, then the overlay text) with the round's `hook` findings. A semantic
    `search_posts` with `queryText` set to the hook's "Said" line, filtered to the creator, helps

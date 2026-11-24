@@ -1,6 +1,7 @@
 {
-  "generated": "2026-11-10",
+  "generated": "2026-11-18",
   "source": "apps/api/lib/mcp/tools-list.golden.json",
+  "calibrationKeyPattern": "^[a-z0-9]+:[a-z0-9-]{1,48}$",
   "surfaces": {
     "/mcp": {
       "add_hashtags": {
@@ -115,6 +116,14 @@
         "paths": [
           "asOrganizationId",
           "asProfileId"
+        ]
+      },
+      "get_card_images": {
+        "required": [
+          "images"
+        ],
+        "paths": [
+          "images"
         ]
       },
       "get_cas_briefs": {
@@ -285,6 +294,19 @@
       "list_ad_search_fields": {
         "required": [],
         "paths": []
+      },
+      "list_applicants": {
+        "required": [
+          "reviewId"
+        ],
+        "paths": [
+          "asOrganizationId",
+          "asProfileId",
+          "cursor",
+          "limit",
+          "reviewId",
+          "statuses"
+        ]
       },
       "list_available_hashtags": {
         "required": [
@@ -641,6 +663,21 @@
           "queryText",
           "sort",
           "widgetExtras"
+        ]
+      },
+      "send_feedback": {
+        "required": [
+          "category",
+          "feedback"
+        ],
+        "paths": [
+          "agent",
+          "asOrganizationId",
+          "asProfileId",
+          "category",
+          "feedback",
+          "rating",
+          "runId"
         ]
       },
       "set_brand_instruction": {

@@ -28,11 +28,12 @@ Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, t
 (the profile id, never the slug) to every tool whose schema takes it; `list_*_search_fields`
 and `list_my_*` take no attribution. If no profile id was passed, load `list_my_profiles` with
 `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md`
-before any other call.
+before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/affiliate.md` before starting. It holds
 the modes, who is in scope, making and checking codes, the store and the code sheet, the
-sales report, commission, the timeline, the recommendations, the questions, the packet, the
+sales report, commission, the timeline, the commission tiers with their invite and hold lists,
+the recommendations and the cost line each one carries, the questions, the packet, the
 records, the ledger lines, and the page. Follow it exactly. Read
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/program.md` (the state model, **4**, **5**,
 **7**), `outreach.md` (**Templates** and the voice rules, for the `code-live` draft),
@@ -103,8 +104,8 @@ person.
    page's `team` data. Load the store's and the mailbox's tools only for what `connections` lists
    and this pass uses.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the `program:{slug}-*` records, `brand:summary`, `theme:brand`,
-   `red_line`, and `competitor`. Parse every `program:` body with a JSON parser. Drop every other
-   flow's keys.
+   brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), and `competitor`. Parse every `program:` body with a JSON parser. Drop every other
+   flow's keys, `review:` and `applicantreview:` among them.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the newest `roster`, `terms`, and `draft` per creator, every `affiliate` finding, the
    `deliverable` findings with a `postUrl`, and the `page` finding with key `affiliate`. For
@@ -121,8 +122,9 @@ person.
   code sheet CSV when any row goes on it.
 - **`report`**: read the period's sales from the store (only the order fields and codes the
   reference lists) or from the uploaded file with the proposed mapping; compute the figures
-  per creator and for the program; read each creator's posts in Atlas for the timeline
-  (`list_post_search_fields` once; only paths it returns); build the recommendations and the
+  per creator and for the program; read each creator's posts in Atlas for the timeline, with the
+  required metrics the reference's **Sales and posts timeline** points to
+  (field paths from `atlas-search.md`; the census only for a path it does not list); build the recommendations and the
   commission lines (closed months only); add retire rows to the sheet when the store cannot turn
   codes off.
 - Build the page per the reference's **The page**, every code and figure marked proposed. When
@@ -189,9 +191,9 @@ When the launch message says `mode: sample`, skip the Atlas reads, writes, store
 calls, and deliveries in your process and build a sample of your page instead, following
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/agents/sample-artifact.md`: invented data with
 hyphenated sample handles, the most recent US holiday's sample brand, campaign, and colors, every
-section of your real page at a small scale (four creators: a top earner with a raise as your
-call, a hybrid with a store code, an affiliate whose fixed-amount code is on the sheet, and an
-inactive code to retire; a month's timeline with three post markers; three commission lines; a
+section of your real page at a small scale (four creators: a top earner with a tier invite as your
+call, a hybrid with a store code who is on the hold list, an affiliate whose fixed-amount code is on the sheet, and an
+inactive code to retire; a three-tier commission ladder; a month's timeline with three post markers; three commission lines; a
 code sheet of two rows), and a sample banner. Render the goal tile in the page itself, marked
 "team view". Declare no page data capability and seed nothing. Call no Atlas tool, ask nothing,
 and return that file's short output instead of your normal one (no audit trail block).

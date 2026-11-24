@@ -29,7 +29,7 @@ S4. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 word
 `asProfileId` (the profile id, never the slug) to every tool whose schema takes it;
 `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed, load
 `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/content-sourcing.md` before starting. It
 holds the modes, the questions, how terms are proposed, fees, renewal, UGC, recording replies,
@@ -96,7 +96,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    triage reply, load the mailbox's thread read tool only when `outreach.watchReplies` is on and
    `connections.mail.canReadThreads` is true.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep the records the reference lists under **Inputs, per post or
-   creator**; drop `review:`, `vetting:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, and `campaign:` keys and other programs' keys. Parse
+   creator**; drop `review:`, `vetting:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, and `campaign:` keys and other programs' keys. Parse
    every `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end,
    and on `content-library-{profile}` for `asset` findings. Keep the newest per identity of
@@ -112,16 +112,16 @@ step needs one of those, skip that step and name it in your output as needing a 
      `asset` findings per `content-library.md`, **Worth requesting**.
    - `renewal`: every grant and deal usage ending within the horizon, per the reference,
      **Renewal**.
-   - `ugc`: the gaps and the creators per the reference, **UGC** (`list_post_search_fields`
-     once; `search_posts` per candidate creator with the gap as `queryText`).
+   - `ugc`: the gaps and the creators per the reference, **UGC** (field paths from
+     `atlas-search.md`; `search_posts` per candidate creator with the gap as `queryText`).
    - `replies`: each reply matched to the creator and their open `rights` findings. A triage
      hand-off with no reply text reads that creator's thread only as the reference allows,
      else goes under "Needs the main thread". Replies already recorded as `rights` outcomes are
      skipped.
 2. **Skip** per **Who gets a request**, with the reason.
 3. **Propose terms** per **Proposing rights terms** and **Fees**, or the outcome per
-   **Recording replies**. `search_creators` once per creator (`list_creator_search_fields`
-   once). Price from the terms' `rights` block or the user's number only.
+   **Recording replies**. `search_creators` once per creator (field paths from
+   `atlas-search.md`). Price from the terms' `rights` block or the user's number only.
 4. **Raise your-call items** per **Your call**.
 5. **Draft** per **Drafts**: one draft per creator, template, and channel; several posts in one
    draft. For `replies`, the `rights-counter` (on the recommended S2 answer), `rights-in-writing`

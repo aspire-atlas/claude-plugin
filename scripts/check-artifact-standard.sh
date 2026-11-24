@@ -26,7 +26,7 @@ fail=0
 err() { echo "FAIL $*"; fail=1; }
 
 [ -f "$STD" ] || { echo "FAIL $STD is missing"; exit 1; }
-for f in "$P/assets/aspire-animated.svg" "$P/assets/aspire-animated-small.svg"; do
+for f in "$P/assets/aspire-animated.svg.md" "$P/assets/aspire-animated-small.svg.md"; do
   [ -f "$f" ] || err "$f is missing (the standard pastes it into pages)"
 done
 
@@ -39,7 +39,7 @@ for p in $(plugin_names); do
   if [ "$src" != "$P" ]; then
     # The block and the standard name these paths under the plugin's own root.
     for f in skills/aspire/references/artifact-standard.md skills/page-standard/SKILL.md skills/page-standard/page-check.md \
-      skills/aspire/references/reader-standard.md assets/aspire-animated.svg assets/aspire-animated-small.svg; do
+      skills/aspire/references/reader-standard.md assets/aspire-animated.svg.md assets/aspire-animated-small.svg.md; do
       [ -e "$src/$f" ] || { err "$p: $src/$f is missing; link it to $P/$f"; continue; }
       { [ -L "$src/$f" ] && [ "$src/$f" -ef "$P/$f" ]; } || err "$p: $src/$f must be a symbolic link to $P/$f, not a copy"
     done
@@ -161,13 +161,16 @@ else
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
-    # Each fixture prints exactly six results and no error: a pass*.html page fails nothing, and a
-    # fail-rN*.html page fails RN and nothing else. Exit 2 means the script could not read the page.
+    # Each fixture prints one result per scripted check (as many as pass.html prints) and no error:
+    # a pass*.html page fails nothing, and a fail-rN*.html page fails RN and nothing else. Exit 2
+    # means the script could not read the page.
+    n=$(python3 -I "$tmp/page_check.py" "$FX/pass.html" 2>/dev/null | grep -c '"check": "R' || true)
+    [ "$n" -gt 0 ] || err "page check printed no result for $FX/pass.html"
     for f in "$FX"/*.html; do
       [ -f "$f" ] || continue
       name=${f##*/}
       out=$(python3 -I "$tmp/page_check.py" "$f" 2>&1) && code=0 || code=$?
-      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq 6 ] && ! grep -q Traceback <<< "$out" ||
+      [ "$code" -ne 2 ] && [ "$(grep -c '"check": "R' <<< "$out")" -eq "$n" ] && ! grep -q Traceback <<< "$out" ||
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
@@ -186,8 +189,45 @@ else
     grep -q '"check": "R14", "name": "Data freshness", "result": "pass"' <<< "$out" ||
       err "the markup example in $PS (section 5) does not pass R14: $(grep '"R14"' <<< "$out")"
 
+    # The like-for-like check's two numbers are set once, in comparisons.md, and the script holds the same.
+    CM=$P/skills/page-standard/comparisons.md
+    if [ ! -f "$CM" ]; then
+      err "$CM is missing"
+    else
+      grep -qF 'comparisons.md' "$PS" || err "$PS does not link comparisons.md"
+      line=$(sed -nE 's/^<!-- directional-max: ([0-9]+); in-line-points: ([0-9]+) -->$/\1 \2/p' "$CM")
+      have="$(sed -nE 's/^DIRECTIONAL_MAX = ([0-9]+)$/\1/p' "$tmp/page_check.py") $(sed -nE 's/^IN_LINE_POINTS = ([0-9]+)$/\1/p' "$tmp/page_check.py")"
+      [ -n "$line" ] && [ "$line" = "$have" ] ||
+        err "$PC's DIRECTIONAL_MAX and IN_LINE_POINTS ($have) differ from $CM's directional-max line (${line:-none})"
+      # comparisons.md is the only file that states either number. Elsewhere, a line about the
+      # directional mark or a share in line with its group points there instead of naming a
+      # number, and no line gives the directional line's number as a post threshold.
+      if [ -n "$line" ]; then
+        max=${line% *}
+        th='[0-9]+ (posts )?or fewer|[0-9]+ or fewer posts|(fewer than|less than|under|below|more than) [0-9]+ posts|[0-9]+ posts minimum|within [0-9]+ points'
+        own="$max (posts )?or fewer|$max or fewer posts|(fewer than|less than|under|below|more than) $max posts|$max posts minimum"
+        while IFS= read -r hit; do
+          [ -n "$hit" ] && err "${hit%%:*}:$(cut -d: -f2 <<< "$hit") restates a like-for-like number; point to $CM instead"
+        done < <(grep -rniE "$th" plugins/*/skills plugins/*/agents docs/STANDARD.md .github/pull_request_template.md --include='*.md' 2>/dev/null |
+          grep -v "^$CM:" | grep -iE "directional|in line with|^[^:]+:[0-9]+:.*($own)" || true)
+      fi
+      # The markup example in comparisons.md is what agents copy, so it must pass R15.
+      awk '/^```html$/{g=1;next} g&&/^```$/{exit} g' "$CM" > "$tmp/compare.html"
+      out=$(python3 -I "$tmp/page_check.py" "$tmp/compare.html" 2>&1) || true
+      grep -q '"check": "R15", "name": "Like for like", "result": "pass"' <<< "$out" ||
+        err "the markup example in $CM does not pass R15: $(grep '"R15"' <<< "$out")"
+    fi
+
+    # The cost and trend rules live in recommendations.md; their markup is on the blocks, which
+    # the page built from every block (below) runs through R5.
+    RC=$P/skills/page-standard/recommendations.md
+    [ -f "$RC" ] || err "$RC is missing"
+    grep -qF 'recommendations.md' "$PS" || err "$PS does not link recommendations.md"
+
     # R13 checks the metrics the page standard's required-metrics table names, code by code: the
-    # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS.
+    # table's Codes and On every cited post columns equal the script's REQUIRED_ROWS. The codes are
+    # compared on their own too, so a code that requires no metric still needs its line: without it,
+    # R13 fails every page that carries the code.
     rows=$(python3 -I -c '
 import re, sys
 skill, script = (open(p, encoding="utf-8").read() for p in sys.argv[1:3])
@@ -200,9 +240,18 @@ table = [] if not block else [(re.findall(r"\b[A-Z][0-9]+\b", cells[2]), re.find
 rows = re.search(r"^REQUIRED_ROWS = \"\"\"(.*?)^\"\"\"", script, re.S | re.M)
 code = [] if not rows else [(l.split(":")[0].split(), l.split(":")[1].split()) for l in rows.group(1).strip().splitlines()]
 a, b = pairs(table), pairs(code)
-print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b)), sorted(set(b) - set(a))))
+ca, cb = ({c for codes, _ in lines for c in codes} for lines in (table, code))
+print("ok" if a and a == b and ca == cb else "table %s; script %s" % (
+    sorted(set(a) - set(b)) + sorted(ca - cb), sorted(set(b) - set(a)) + sorted(cb - ca)))
 ' "$PS" "$PC" 2>&1 || true)
     [ "$rows" = ok ] || err "$PC's REQUIRED_ROWS differ from the required-metrics table in $PS (section 8): $rows"
+
+    # The paid label wording is checked on the question codes post-kinds.md names (R ids aside), and it is the
+    # only file that names them: they equal the script's PAID_CODES.
+    PK=$P/skills/page-standard/post-kinds.md
+    named=$(grep -oE '\b[A-QS-Z][0-9]+\b' "$PK" | sort -u | tr '\n' ' ')
+    coded=$(sed -n 's/^PAID_CODES = {\(.*\)}$/\1/p' "$PC" | grep -oE '[A-Z][0-9]+' | sort -u | tr '\n' ' ')
+    [ -n "$coded" ] && [ "$named" = "$coded" ] || err "$PC's PAID_CODES ($coded) differ from the question codes $PK names ($named)"
 
     # The page blocks: a page assembled from every block passes the page check, so a block can't
     # drift from the markup the script reads.
@@ -219,7 +268,7 @@ print("ok" if a and a == b else "table %s; script %s" % (sorted(set(a) - set(b))
         echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq 6 ] ||
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$n" ] ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

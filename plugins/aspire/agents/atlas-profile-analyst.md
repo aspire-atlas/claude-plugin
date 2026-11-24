@@ -17,7 +17,7 @@ linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and 
 (`interactive`, the default, or `unattended`), `onboarding: true` when the launch is the first
 insights at the end of onboarding, and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
-`context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `recipient-lens.md` before starting, and render for the primary lens per **Rendering for a
 lens**. A launch with `target_mode` `reuse`, or a `performance` or `creative` lens asking for hooks,
@@ -38,8 +38,8 @@ findings and pushes only, saying in the summary that nothing was saved.
 1. Load tools: `ToolSearch` with `select:` for `list_post_search_fields`, `search_posts`,
    `search_creators`, `list_creator_search_fields`, `append_insights`, `report_checkpoint` under the given prefix. In mode
    `handle`, also load `lookup_creators`.
-2. Call `list_post_search_fields` once and use only field paths it returns. Never guess a path. In mode
-   `handle`, call `list_creator_search_fields` too.
+2. Take field paths from `atlas-search.md`; call `list_post_search_fields` or `list_creator_search_fields`
+   only for a path it does not list. Never guess a path.
 3. **Resolve the target and verify it is current (mode `handle` only).** Follow **Resolve** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`. Never run a lookup in
    mode `own`: connected channels are indexed by Atlas directly. A handle that cannot be resolved
@@ -48,12 +48,16 @@ findings and pushes only, saying in the summary that nothing was saved.
    - `search_creators` filtered on the username field for follower count, verification, bio.
    - `search_posts` filtered on the author username field, sorted by posted date desc, limit 100,
      projecting text, like/comment counts, media type, posted date, and the network's product type field.
-   - One `aggs` call on the same filter: terms on media type or product type, and cardinality on distinct
-     posts, to size the sample.
+   - One `aggs` call on the same filter with `limit: 0` and no cursor: terms on media type or product
+     type. Its `totalHits` sizes the sample.
 5. Assess per account: posting cadence over the window, engagement per post relative to follower count,
    top 3 posts by engagement and what they share, format mix, and any content that touches a stated red
-   line (never a `review:` key; those are content review only).
+   line (never a `review:` or `applicantreview:` key; those are content review and one campaign's
+   applicant screening only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
+   On the page, a block that gives the brand's own organic figures carries `data-own`, and a
+   competitor's or creator's posts are never called organic or unpaid
+   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, **Paid label or none**).
    **Benchmark against competitors Atlas already indexes.** For each `competitor` handle that
    `search_creators` returns, read its last 90 days with the same `search_posts` filter and compare
    on rates, never raw counts: engagement per post against follower count, posts per week, format
@@ -65,15 +69,15 @@ findings and pushes only, saying in the summary that nothing was saved.
    evidence post, and a numeric target from the account's own medians (for example 1.5x median Reel
    views). Lead with the strongest pattern; give the weakest at most a test slot. Respect the cadence
    the account already sustains. Describe the idea, never write captions, scripts, or hooks when a
-   `red_line` blocks AI-written copy. Pushes that need creators or a budget belong in the creator
+   brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds) blocks AI-written copy. Pushes that need creators or a budget belong in the creator
    brief: say so in one line and offer it.
 7. Mode `handle` only: **compare it against its own peers, never against the brand.** Build the peer
    set and compare per **Peer set** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`.
    - The brand's calibrations are still for two things only: saying whether the handle matches a saved
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
-     account is or is not relevant to the brand's stated goal. Apply `red_line` checks only to the
-     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), or `lastrun:` (a flow's saved setup answers, never a rule).
+     account is or is not relevant to the brand's stated goal. Apply brand red line checks only to the
+     brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
 8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role

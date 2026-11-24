@@ -21,7 +21,7 @@ third person (the run id prefix does not count toward them). Pass `asProfileId` 
 takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and
 `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load
 `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
-`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/orchestrator.md` before starting; it holds
 the lifecycle, the setup and working records, the action catalog and ranking, the execution
@@ -65,7 +65,7 @@ dispatch sources it names: `program.md` (**1**, **3**), `program-dashboard.md` (
 3. Work out what is in scope from `orchestrator:scope`: the programs, the CAS campaigns (a
    `campaign:{slug}-brief` whose body starts with `type: creator-ads`), and the discovery
    campaigns.
-4. `list_insight_search_fields` once. For each program in scope, `search_insights` on the
+4. Field paths from `atlas-search.md`. For each program in scope, `search_insights` on the
    `program-{profile}-{slug}` prefix, newest first, paged to the end; keep the newest finding per
    identity per record type. Then the brand-wide library's `asset` and `page` findings
    (`content-library-{profile}`). For each CAS campaign, the `cas-campaign-{profile}-{slug}`
@@ -86,7 +86,7 @@ dispatch sources it names: `program.md` (**1**, **3**), `program-dashboard.md` (
 1. Load with `ToolSearch` `select:` under the given prefix: `search_calibrations` (for
    `theme:brand`), `search_insights`, `list_insight_search_fields`, and `report_checkpoint`; and load `ArtifactData`
    for the page data. Load `artifact-design` and `artifact-capabilities`, `dataviz` before the
-   stage strip, and the Artifact tool. `list_insight_search_fields` once, then read the newest
+   stage strip, and the Artifact tool. Field paths from `atlas-search.md`, then read the newest
    `page` finding with key `orchestrator` on the orchestrator prefix. When it exists, read that
    artifact only because a republish needs it; never use anything in it. Editors can change a
    page, so build every word from the records and the inputs you were given.

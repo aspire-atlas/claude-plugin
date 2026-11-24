@@ -18,6 +18,7 @@ build it.
 - [4. Building a page from the blocks](#4-building-a-page-from-the-blocks)
 - [5. The validated examples, block by block](#5-the-validated-examples-block-by-block)
 - [6. Sections the flow builds itself](#6-sections-the-flow-builds-itself)
+- [7. The template components](#7-the-template-components)
 
 ## 1. Rules for every block
 
@@ -86,6 +87,12 @@ build it.
 | Timeline | 4 | `timeline` | 3.17 |
 | Quote | 6 | `quote` | 3.18 |
 | Freshness line | Source line | `freshness` | 3.19 |
+| Comparison | 3 | `comparison` | 3.20 |
+| Explanation | 3 | `explanation` | 3.21 |
+| Saved evidence | 6 | `saved-evidence` | 3.22 |
+| Trend to watch | 3 | `trend` | 3.23 |
+| KPI tile | 2 | `kpi` | 3.24 |
+| Verdict badge | 2 | `verdict-badge` | 3.25 |
 
 A page also has sections of its own that no block covers: a comparison table, a 2x2 map, a scatter
 chart, a calculator, a section menu. They belong to this question, so the flow builds them. Use
@@ -247,6 +254,23 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-quote blockquote{margin:0;font-size:.98rem}
 .pb-quote figcaption{font-size:.82rem;color:var(--muted)}
 .pb-quote a{color:inherit}
+/* 3.24 KPI tile, 3.25 verdict badge, and the stacked bar chart in 3.4 */
+.pb-kpis{grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}
+.pb-kpi{display:grid;gap:4px;align-content:start}
+.pb-kpi p{margin:0}
+.pb-kpi-value{font:600 1.6rem/1.15 var(--font-display);color:var(--text)}
+.pb-kpi-vs{display:flex;gap:6px;align-items:baseline;font-size:.86rem;color:var(--muted)}
+.pb-kpi-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--pb-flat)}
+.pb-kpi-dot.pb-ok{background:var(--pb-ok)}.pb-kpi-dot.pb-warn{background:var(--pb-warn)}.pb-kpi-dot.pb-bad{background:var(--pb-bad)}
+.pb-badge{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;padding:12px 16px;border-radius:var(--radius,10px);font-size:.98rem}
+.pb-badge-call{font:700 1.15rem/1.2 var(--font-display);text-transform:uppercase;letter-spacing:.04em}
+.pb-checks{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:.9rem}
+.pb-src{font-size:.7rem;padding:0 7px;color:var(--muted)}
+.pb-stack{display:block;width:100%;max-width:440px;height:auto}
+.pb-stack text{font:12px var(--font-body);fill:var(--text)}
+.pb-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0;padding:0;list-style:none;font-size:.82rem;color:var(--muted)}
+.pb-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+.pb-confidence{margin:4px 0 0;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;font-size:.9rem}
 @media print{.pb-beats{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
 </style>
 ```
@@ -348,7 +372,8 @@ one, unless the flow's reference gives each insight its own chart.
 - The comparison names what the number is compared with: last period, peers, a goal, or the
   account's own usual.
 - The chart is inline SVG on the `--chart-*` tokens, with a `<title>` and an `aria-label`.
-  A chart that shows above or below baseline uses the status tokens.
+  A chart that shows above or below baseline uses the status tokens. A chart of parts is a
+  stacked bar, one bar per group, with a legend under it. Never a pie.
 - Put several cards in `<div class="pb-grid">`, headline insight first.
 - A big number that backs the evidence goes in a `pb-stat` line: the figure, then one sentence.
 - **Summary variant.** On a long readout, the top of the page can carry one short card per
@@ -384,16 +409,20 @@ around the next steps.
 - One `data-decision` item per decision. `data-by` is the deadline as `YYYY-MM-DD`, and the same
   date shows in the text. Leave `data-by` out when there is no deadline.
 - Each decision says what happens once it is approved, in the `pb-meta` line.
+- Each decision is a recommendation, so it carries `data-recommend`, its `data-cost`, and a cost
+  line (`recommendations.md` in this folder).
 
 <!-- block:decisions -->
 ```html
 <section class="pb-card pb-decisions" data-page="decisions" data-block="decisions">
   <h2 class="pb-h">Decisions for you</h2>
   <ol>
-    <li data-decision data-by="2026-11-04"><span>Approve the 11 creators for outreach</span><span class="pb-due">by Nov 4</span>
-      <span class="pb-meta">Approves: the VP of marketing. Then Atlas drafts the 11 first messages.</span></li>
-    <li data-decision data-by="2026-11-06"><span>Approve a USD 18,400 creator budget</span><span class="pb-due">by Nov 6</span>
-      <span class="pb-meta">Approves: the VP of marketing. Fees come from the brand's fee calculator.</span></li>
+    <li data-decision data-by="2026-11-04" data-recommend data-cost="none"><span>Approve the 11 creators for outreach</span><span class="pb-due">by Nov 4</span>
+      <span class="pb-meta">Approves: the VP of marketing. Then Atlas drafts the 11 first messages.</span>
+      <span class="pb-meta" data-cost-line>Cost: no spend. The fees are the next decision.</span></li>
+    <li data-decision data-by="2026-11-06" data-recommend data-cost="money"><span>Approve a USD 18,400 creator budget</span><span class="pb-due">by Nov 6</span>
+      <span class="pb-meta">Approves: the VP of marketing. Fees come from the brand's fee calculator.</span>
+      <span class="pb-meta" data-cost-line>Cost: USD 18,400 once, the 11 fees from the fee calculator added up.</span></li>
   </ol>
 </section>
 <!-- With no decision: <section class="pb-card pb-decisions" data-page="decisions" data-block="decisions"><h2 class="pb-h">Decisions</h2><p>Nothing needs approval.</p></section> -->
@@ -408,16 +437,19 @@ change. Approvals never go here; they go in the decisions block.
 - Rank by impact on the page's answer, highest first. Five rows at most on a split page's top.
 - "Who" is a role or a named person the run knows, never "the team".
 - "What it should change" is a measurable result with a number where the run has one.
+- "Cost" is the step's cost line: the amount with its arithmetic, "No spend", or "Cannot be
+  priced" with the missing figure and who has it. The row carries `data-recommend` and its
+  `data-cost` (`recommendations.md` in this folder).
 
 <!-- block:next-steps -->
 ```html
 <section class="pb-card" data-page="next-steps" data-block="next-steps">
   <h2 class="pb-h">Next steps</h2>
   <table class="pb-table">
-    <thead><tr><th>#</th><th>What</th><th>Who</th><th>By when</th><th>What it should change</th></tr></thead>
+    <thead><tr><th>#</th><th>What</th><th>Who</th><th>By when</th><th>What it should change</th><th>Cost</th></tr></thead>
     <tbody>
-      <tr><td data-label="Rank" class="pb-rank">1</td><td data-label="What">Send first messages to the 11 approved creators</td><td data-label="Who">Influencer manager</td><td data-label="By when">Nov 5</td><td data-label="What it should change">8 or more replies by Nov 12</td></tr>
-      <tr><td data-label="Rank" class="pb-rank">2</td><td data-label="What">Ship product to creators who say yes</td><td data-label="Who">Operations lead</td><td data-label="By when">Nov 10</td><td data-label="What it should change">Posts live before the Nov 18 launch</td></tr>
+      <tr data-recommend data-cost="none"><td data-label="Rank" class="pb-rank">1</td><td data-label="What">Send first messages to the 11 approved creators</td><td data-label="Who">Influencer manager</td><td data-label="By when">Nov 5</td><td data-label="What it should change">8 or more replies by Nov 12</td><td data-label="Cost" data-cost-line>No spend, time only</td></tr>
+      <tr data-recommend data-cost="money"><td data-label="Rank" class="pb-rank">2</td><td data-label="What">Ship product to creators who say yes</td><td data-label="Who">Operations lead</td><td data-label="By when">Nov 10</td><td data-label="What it should change">Posts live before the Nov 18 launch</td><td data-label="Cost" data-cost-line>About USD 1,320: 11 kits at USD 120 each (estimate, from the catalog's unit cost)</td></tr>
     </tbody>
   </table>
 </section>
@@ -781,8 +813,10 @@ account.
   date, shown as "last changed", never "last fetched". With no `snapshotAt` either, `data-fetched`
   is `unknown`, shown as "freshness unknown".
 - On a team page, an account behind its pace, or refreshed in this run, says so on the same entry,
-  and a refresh skipped as recently refreshed says "refreshed recently, skipped". A page shared
-  outside the team leaves those notes out (`SKILL.md`, section 9.2).
+  a refresh skipped as recently refreshed says "refreshed recently, skipped", and an account left
+  out by the run's refresh limit carries the left-out note `SKILL.md`, section 9.5, gives. A page
+  shared outside the team leaves those notes out and puts them in the page check's `gaps`
+  (`SKILL.md`, section 9.2).
 - The page check's R14 reads these.
 
 <!-- block:freshness -->
@@ -793,6 +827,159 @@ account.
   <span data-fresh="tiktok:brightsidetoys" data-newest="2026-10-27" data-fetched="2026-10-28">@brightsidetoys on TikTok: newest post Oct 27, last fetched Oct 28</span>.</p>
 ```
 <!-- /block:freshness -->
+
+### 3.20 Comparison
+
+**Holds:** two groups, two periods, or two brands set side by side, or a share with the size of
+the group it comes from. Wherever a page compares, in an insight, the answer, a table row, or a
+chart's caption, the comparison carries this markup (`comparisons.md`).
+
+- Each side says how many posts it rests on. A thin side shows "directional" and its post count
+  beside its number, as `comparisons.md` sets the line.
+- Both sides hold one kind of post, and `data-kind` names it: `paid-label`, `shop`, or
+  `no-paid-label`. The kinds differ only in a `data-compare="kinds"` comparison.
+- A share shows the group's share of the whole beside it (`data-share`, `data-group-share`).
+- A comparison that fails a check and stays says which, in one line, named in `data-fails`.
+- The page check's R15 reads these.
+
+<!-- block:comparison -->
+```html
+<p data-compare="kinds" data-block="comparison">TikTok Shop posts drew
+  <span data-side="TikTok Shop posts" data-kind="shop" data-posts="18">3.6 engagements per 1,000 views
+    <span class="pb-chip">18 posts, directional</span></span>, against
+  <span data-side="Posts with no paid label" data-kind="no-paid-label" data-posts="212">14.7 across the
+    212 posts with no paid label</span>.</p>
+```
+<!-- /block:comparison -->
+
+### 3.21 Explanation
+
+**Holds:** why something happened (a sales spike, a top seller, a drop), with the evidence it rests
+on, or "Not explained yet" with what was searched. The wider search comes first
+(`explanations.md`).
+
+- `data-explain` on the block. Each piece of evidence is a link carrying `data-evidence` with its
+  source: `atlas` (a post, or a caption or description at its timecode), `site` (the brand's own
+  site or store), or `outside` (a coupon site, another store, and every saved capture (3.22),
+  linked by its anchor). An explanation needs at least one `atlas` or `site` piece.
+- Evidence from Atlas comes first, oldest to newest. Outside evidence follows it.
+- With no evidence in Atlas, the block says "Not explained yet" on a `data-unexplained` line and
+  lists what was searched on a `data-searched` line. Never name a cause the evidence does not show.
+- A cited post also gets its post card (3.8) in the evidence part. The page check's R7 reads these.
+
+<!-- block:explanation -->
+```html
+<div class="pb-card" data-block="explanation" data-explain>
+  <p class="pb-claim">@makerjune's code sold through her own older posts, and a coupon site carried it too.</p>
+  <ul>
+    <li><a data-evidence="atlas" href="https://www.tiktok.com/@makerjune/video/EXAMPLE1">Her TikTok from Mar 3, 2026, which still names the code</a></li>
+    <li><a data-evidence="atlas" href="https://www.youtube.com/watch?v=EXAMPLE2">The code in her YouTube video's description, Sep 18</a></li>
+    <li><a data-evidence="outside" href="#saved-1">The code on a coupon site, saved Oct 30</a></li>
+  </ul>
+</div>
+<div class="pb-card" data-block="explanation" data-explain>
+  <p class="pb-claim">@brightbuilds's orders on Oct 9</p>
+  <p data-unexplained>Not explained yet.</p>
+  <p class="pb-muted" data-searched>Searched: Instagram, TikTok and YouTube posts at any date, with their captions, transcripts and descriptions, and the brand's site.</p>
+</div>
+```
+<!-- /block:explanation -->
+
+### 3.22 Saved evidence
+
+**Holds:** one piece of evidence from outside Atlas that can disappear (a coupon-site listing, a
+store page, a post that expires), saved the moment it was read: its link, the date and time, the
+exact words that matter, and a screenshot (`explanations.md`).
+
+- `data-saved` on the block, with `data-captured` the date and time it was read
+  (`YYYY-MM-DDTHH:MMZ`); the block shows the date. The words are in a `blockquote`.
+- The screenshot is a data URI with `alt` text and `data-print="fit"`. A host that cannot take one
+  shows "Screenshot not taken" in its place.
+- Carried from an earlier run, the block keeps its first date. When the source now blocks the
+  check, add `data-gone` and the line "No longer visible on {date}".
+- The page check's R7 reads these.
+
+<!-- block:saved-evidence -->
+```html
+<figure class="pb-card" id="saved-1" data-block="saved-evidence" data-saved data-captured="2026-10-30T15:20Z">
+  <img src="data:image/png;base64,..." alt="Coupon site listing for the MAKERJUNE15 code" width="320" height="180" data-print="fit">
+  <blockquote>MAKERJUNE15: 15% off sitewide. Verified today.</blockquote>
+  <figcaption class="pb-muted"><a href="https://coupons.example.com/brightside-toys">coupons.example.com</a>, saved Oct 30, 2026, 3:20 PM UTC</figcaption>
+</figure>
+```
+<!-- /block:saved-evidence -->
+
+### 3.23 Trend to watch
+
+**Holds:** a finding that could plausibly help or hurt the brand, with both readings and the
+signals that would settle it (`recommendations.md`). It takes an insight's place and never sits
+in the decisions.
+
+- The label "Trend to watch", then the finding with its numbers.
+- Two readings, one line each: `data-reading="helps"` and `data-reading="hurts"`.
+- One to three signals. Each `data-signal` shows where Atlas would see it (`data-where`) and the
+  date it would show by (`data-by`).
+- Its only next step is to watch the signals. It carries no approval and no other action.
+- The page check's R5 reads these.
+
+<!-- block:trend -->
+```html
+<article class="pb-card" data-trend data-block="trend">
+  <p class="pb-label">Trend to watch</p>
+  <h3 class="pb-h">Creators call the starter kit "the cheap one" in 14 of 61 posts</h3>
+  <p data-reading="helps"><b>If it helps:</b> the low price is why new buyers try the kit first.</p>
+  <p data-reading="hurts"><b>If it hurts:</b> "cheap" becomes what people say about the whole brand.</p>
+  <ul>
+    <li data-signal data-where="the weekly report's comment themes" data-by="2026-11-25">Comments on these posts that mention quality, in the weekly report's comment themes, by Nov 25.</li>
+    <li data-signal data-where="the monthly affiliate report" data-by="2026-12-05">Orders for the full-size set through the same creators' codes, in the monthly affiliate report, by Dec 5.</li>
+  </ul>
+  <p class="pb-so"><b>So:</b> watch these signals. Nothing to approve yet.</p>
+</article>
+```
+<!-- /block:trend -->
+
+### 3.24 KPI tile
+
+**Holds:** one headline figure: its label, its value, and what it is compared with. A page shows
+its figures as a row of tiles under the answer; a tracker may show up to twelve.
+
+- The comparison is always there: last period, a goal, the account's usual, or peers.
+- `data-status` is `ok`, `warn`, `bad`, or `flat`, and the dot beside the comparison takes that
+  status token. Use `flat` when the figure is neither good nor bad.
+- The source chip names where the figure came from: Atlas, Brand memory, Web, You, Our read, or
+  the connected tool by name.
+- Tiles sit in `<div class="pb-grid pb-kpis">`.
+
+<!-- block:kpi -->
+```html
+<article class="pb-card pb-kpi" data-block="kpi" data-status="ok">
+  <p class="pb-label">Views last week</p>
+  <p class="pb-kpi-value pb-num">412,800</p>
+  <p class="pb-kpi-vs"><span class="pb-kpi-dot pb-ok"></span>1.4 times the 8-week median of 291,000</p>
+  <p><span class="pb-chip pb-src" title="Source">Atlas</span></p>
+</article>
+```
+<!-- /block:kpi -->
+
+### 3.25 Verdict badge
+
+**Holds:** the call on one piece of work or one post, such as Go, No go, or Fix first, with the one
+reason that decided it. It sits right under the answer. The checks behind it follow as a list,
+each with a status chip and one line.
+
+- The badge takes its status token: `pb-ok` for a go, `pb-warn` for a fix, `pb-bad` for a no go,
+  `pb-flat` for no call yet.
+- Each check says what was checked and what was found. A check that fails names the fix.
+
+<!-- block:verdict-badge -->
+```html
+<div class="pb-badge pb-warn" data-block="verdict-badge" data-verdict="warn"><b class="pb-badge-call">Fix first</b><span>The post follows the brief, but the paid label is missing.</span></div>
+<ul class="pb-checks">
+  <li><span class="pb-chip pb-ok">Pass</span> <b>Brief</b> <span class="pb-muted">Shows the playset in the first 3 seconds, as the brief asks.</span></li>
+  <li><span class="pb-chip pb-warn">Fix</span> <b>Paid label</b> <span class="pb-muted">Add the paid partnership label before it goes live.</span></li>
+</ul>
+```
+<!-- /block:verdict-badge -->
 
 ## 4. Building a page from the blocks
 
@@ -813,7 +1000,7 @@ account.
 
 ## 5. The validated examples, block by block
 
-Aspire's reviewers approved one page for each of three questions. Each can be rebuilt from these
+Aspire's reviewers approved one page for each question below. Each can be rebuilt from these
 blocks with nothing left out. The evidence each sets is in `examples.md`; read every example
 the launch block lists in full (`SKILL.md`, section 4). The tables below say which block holds each of its elements, and
 which elements stay the flow's own sections (section 6). "Adds" marks what the blocks require and
@@ -845,6 +1032,50 @@ the example lacked, so the rebuilt page passes a check the example did not.
 | Every creator against the checks, with score and call | The flow's own table (section 6), above the 3.7 grids |
 | How the verdict was made: the two scores, verdicts, weights, reach penalty, fees, brand post detection, corrections | 3.11 |
 | What's missing (not in the example) | 3.12, adds |
+| Source line | `artifact-standard.md` |
+
+**I4, a dated creator plan sent to the creators** (plan; the influencer manager reads it)
+
+| Example element | Block |
+| --------------- | ----- |
+| Title with the reader; scope and as-of row | 3.1 |
+| Post counts per platform (in the source footer in the example) | 3.2, adds them to the top |
+| The plan, its condition, and its deadline, with the strategy | 3.3 |
+| Dated milestones with day counts | 3.17 |
+| Why this plan: three findings with multiples and post counts | 3.4, three cards, each with its comparison (3.20) |
+| Late-start note: lead times, rate pressure, draft and approval dates | 3.4, a trend to watch (3.23) when it could go either way; otherwise a line in 3.3 |
+| Next steps in order, each with its date and reason | 3.6 |
+| What the brand must settle, and the worked per-order example | 3.5 for the decisions; the worked example is the flow's own (section 6) |
+| Creators and fees: totals at target, opening, and maximum | 3.7, the fee in each card's details slot; the totals in 3.3's tally |
+| Who posts when | The flow's own schedule (section 6), beside 3.17 |
+| Contract terms to agree | 3.5, one decision per term the brand must approve; 3.10 for usage |
+| 72-hour rule table: boost, leave, re-cut, pause | 3.15 |
+| Reporting rhythm with dated reviews | 3.17 |
+| Post cards behind each finding | 3.8 |
+| The creator brief | The flow's own section (section 6) |
+| Next-step checklist saved in the browser | Page layout; the steps still read without script (3.6) |
+| What's missing (not in the example) | 3.12, adds |
+| Source line | `artifact-standard.md` |
+
+**O1, why last week's posts did well** (readout; the social team reads it)
+
+| Example element | Block |
+| --------------- | ----- |
+| Week and title; scope and as-of row | 3.1 |
+| Tallies per platform with post counts | 3.2 |
+| The creative finding and its share of views and shares | 3.3 |
+| The team update to paste, per audience | 3.13, a draft on offer |
+| What the best posts had in common: ranked cards with cover, opening, and ask | 3.8 |
+| Creative choices table: choice, posts, views, against typical, shares per 1,000 views | 3.4 with its comparison (3.20) |
+| Recent weeks against a typical post, by group, with the excluded outlier | 3.4, the headline insight's chart |
+| Comment themes and the ask that drew them | 3.4 with 3.18 for each quote |
+| A platform that went differently, with one test | 3.4, and the test in 3.15 |
+| Next week: decisions and steps | 3.5 and 3.6 |
+| The week in numbers against the 8-week median | 3.11, in `details` |
+| Every post, newest first | 3.16 |
+| Data gaps | 3.12 |
+| How it was worked out | 3.11 |
+| Section menu | Page layout |
 | Source line | `artifact-standard.md` |
 
 **O3, where we stand against competitors** (readout; marketing leadership reads it, split)
@@ -913,3 +1144,19 @@ calculator needs script; the blocks never do, so the page states the calculator'
 in plain text where the blocks show it, and the page still reads correctly without script.
 
 When the same section turns up on a second question's validated page, it becomes a block here.
+
+## 7. The template components
+
+The page templates (`templates.md` in this folder) draw every page from these blocks. Each
+component the templates name is one block:
+
+| Component | Block |
+| --------- | ----- |
+| KPI tile | 3.24 |
+| Insight block | 3.4, with its chart as a stacked bar |
+| Action list | 3.6, each row with its source chip and the job Atlas can do it with |
+| Creator card | 3.7, the verdict and its reason, under the creator's handle line. A page that needs the full creator card (`creator-card.md`) still draws it as 3.7 says |
+| Post card | 3.8 |
+| Verdict badge | 3.25 |
+| Gaps block | 3.12, with the confidence line |
+| Plan steps | 3.17 |

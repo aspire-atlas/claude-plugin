@@ -12,6 +12,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [Questions (main thread)](#questions-main-thread)
 - [Page structure](#page-structure)
 - [Campaign mode](#campaign-mode)
+- [Campaign plan (a launch that spans several agents)](#campaign-plan-a-launch-that-spans-several-agents)
 - [Creator-ads mode (the CAS master brief)](#creator-ads-mode-the-cas-master-brief)
 - [Fit rubric](#fit-rubric)
 - [Pricing method](#pricing-method)
@@ -39,8 +40,7 @@ the agent, skipping any the user already answered. In campaign mode it also sett
 (a saved `campaign:*-brief`, or "a new campaign", which runs **Creator discovery** Setup first
 unless the user declines) and the first post date.
 
-1. **Scope.** If a `red_line` calibration blocks AI generated content (ignore `review:` keys,
-   which are content review only), offer "Strategy brief only (Recommended)" vs "Include draft
+1. **Scope.** If a brand red line (**Atlas tools**, Calibration kinds) blocks AI generated content, offer "Strategy brief only (Recommended)" vs "Include draft
    copy (overrides the red line; record the exception first)". Never produce copy without the
    override.
 2. **Creator sourcing.** "Already in Atlas", "Atlas creator marketplace (searches beyond your
@@ -128,6 +128,17 @@ phases instead of one week of three posts.
   closing "Next steps" box offers content review for drafts and a daily check on how the launch is landing.
   Title "<Brand> Campaign Brief: <Campaign>", republished to the same path for that campaign.
 
+## Campaign plan (a launch that spans several agents)
+
+A launch ask ("we launch on the 14th and need creators") spans four agents.
+Propose the sequence in the setup reply's Heard question ("I'll start a shortlist and brief for the
+launch, then check drafts and run a daily pulse through launch week. Sound right?"), not in a
+confirmation of its own, then run it in order, each step through its own section and its own write
+confirmations, and each new page through its own storyline (**Orchestration contract** **2**, **The
+storyline**) before it is built: **Creator discovery** (Setup for the campaign if new, then Run),
+**Creator brief** in campaign mode, the pulse offer (**Readouts**, **Launch pulse**), and **Content
+review** as drafts arrive.
+
 ## Creator-ads mode (the CAS master brief)
 
 For a CAS campaign (`brief_mode` `creator-ads`, **CAS campaign**), the brief is one master brief
@@ -162,7 +173,7 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   round, never per lane.
 - **Disclosure treatment**: the paid partnership label, plus anything `review:disclosure` says
   when it exists (read it for disclosure only).
-- **Do's and don'ts**, one line each: from saved `red_line` and `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:` or `lastrun:` keys,
+- **Do's and don'ts**, one line each: from brand red lines and saved `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `adreuse:`, `applicantreview:` or `lastrun:` keys,
   and never the campaign's own `-cas`, `-lane-*`, `-terms` or `-decision-defaults` records).
   When the client's own creator brief guardrails are saved (a `guideline` whose body names
   them), mirror them line for line.
@@ -187,6 +198,18 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   hook keeps its pattern, Said, Shown and Overlay; each CTA its type (direct or soft), action,
   destination and moment. The body carries the beats between the hook and the CTA, with its
   length in seconds.
+- **Promo flag** on each hook and CTA: on when its line names a price, a code or an offer, off
+  otherwise.
+- **Proof point**: one per concept, personal and dropped mid-action ("I charged it once on
+  Friday" while the creator is out the door), never a stat read to camera. Its line, and the
+  moment in the beats it lands.
+- **Bridges**: one from each hook to the body and one from the body to each CTA, so any hook and
+  any CTA can be cut onto the same body. Each names the hook or CTA it joins.
+- **Claims**: what the creator may say about the product, each with the product-page line it
+  came from. From the intake answers or the product truth agent's findings when the session has
+  them; otherwise one bracketed blank, never a claim written from memory.
+- **Pronunciation**: how to say the brand and product names a creator could get wrong, from the
+  same sources; otherwise one bracketed blank.
 - **Beat structure**: hook, problem or setup, proof, payoff, CTA, with seconds per beat.
 - **10 to 15 B-roll shots**, numbered B01 onward, each one line: what is filmed and which beat it
   serves.
@@ -200,14 +223,15 @@ from**, and leave them out of the data block, since they aren't parts of the bri
   `campaign:{slug}-cas`, else the defaults in **CAS campaign**, **Master Brief**: V2 BAB,
   V3 4Ps, V4 HSO, V5 SSS), unless that is the concept's framework already, in which case they
   take the next slot's. Each variant:
-  its framework, length, which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
+  its framework, length, funnel job (reach, consideration or conversion: what the variant is
+  built to do, which Ad Performance judges it against), which hook and CTA by number, the VO in a few lines, the B-roll shot numbers it uses,
   and a one line note. V1 uses H1 and C1. When there are at least as many variants as hooks, every
   hook is used by at least one variant, and every CTA when there are at least two. It is for the
   editors: neither the client nor a creator ever sees it.
 - **Creators**: the lane's approved creators from the roster, as creator cards, each with the
   agreed fee and ship date.
 
-A `red_line` that blocks AI-written copy still applies: hooks, CTAs and the body become
+A brand red line that blocks AI-written copy still applies: hooks, CTAs and the body become
 directions, per **Hooks and CTAs**, **Limits**. Say so in the standing-rule banner.
 
 **Editing coverage check**, before the page ships. Every brief must pass all three; fix the
@@ -220,7 +244,7 @@ brief, never the check:
 
 Show the result per lane on the page ("Coverage: 3 of 3 checks pass"). The variant plan gets its
 own check, shown with the plan and never counted in the coverage result: every variant names a
-hook, a CTA and shots that exist, and its length holds its beats.
+hook, a CTA and shots that exist, has a length and a funnel job, and its length holds its beats.
 
 **The hook log.** Follow **Hooks and CTAs**, **Limits**: read every hook and CTA ever briefed
 on the campaign, never reuse one, and append every new one as a `hook` finding.
@@ -241,23 +265,35 @@ caption holding `</script>`, say) can end the element. JSON reads those back as 
 characters. In this shape:
 
 ```json
-{"schema": 1, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
+{"schema": 2, "campaign": "{slug}", "round": 1, "version": 1, "title": "…", "summary": "…",
  "tone": "…", "dos": ["…"], "donts": ["…"], "disclosure": "…", "fileNaming": "…", "notice": "",
  "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve", "use": "…"}],
  "concepts": [{"lane": "{lane}", "order": 1, "name": "…", "line": "…", "personas": ["…"],
    "trigger": "…", "framework": {"code": "PAS", "name": "Problem, agitate, solve"},
    "story": "…", "sellingPoints": ["…"], "problem": "…", "agitate": "…", "solve": "…",
    "beats": [{"n": 1, "name": "Hook", "seconds": "0-3", "what": "…"}],
-   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…"}],
-   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "[destination]", "moment": "…", "why": "…"}],
+   "hooks": [{"n": 1, "type": "question", "line": "…", "shown": "…", "overlay": "…", "why": "…",
+              "promo": false}],
+   "ctas": [{"n": 1, "type": "direct", "line": "…", "destination": "[destination]", "moment": "…", "why": "…",
+             "promo": false}],
    "body": "…", "length": "30 seconds", "runtime": {"instagram": "…", "tiktok": "…"},
    "broll": [{"n": 1, "shot": "…", "beat": "…"}],
+   "proofPoint": {"line": "…", "moment": "…"},
+   "bridges": [{"from": "hook", "to": "body", "n": 1, "line": "…"},
+               {"from": "body", "to": "cta", "n": 1, "line": "…"}],
+   "claims": [{"claim": "[claim]", "source": ""}],
+   "pronunciation": [{"term": "[term]", "say": ""}],
    "product": {"name": "…", "sku": "[SKU]"},
    "coverage": {"passed": 3, "of": 3, "failed": []},
    "variantCheck": {"passed": true, "failed": []},
-   "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "hook": 1, "cta": 1,
-                 "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
+   "variants": [{"n": 1, "framework": "PAS", "length": "30 seconds", "funnelJob": "conversion",
+                 "hook": 1, "cta": 1, "vo": "…", "broll": [1, 4, 7], "note": "…"}]}]}
 ```
+
+A claim's `source` and every variant's `funnelJob` are the agency's: the page keeps them in its
+agency data and Atlas hands them only to the agency (**CAS campaign**, **Working state**, **Who
+reads which field**). A run on a brief whose block is still schema 1 writes schema 2, filling the
+new parts per the rules above and leaving every other part as `current_brief` has it.
 
 Text is plain, with a blank line between paragraphs and "- " or "1. " at the start of a list
 line; the page turns it into its own rich text. A bracketed blank stays a bracketed blank. The
@@ -312,7 +348,7 @@ calibrations (never from Aspire's own positioning; this plugin serves any brand)
   `brand:business-context`. Write one line each, for example buyer "home cooks who buy
   premium cookware", category "consumer kitchen brands".
 - **Off-audience signals**: the content types that would not reach that buyer. Infer from the
-  buyer line and any `guideline` or `red_line` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `ad-reuse:` or `lastrun:`
+  buyer line, any brand red line, and any `guideline` records (never `review:`, `vetting:`, `program:`, `orchestrator:`, `adreuse:`, `applicantreview:` or `lastrun:`
   keys, and never a creator ad campaign's `campaign:{slug}-cas`, `-lane-*`, `-terms` or
   `-decision-defaults`).
 - **Search vocabulary**: 3 to 6 bio keywords a creator serving that buyer would use. Derive
@@ -360,11 +396,11 @@ fetched during the run.
 
 ## Atlas quirks
 
-- `search_posts` returns `media.mediaUrl` and `media.thumbnailUrl` as null when projected as
-  leaf paths. Project the `media` container instead; the URLs are present.
-- Same for `instagram.account.profilePictureUrl` on posts: project `instagram.account`.
-- `search_creators` returns `instagram.profilePictureUrl` null as a leaf; project the
-  `instagram` container and exclude the three demographics blobs to keep the payload small.
+- `search_creators` returns the card fields (picture, badges, past partners, rate, median views)
+  on every hit, and `search_posts` returns `media` and the author's picture on every hit. Project
+  only the other fields a section shows, by the leaf paths in **Atlas search**. A search over many
+  creators or posts never projects a whole network container; a one-creator profile or a one-post
+  analysis may.
 - `/thumbnail` routes on `cdn.aspire.io` return 404 on image posts, where the base media URL is
   the full-size image. On video posts the base URL is the video file and `/thumbnail` is the
   full-size poster. Pass both, `mediaUrl` first, to the **Images** snippet in **Creator card**.

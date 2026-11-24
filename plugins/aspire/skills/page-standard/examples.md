@@ -34,6 +34,8 @@ the skeleton and the blocks alone.
 | Code | Kind of page | Reader | Built by flow |
 | ---- | ------------ | ------ | ------------- |
 | I1 | Shortlist | The influencer manager | Creator vetting, on a pool from creator discovery |
+| I4 | Plan | The influencer manager | Creator brief, campaign mode |
+| O1 | Readout | The social team | Weekly insights report, or the profile analyst for one account |
 | O3 | Readout, split | Marketing leadership | Market signal, leadership page |
 | P1 | Plan | Paid social, then creative | Ad reuse |
 <!-- /examples -->
@@ -77,6 +79,57 @@ and every check names the finding it comes from.
 12. What we look for: each check names the finding it comes from ("Doing well", "Challenge 3",
     "Reach", "US supply"), with a 1, ½, or 0 mark per creator and the bar for a yes in plain
     words; a check a finding suggests but the brand hasn't saved is a proposed change in Decisions.
+
+### I4: a dated creator plan for a season or launch, sent to the creators
+
+What makes it work: a late, crowded season becomes a plan the influencer manager can run from the
+page. The headline is the plan and its deadline, every step has a date and a reason, every creator
+has one job and one tracked code, and rules for the first 72 hours say what to do with each post.
+
+1. A headline with how many creators, the condition, and the deadline ("15 creators who already
+   post about the brand, if offers go out Monday and the deal is set by Wednesday"), and the
+   strategy in one sentence.
+2. A timeline of the dated milestones, each with its day count from today: offers out, launch, the
+   sale days, and the shipping cut-off.
+3. Why this plan: up to three findings, each a multiple of the creators' usual views with the post
+   count behind it, a thin one marked as thin.
+4. A late-start note when time is short: booking lead times, rate pressure, and the draft and
+   approval dates.
+5. Next steps in order, each with its date and its reason.
+6. What the brand must settle before the deal (price, retailer link, stock, codes), with a worked
+   per-order example of what each order leaves after the discount, product cost, fees, and the
+   creator's payout.
+7. Creators and fees: the total at target, at opening offers, and at the maximum, and what is not
+   priced yet, named.
+8. Who posts when: each creator's moment and kind of post.
+9. Contract terms to agree (what, what to ask for, why) and a 72-hour rule table: boost, leave,
+   re-cut, or pause, by multiple of the creator's usual views.
+10. A reporting rhythm with dated reviews and recaps.
+11. Evidence: a post card behind each finding, with its multiple, date, and handle.
+12. The creator brief itself.
+
+### O1: why last week's posts did well, and whether it is a pattern
+
+What makes it work: the headline is a creative finding, not a total. It names what the best posts
+shared and how much of the week's views and shares they drew, ties each finding to the posts, their
+openings, and their asks, measures against a typical week, and names every gap.
+
+1. A headline with the creative pattern and its share of the week's views and shares, and a line on
+   the week's change and what did least.
+2. Tallies per platform against the typical week, with the post counts.
+3. A team update ready to paste, with a version for each audience the page names.
+4. What the best posts had in common: ranked post cards, each with its cover, opening, and the ask
+   to viewers.
+5. A creative choices table: choice, posts, views, against typical, and shares per 1,000 views.
+6. A chart of recent weeks' posts against a typical post, by group, with any excluded outlier named
+   and why.
+7. Comment themes, with the ask that drew the comments counted.
+8. A read of each platform that went differently, with one test to run.
+9. Next week: decisions and steps.
+10. The week in numbers against the 8-week median, with the date views were read.
+11. Every post: views, against typical, likes, comments, and shares, newest first.
+12. What is missing, named: reach, follower growth, saves, retention, and the platforms not read.
+13. How it was worked out: the sources, the baseline, and how openings were grouped.
 
 ### O3: where we stand against competitors, and what to do
 

@@ -24,7 +24,7 @@ argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does
 them). Pass `asProfileId` (the profile id, never the slug) to
 every tool whose schema takes it; `list_*_search_fields` and `list_my_*` take no attribution.
 If no profile id was passed, load `list_my_profiles` with `ToolSearch` and resolve it per
-**Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+**Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/roster-manager.md` before starting. It
 holds who is reviewed, the reads, the signals, cost, the segment rules, your call, renewals,
@@ -84,8 +84,8 @@ step needs one of those, skip that step and name it in your output as needing a 
    `connections`.
 3. `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`). Keep `program:{slug}-program`, `-terms`, `-outreach`, and
    `-cadence`, `brand:summary`, the `voice_and_content_ops` brand fact, `guideline:voice`,
-   `red_line` (not `review:` keys), `competitor`, every `creator:*` record, and `theme:brand`.
-   Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `ad-reuse:`, `lastrun:`, and `campaign:` keys and other programs' keys. Parse every
+   brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds), `competitor`, every `creator:*` record, and `theme:brand`.
+   Drop `vetting:`, `review:`, `library:`, `orchestrator:`, `adreuse:`, `applicantreview:`, `lastrun:`, and `campaign:` keys and other programs' keys. Parse every
    `program:` body with a JSON parser.
 4. `search_insights` on the prefix `program-{profile}-{slug}`, newest first, paged to the end.
    Keep the newest finding per identity for `roster`, `terms`, `deliverable`, `fulfillment`,
@@ -96,9 +96,9 @@ step needs one of those, skip that step and name it in your output as needing a 
 
 1. **Pick the creators** per **Who is reviewed**, limited by `creators` and `types`. Resolve
    the window.
-2. **Read each creator** per **Reads, per creator** (`list_creator_search_fields` and
-   `list_post_search_fields` once each; use only paths they return): the account, the posts in
-   the window and the 90 days before it, and one red-line search per `red_line`. Work in batches
+2. **Read each creator** per **Reads, per creator** (field paths from
+   `atlas-search.md`; the census only for a path it does not list): the account, the posts in
+   the window and the 90 days before it, and one red-line search per brand red line. Work in batches
    of ten.
 3. **Compute the signals** per **The signals** and **Cost**, then the roster medians per tier.
 4. **Segment** each creator per **Segments**, with two reasons and the evidence lines, and mark
@@ -107,7 +107,7 @@ step needs one of those, skip that step and name it in your output as needing a 
    per **Renewals**, and the `lookalike-seeds` block per **Lookalike seeds**.
 6. **Draft** per **Drafts**: a thank-you and rebook invite per star without a renewal due, a
    check-in per slipping creator, a re-engagement note per dormant creator. Skip a creator with
-   an open `yourCall` from another flow, a saved reject, or a `red_line` that blocks AI-written
+   an open `yourCall` from another flow, a saved reject, or a brand red line that blocks AI-written
    outreach, and list them.
 7. **Build the page** per **The page**, every call marked proposed, and publish it with the
    Artifact tool. When a `page` finding with key `roster` exists, read that artifact first and

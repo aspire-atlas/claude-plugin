@@ -41,8 +41,11 @@ for d in plugins/*/; do claude plugin validate "$d"; done
 bash scripts/check-channel.sh develop   # or: main
 bash scripts/check-tool-contract.sh
 bash scripts/check-agent-roster.sh
+bash scripts/check-agent-triggers.sh
 bash scripts/check-artifact-standard.sh
+bash scripts/check-page-templates.sh
 bash scripts/check-orchestration.sh
+bash scripts/check-calibration-keys.sh
 bash scripts/check-agent-specs.sh
 bash scripts/check-palette.sh
 bash scripts/check-skill-args.sh
@@ -73,7 +76,7 @@ bun run eval:pages --compare <the newest baseline's date> latest
 
 Paste the run's table (`scripts/eval/.runs/<time>/table.md`) into the pull request body, with the compare output when a result moved. Run it once without the rule first: if the page already gets it right, the rule is not needed. A check that fails on the approved page is a finding about the check, so say so in the pull request. Setup, what the table means, and what a rerun may do are in [scripts/eval/README.md](scripts/eval/README.md). `bun run eval:test` covers the harness itself.
 
-CI also reruns it. On a pull request that changes an agent (`plugins/aspire/agents/`), a flow file (`plugins/aspire/skills/aspire/references/`), the router `SKILL.md`, or the page standard (`plugins/aspire/skills/page-standard/`), the `eval` job reruns the questions those files answer and posts the table as one comment, edited on each push. It fails only when a check the approved page passes now fails on the new page. A change that touches neither path skips it. For a docs-only or allowlisted change under those paths, add the `skip-eval` label and a `skip-eval: <reason>` line to the PR body, then push or re-run the eval job. A new agent or flow file reruns nothing until its question lists the file in `paths` in `scripts/eval/questions.json`. A nightly run of all seven questions on `develop` posts to the Atlas engineering Slack channel. How the job works and how to read its comment: [scripts/eval/README.md](scripts/eval/README.md#in-ci) and the "The eval on a pull request" section of [docs/STANDARD.md](docs/STANDARD.md).
+CI also reruns it. On a pull request that changes an agent (`plugins/aspire/agents/`), a flow file (`plugins/aspire/skills/aspire/references/`), the router `SKILL.md`, or the page standard (`plugins/aspire/skills/page-standard/`), the `eval` job reruns the questions those files answer and posts the table as one comment, edited on each push. It fails when a check the approved page passes now fails on the new page, when a client case's assertion does not pass after its ticket landed, or when the run's chat breaks a countable English rule. A change that touches neither path skips it. For a docs-only or allowlisted change under those paths, add the `skip-eval` label and a `skip-eval: <reason>` line to the PR body, then push or re-run the eval job. A new agent or flow file reruns nothing until its question lists the file in `paths` in `scripts/eval/questions.json`. A nightly run of every question on `develop` posts to the Atlas engineering Slack channel. How the job works and how to read its comment: [scripts/eval/README.md](scripts/eval/README.md#in-ci) and the "The eval on a pull request" section of [docs/STANDARD.md](docs/STANDARD.md).
 
 After the pull request merges and the results hold, store a baseline with `bun run eval:pages --baseline --from latest` and commit `scripts/eval/baselines/<date>/`.
 
@@ -116,7 +119,7 @@ What it writes:
 - `plugins/aspire/agents/atlas-<slug>.md`, with the artifact standard block, the orchestration contract block and the checkpoint paragraph copied from the files that own them
 - `plugins/aspire/skills/aspire/references/<slug>.md`, the flow reference
 - `docs/agent-specs/agents/NN-<name>.md`, the spec, numbered next. When the agent's spec is already written (its `plugin_agents` is `none`), give the agent that spec's name: the generator names the agent in it instead and takes its question codes when you leave `--codes` out
-- the agent's rows in `SKILL.md` (the **Sections** index, **Agent hand-off**, **Model tiers**), the plugin README's agent table, the agents panel (`plugins/aspire-mod/hooks/roster.ts` and a placeholder costume in `costumes.ts`), the permission level table in `orchestration.md` section 7, and the `agents` map in `scripts/eval/questions.json`
+- the agent's rows in `SKILL.md` (the **Sections** index, **Model tiers**) and in `references/agents-menu.md` (**Agents menu hand-off**), the plugin README's agent table, the agents panel (`plugins/aspire-mod/hooks/roster.ts` and a placeholder costume in `costumes.ts`), the permission level table in `orchestration.md` section 7, and the `agents` map in `scripts/eval/questions.json`
 
 The scaffold passes every check as written. Each line you still have to write says `TODO(new-agent)`, and the standard review flags each one until it is filled. Fill them in this order, since each step reads the one before it:
 
@@ -125,6 +128,7 @@ The scaffold passes every check as written. Each line you still have to write sa
 3. **The spec.** The job to be done, the kind of page, the skills it carries, the universal skills, the trigger phrases, and the non-goals.
 4. **The roster rows.** The README description, the **Model tiers** reason, the permission level note (for an agent that writes, sends or spends), and the agents panel blurb, costume name and prop.
 5. **The eval question.** Add the agent and flow paths to the question in `scripts/eval/questions.json` that asks its code, or add a question for it, and rerun it with `bun run eval:pages --only <code>`. Set the agent's `approved` to the ticket that holds its approved page once it has one.
+6. **The page template.** Put the agent under one template in `plugins/aspire/skills/page-standard/page-templates.json` and in the mapping table in `templates.md`, section 6, or in `notTemplated` with the reason. Add it to the `job` list in `page-data.schema.json`. `scripts/check-page-templates.sh` fails until it does.
 
 Then check that nothing is left, run the checks under [Local testing](#local-testing) and `claude plugin test plugins/aspire-mod`, and open the pull request with the template's **The standard** list ticked:
 

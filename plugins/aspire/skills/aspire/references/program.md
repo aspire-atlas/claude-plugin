@@ -187,7 +187,11 @@ The terms object, one block per type the program carries:
  "affiliate": {"commissionPct": 15, "commissionPctMax": 20, "codeDiscountPct": 20,
                "codeDiscountPctMax": 25, "codePattern": "{HANDLE}20",
                "codeDiscountAmount": null, "attributionDays": 30, "payout": "monthly",
-               "disclosure": "#ad and code in caption"},
+               "disclosure": "#ad and code in caption",
+               "tiers": [{"name": "Tier 1", "commissionPct": 15,
+                          "threshold": {"metric": "revenue", "amount": 0, "months": 1}},
+                         {"name": "Tier 2", "commissionPct": 18,
+                          "threshold": {"metric": "revenue", "amount": 1000, "months": 2}}]},
  "rights": {"organicRepost30": 150, "paidUsage30": 400, "whitelisting30": 600}}
 ```
 
@@ -202,7 +206,11 @@ call. Usage runs from the post date for `usageDays`. Ambassador `postWithinDays`
 start of each month of the term. `graceDays` (default 3) is how long after the due date a post is
 still waiting rather than missing; `mustInclude` lists what each post must carry beyond the
 disclosure (a tag, a link, the code), and is optional on every block. `codeDiscountAmount` is a
-fixed-amount code instead of a percentage. `payout` is `monthly` or `net-{n}` (days after the
+fixed-amount code instead of a percentage. `tiers` is the optional commission ladder, lowest
+tier first: each tier's rate and the `threshold` to reach it (`metric` `revenue` or `orders`, the
+`amount` per month, and for how many closed `months` running); the affiliate manager reads it and
+proposes one when it is absent, and an empty list records that the user chose no tiers
+(**Affiliate manager**). `payout` is `monthly` or `net-{n}` (days after the
 month closes). `paymentTiming` is when a fee is due: `on-agreement`, `net-{n}`, `on-posting`, or
 `on-posting-net-{n}`; P5 asks it, negotiation copies it onto each deal, and without it the
 ledger uses `on-posting-net-30` for paid and `net-30` for ambassador, labelled as a default. The optional `rights` block holds the brand's own usage fees per 30 days, typed in
@@ -265,16 +273,16 @@ reach, because Atlas holds views.
 | ---------- | -------- | ------ | ---- | ----------- | ---------- |
 | `roster` | the creator's account | The creator's account, `entityId` = the network's own account id | `action_item` `medium` while active; `action_item` `low` at No reply; `went_well` complete; `needs_improvement` declined or dropped | `handle`, `network`, `name`, `type`, `stage`, `source` (discovery, vetting, typed, csv), `contact` `{email, manager, dm}`, `tier`, `lastContactAt`, `nextFollowUpAt`, `waitingOn` (brand while a draft is unsent, creator once sent), `yourCall` (the open question, while one is open), `yourCallDeferredAt` (when the user chose "Decide later"), `notes` | Every program agent that moves a creator; content sourcing writes only `waitingOn` and `yourCall`; fulfillment moves Delivered to Posting due on delivery; the deliverable tracker moves Posting due only when no product ships, and moves Posted and Complete; Program manager |
 | `draft` | the creator + the template + the channel | The creator's account | `action_item` `low` while not sent; `went_well` once sent | `handle`, `channel` (email, dm, aspire), `template`, `subject`, `body`, `mailDraftId` (when a mailbox draft exists), `sentAt`, `sentBy` (`user` or `send-authorized`) | outreach, negotiation, fulfillment, affiliate manager, sourcing, tracker, roster manager |
-| `reply` | one per exchange, never replaced | The creator's account | `went_well` `low` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, sourcing |
+| `reply` | one per exchange, never replaced | The creator's account | `went_well` | `handle`, `channel`, `receivedAt`, `summary` (one plain line), `class` (interested, accepted, question, counter, declined, details, rights, auto-reply, other; an auto-reply moves nothing and never counts as a reply), `record` (what it wrote), `nextMove`, `source` (pasted, mailbox) | outreach (triage), negotiation, sourcing |
 | `terms` | the creator + the deal version | The creator's account | `action_item` `medium` while negotiating; `went_well` agreed; `needs_improvement` declined | `handle`, `type`, `status` (offered, countered, agreed, declined), `version`, `offer` `{open, target, max}`, `counter`, `fee`, `productValue`, `commissionPct`, `codeDiscountPct`, `code`, `monthlyFee`, `termMonths`, `deliverables` (list: what, count, due), `postWithinDays`, `usage`, `usageDays`, `usageChannels`, `exclusivity`, `disclosure`, `whitelisting` (true or false, with `whitelistingDays`), `paymentTiming`, `termStart`, `termEnd`, `agreedAt` | negotiation |
 | `fulfillment` | the creator + `orderKey` (`{YYYY-MM}` for an ambassador's monthly order, `1` otherwise) | The creator's account | `action_item` `medium` until delivered; `went_well` delivered | `handle`, `product`, `options`, `value`, `status` (to request, requested, received, ordered, shipped, delivered, issue, returned), `address`, `pickup`, `carrier`, `tracking`, `orderRef`, `orderedAt`, `shippedAt`, `deliveredAt`, `postDueAt` | fulfillment |
 | `deliverable` | the creator + `deliverableKey` | The creator's account | `action_item` `medium` while due; `went_well` posted on time; `needs_improvement` late, missing, or needs a fix; `action_item` `low` for an expected (loose gifting) post not made | `handle`, `what`, `due`, `status` (due, posted, late, missing, needs fix, waived; posted carries `onTime`; late means past due and inside the grace days with nothing posted, or past them while Atlas holds no posts from the creator since the due date), `postUrl`, `postId`, `postedAt`, `disclosure` (found, missing, unclear), `checks` (one line each), `owed` (true for terms, false for loose gifting) | deliverable tracker |
-| `asset` | the post | The creator's account | `went_well` `low` | `postUrl`, `postId`, `handle`, `network`, `format`, `products`, `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `sources` (any of program, tagged, mention, hashtag) | content library |
+| `asset` | the post | The creator's account | `went_well` | `postUrl`, `postId`, `handle`, `network`, `format`, `products`, `themes`, `hookPattern`, `adScore`, `peopleOnScreen`, `safety`, `sources` (any of program, tagged, mention, hashtag) | content library |
 | `rights` | the post + the usage | The creator's account | `action_item` `medium` while requested; `went_well` granted; `needs_improvement` declined or expired | `postUrl`, `handle`, `status` (wanted, requested, countered, granted, declined, expired, renewal requested), `proof` (where and when the grant was given), `inWriting`, `usage` (organic repost, paid usage, whitelisting), `channels`, `startsAt`, `expiresAt`, `fee`, `requestKind` (rights, renewal, new-ugc), `assetSpec` (new UGC: what, specs, due) | content sourcing |
 | `affiliate` | the creator + the period | The creator's account | `went_well` when sales; `action_item` `low` when none | `handle`, `code`, `link`, `period` (`YYYY-MM`), `orders`, `revenue`, `aov`, `commission`, `currency`, `source` (store, csv), `codeStatus` (planned, live, retired) | affiliate manager |
-| `ledger` | `lineId`, newest status wins | The creator's account, or the brand's for program-level lines | `action_item` `medium` while owed; `went_well` paid; `went_well` `low` product cost; `action_item` `low` void | `lineId`, `handle`, `kind` (fee, product, commission, rights, ugc), `amount`, `currency`, `status` (accrued, invoiced, approved, paid, void), `dueAt`, `invoiceRef`, `paidAt`, `from` (the record it came from) | program ledger |
-| `page` | the page key | The brand's own account on its first linked network | `went_well` `low` | `key` (outreach, negotiation, orderForm, library, sourcing, tracker, roster, ledger, dashboard, affiliate), `url`, `title` | The agent that first publishes the page, in the same approval as its other writes; unattended runs may write it |
-| `snapshot` | the program + the date | The brand's own account on its first linked network | `went_well` `low` | The dashboard's headline numbers (full list in **Program dashboard**, **The snapshot**); a number not tracked is null, never 0 | program dashboard |
+| `ledger` | `lineId`, newest status wins | The creator's account, or the brand's for program-level lines | `action_item` `medium` while owed; `went_well` paid; `went_well` product cost; `action_item` `low` void | `lineId`, `handle`, `kind` (fee, product, commission, rights, ugc), `amount`, `currency`, `status` (accrued, invoiced, approved, paid, void), `dueAt`, `invoiceRef`, `paidAt`, `from` (the record it came from) | program ledger |
+| `page` | the page key | The brand's own account on its first linked network | `went_well` | `key` (outreach, negotiation, orderForm, library, sourcing, tracker, roster, ledger, dashboard, affiliate), `url`, `title` | The agent that first publishes the page, in the same approval as its other writes; unattended runs may write it |
+| `snapshot` | the program + the date | The brand's own account on its first linked network | `went_well` | The dashboard's headline numbers (full list in **Program dashboard**, **The snapshot**); a number not tracked is null, never 0 | program dashboard |
 | `roster-health` | the creator + the date | The creator's account | `went_well` star or steady; `needs_improvement` slipping, dormant, retire | `handle`, `segment` (star, steady, slipping, dormant, retire, insufficient; insufficient is `action_item` `low`), `seedEligible`, `quotaMet`, `trend`, `costPerEngagement`, `revenue`, `renewalDueAt`, `recommendation` | roster manager |
 
 A `roster` finding carries the whole row, not only what changed: copy the newest finding's
@@ -319,7 +327,7 @@ records. Program flows that read `asset` findings or the library `page` finding 
 the dashboard) also read the newest of each on the prefix `content-library-{profile}`, so a
 brand-wide refresh counts for every program. Its scheduled refresh is approved by the
 `library:cadence` calibration (**8**), not by a program's P9. `library:cadence` is a
-`policy` record: flows that read only `guideline` and `red_line` records never see it, and
+`policy` record: flows that read only `guideline` records and brand red lines (**Atlas tools**, Calibration kinds) never see it, and
 every flow that reads calibrations more broadly names `library:` in its drop list. Only the
 library and the **Content library** section read it.
 

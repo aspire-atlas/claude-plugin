@@ -20,12 +20,26 @@ absent) with the lane to fill when one is named, and `recipient` (one or more le
 `campaign` or `growth` when the main thread passes one). Render for the primary lens: `growth`
 leads the summary and page with the lookalike tier and each seed's results; `campaign` leads
 with how far the pool is from the lineup the launch needs. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words,
-third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call.
+third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
-holds the campaign calibration keys, the tier model, the scoring table, the pool state
+holds the campaign calibration keys, the tier model, how scoring applies the vetting map, the pool state
 machine, the page structure, delivery, and the unattended run rules. Follow it exactly.
 Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`; read it too. Each candidate's estimated fee comes from the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the saved `fees:rate-card` from your calibration read, or the Aspire recommended rates without one, applied to view counts on the posts you already fetched.
+
+**Fit score.** Score fit only by **How criteria become points** in
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` (section **1. Brand fit**), as
+the discovery reference's **Scoring** applies it, never by a split of your own: the same map and
+credit rules vetting uses, so a creator gets the same score in both. Read that section and
+**Criteria exclusions** under **2. Brand safety** there. Take the map from the newest pool finding that
+carries a `detail.criteriaMap` (verdicts carry none; skip past them) when its `version` is the
+current version of `campaign:{slug}-criteria`, and use it exactly as given; otherwise build it once before scoring the first candidate (each criterion
+numbered, quoted from the record, with its component and measure; repeats scored once; exclusions
+and criteria posts can't show listed apart) and score every candidate in the run against it. Count
+only over each candidate's posts read as vetting reads them (90 days, newest 50, widened once to 180
+days with fewer than 5); when unsure whether a post matches, it does not count. An exclusion hit is
+a safety Flag, never points. Record every candidate's `fitBreakdown` and the map in the finding and
+the points per criterion on the card.
 
 **Creator-ads mode.** When `campaign_type` is `creator-ads`, or the `campaign:{slug}-brief`
 body starts with `type: creator-ads`, follow **Creator-ads mode** in the discovery reference on
@@ -56,8 +70,7 @@ the category read of paid partners belongs to vetting.
    (`search_creators`, `search_creator_marketplace`, `lookup_creators`, web research) are
    yours to run in both modes: the saved cadence record is the standing approval.
 6. **Competitors and red lines are hard filters.** Never shortlist a handle recorded as a
-   `competitor`, and flag any candidate whose recent content matches a `red_line`. `review:`
-   keys never count (step 3 drops them).
+   `competitor`, and flag any candidate whose recent content matches a brand red line (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`, Calibration kinds).
 
 **Process**
 
@@ -69,27 +82,33 @@ the category read of paid partners belongs to vetting.
 2. Resolve the date from the shell clock in the cadence record's timezone (`TZ=<tz> date +%F`),
    never from the prompt or the session header.
 3. Read `get_brand_context` with `includeSuperseded: true` (`truncated` true: page the rest with `search_calibrations`; tool absent: `search_calibrations`, no filter, limit 100 per page, paged to the end, `includeSuperseded: true`): the five
-   campaign records, plus `brand:summary`, every `competitor`, `partner`, `red_line`, and
+   campaign records, plus `brand:summary`, every `competitor`, `partner`, brand red lines, and
    `guideline`. Drop every key starting `review:` (content review only), `vetting:` (creator
-   vetting only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `ad-reuse:` (ad reuse only), or `lastrun:` (a flow's saved setup answers), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
+   vetting only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
    each one with stance `reject` to the dedupe set, and show any other stance on that
    creator's card under "Notes".
 4. Rebuild the pool: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
-   wins. Count undecided against the pool target; that gap is this run's fill quota. With
+   wins. Count undecided against the pool target; that gap is this run's fill quota, lowered to
+   the launch block's `approved.spend.cap` when it is not `null` (its `spend.unit` is
+   `candidates`; 0 means add none and re-score what the pool holds; in creator-ads mode it caps
+   the candidates added across all lanes, emptiest lane first). With
    `job: shortlist` the quota is zero: re-score in step 5, skip steps 7 and 8 (no sourcing), then
    write the re-scores and publish. With `job: view`, skip steps 5 to 9 and the delivery in
    step 10: republish the page from the newest pool state as it stands, write nothing to
    Atlas, and return the summary.
-5. Re-score every undecided candidate against current data before sourcing new ones — a
-   candidate who went dormant or dropped engagement should fall before a new one is added.
-6. Call `list_post_search_fields` and `list_creator_search_fields` once each; use only paths
-   they return. Find the partnership marker tier 1 needs in the post census rather than
-   assuming a field name; if the census exposes none, say so in the summary and treat
-   `partner` calibrations plus the brand's own collab posts as the whole of tier 1.
-7. Fill the quota in tier order per the reference, stopping the moment the pool is at target.
+5. Settle the criteria map (**Fit score** above): reuse the newest map a finding carries while
+   the criteria record is at its version, else build it now. Then re-score every undecided candidate
+   against it and current data before sourcing new ones — a candidate who went dormant or dropped
+   engagement should fall before a new one is added. Creator-ads mode builds no map.
+6. Take field paths from `atlas-search.md`; call a `list_*_search_fields` census only for a path it does
+   not list. Tier 1 reads the brand's partnership content with the `partnership` filter per the
+   reference (branded, collab, affiliate and product posts; tagged and reposted ones are tier 2); without the Profile's Meta links, say so in the summary.
+7. Fill the quota in tier order per the reference, stopping the moment the quota is met or the
+   pool is at target, whichever comes first; with a quota of 0, source nothing and look up no handle.
+   Count the handles you resolve with `lookup_creators` for the headline (**Output format**).
    For tier 3, pick the seeds and run the three lookalike searches per **Lookalike seeds**;
    `search_insights` on the `readout-weekly-{profile}` prefix supplies the growth-lens seeds,
    and on the `program-{profile}-{slug}` prefix of a program whose `discoveryCampaign` is this
@@ -99,8 +118,9 @@ the category read of paid partners belongs to vetting.
    Record tier, exact source, `seed` for a lookalike, `recommendationTypes` for a creator a
    recommendation pass returned, and `tierScheme: 2` on every candidate. Resolve every web-sourced handle with
    `lookup_creators` before scoring it.
-8. Score each new candidate with the reference's table, naming the field behind each
-   component. A component with no data scores zero and is listed as missing. Then work out
+8. Score each new candidate against the same map, per the reference's **Scoring**, naming the
+   posts or field behind each criterion's credit. A component with no data scores zero and is
+   listed as missing. Then work out
    **The findings behind the shortlist** from the posts this run already read, tag every check
    with its finding, and list any criterion a finding suggests as a proposed change; never
    apply one.
@@ -114,14 +134,16 @@ the category read of paid partners belongs to vetting.
 
 **Output format (summary for the main thread, under 250 words)**
 
-- Headline: pool state in one line — undecided against target, added this run, decided since
-  last run.
+- Headline: pool state in one line — undecided against target, added this run, handles looked
+  up this run, decided since last run.
 - Added: up to 5 bullets, the highest-scoring additions, each with handle, tier, follower
   count, fit score, and the one fact that earned the score. Lookalikes name their seed.
   Creator-ads mode: the pool per lane against its target first, then the additions with their
   lane, hook rate, and the pass that found them ("Meta: high ad performance"), then per lane
   the recommendation passes that ran and how many each returned.
-- Moved: candidates whose score changed materially since the last run, and why.
+- Moved: whether the criteria map was reused, rebuilt because the criteria changed, or built
+  because no finding had one yet, then candidates whose score
+  changed materially since the last run, and why.
 - Flags: risk flags, competitor near-misses, dormant accounts, candidates with no contact
   route. "None" is a valid line.
 - Gaps: tiers that came back empty (including "no lookalike seed qualified"), in creator-ads
