@@ -1,12 +1,20 @@
 # Dependabot: grouped security and version updates (CVE Remediation, ASP-6055).
 # Security fixes for an ecosystem arrive as one PR. Minor and patch version updates arrive as one
 # weekly PR. Major version updates still get their own PR, so each breaking change is reviewed alone.
+# Version-update PRs target develop (the beta channel); security-update PRs always target the
+# default branch and ignore target-branch.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
     groups:
-      github-actions:
+      actions-security:
+        applies-to: security-updates
         patterns: ["*"]
+      actions-minor-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
