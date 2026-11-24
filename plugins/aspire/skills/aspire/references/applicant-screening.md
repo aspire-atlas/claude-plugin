@@ -111,7 +111,8 @@ in an interactive run", and the run reports it.
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when its Team call
 carries a `sheetValue`: the team took back in the Sheet a call saved from there (as it stood or
 changed in F1), and no newer call on the applicant was saved since in this review. It is vetted
-like any undecided row, and the team's F1 answer on it replaces the old call.
+like any undecided row, and the team's F1 answer on it replaces the old call. A row whose
+applicant is already `screened` in this review is never reopened (**Already screened**).
 
 **Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
 wait for the next run, and the next run offers them, since nothing was saved for them.
@@ -215,7 +216,9 @@ means the list is not counted as a campaign's applicants.
   scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
   line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
   This run writes no claims, so a scheduled run that starts while it is open can screen an
-  applicant it is screening too; the newer result then decides the applicant's status.
+  applicant it is screening too; the newer result then decides the applicant's status. For a CSV
+  or pasted handles, the list then loses every applicant already screened in the review, before
+  R5 (**Applicant review**, **Applicant status**, Screened once).
 - **Import the applicant export (step 3d)** when R2 named an applicant review and the list came
   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
   report and confirmation, before the launch. From then on the run's list is this file's
@@ -223,7 +226,8 @@ means the list is not counted as a campaign's applicants.
   review's other applicants, so the handles R3 approved are the ones looked up. Each list entry
   carries its `aspireApplicantId`, so the agent finds the applicant's answers (**Applicant
   review**, **Applying the form rules**, step 1). "Not now", or an import that stops, leaves the
-  list as it was.
+  list as it was. Either way, the check for applicants already screened runs again on that list
+  (**Applicant review**, **Applicant status**, Screened once).
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
