@@ -482,7 +482,8 @@ the review's own Team call wins over the record (**Team calls on a review**, Wha
    creator, and discovery still hides them. An overturn in the source review of a record with
    `confirmed: no` makes it **disputed** (the table above), with nothing written.
 3. **The next interactive run asks.** An interactive vetting run on any of the brand's reviews, after
-   B1, finds this brand's brand-safety records that need a person, reading every review's Team calls
+   B1, finds this brand's brand-safety records whose active version has stance `reject` and that
+   need a person, reading every review's Team calls
    on their creators (`search_insights` with a `prefix` filter on `detail.account_review.runKey` =
    `applicant-calls-`, paged, kept by handle and network): disputed ones; ones the team overturned
    in a review, where that review's Team call is newer than the record's current version and carries
@@ -494,7 +495,9 @@ the review's own Team call wins over the record (**Team calls on a review**, Wha
    Destructive tools confirmation, showing the current and the new statement:
    - **Overturned in a review:** "@handle is rejected for brand safety across {brand} (from the
      {source campaign} review), and the team approved them in the {campaign} review. Lift that for
-     every campaign, or only for this review? Your answer is saved to Atlas." Options: 1) Lift it for
+     every campaign, or only for this review? Your answer is saved to Atlas." When the overturn is in
+     the source review itself, "and the team approved them there" replaces the review's second
+     naming. Options: 1) Lift it for
      every campaign; 2) Only for the {campaign} review; 3) Decide later (asked again next run).
    - **Disputed:** "The team approved @handle in the {campaign} review, where the brand-safety reject
      came from. Lift it for every campaign? Your answer is saved to Atlas." Options: 1) Lift it for
@@ -503,10 +506,13 @@ the review's own Team call wins over the record (**Team calls on a review**, Wha
      {brand} (from the {campaign} review): {check}. Confirm it? Your answer is saved to Atlas."
      Options: 1) Confirm the reject (Recommended); 2) Lift it for every campaign; 3) Decide later.
 4. **What each answer saves.**
-   - **Lift it for every campaign:** `supersede_calibration` with stance `note` and the body line
-     `lifted: brand-safety reject from the {campaign} review lifted by {name} on {YYYY-MM-DD}: {why}`,
-     `{name}` the person's name as `get_status` gives it, `{why}` the Team call's words or the
-     user's. Other reviews then treat the creator as undecided, and discovery may surface them.
+   - **Lift it for every campaign:** `supersede_calibration` with `concern: "preference"`, the
+     `statement` "@{handle} ({network}): note. Brand-safety reject from the {campaign} review lifted
+     for every campaign on {YYYY-MM-DD}: {why}", and the body with stance `note`, the same `reason`,
+     `profile`, `review`, `campaign`, `aspire applicant`, and `check` lines, no `confirmed` line,
+     and the line `lifted: brand-safety reject from the {campaign} review lifted by {name} on
+     {YYYY-MM-DD}: {why}`, `{name}` the person's name as `get_status` gives it, `{why}` the Team
+     call's words or the user's. Other reviews then treat the creator as undecided, and discovery may surface them.
      Retracting the record outright is a separate ask with its own Destructive tools confirmation.
    - **Only for the {campaign} review:** the record stays as it is; a Team call row in that review
      repeating its call with `brandWideKept`, so the run stops asking about it for that review.

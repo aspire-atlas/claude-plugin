@@ -223,7 +223,7 @@ Rules:
   tiers 1 and 2 alone is a good run, not a shallow one.
 - Record the tier and the exact source on every candidate; the page shows it.
 - Never surface the brand's own handles, any `competitor` handle, any handle already
-  decided for this campaign, or any creator whose `creator:*` calibration has stance `reject`
+  decided for this campaign, or any creator whose active `creator:*` calibration has stance `reject`
   (the team's call from creator vetting, **Creator vetting**) and applies to this brand: one whose
   body names a brand profile (a brand-safety reject from an applicant review, **Applicant
   screening**, **Brand-wide brand-safety rejects**) applies only to that profile, confirmed,

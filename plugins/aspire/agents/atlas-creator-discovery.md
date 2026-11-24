@@ -87,7 +87,7 @@ the category read of paid partners belongs to vetting.
    vetting only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers), and the CAS keys (`-cas`, `-lane-*`, `-decision-defaults`, `-terms`) of any
    campaign other than this one. Keep `theme:brand` for the page in step 10; it is never a guideline. Keep
    every `creator:*` record apart: it is the team's call on one creator, not a criterion. Add
-   each one with stance `reject` to the dedupe set, and show any other stance on that
+   each active one (never a superseded version) with stance `reject` to the dedupe set, and show any other stance on that
    creator's card under "Notes". A record whose body has a `profile:` line (a brand-safety reject
    from an applicant review) applies only when it names this brand profile: hide that creator
    whether or not a person confirmed the reject, and whether or not it is disputed; once lifted
