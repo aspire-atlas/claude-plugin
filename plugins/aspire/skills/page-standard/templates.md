@@ -136,7 +136,9 @@ A Shortlist groups its creators by verdict and shows the tally under the answer.
 A screen is 1280 by 800 pixels. `page-templates.json` holds each budget as data. A budget covers
 the argument: the page from the top to the end of its decisions. The evidence and everything after
 it sit below and are not counted. The page check estimates the height and fails a page over its
-budget (R10; `rubric.md`, section 4).
+budget (R10; `rubric.md`, section 4). The budget caps the page; it does not loosen R10's first
+screen. A page or section for a VP or budget owner, and a flow whose reference sets one screen (the
+Readout's Leadership lens, the competitive brief), still fits its argument on the first screen.
 
 | Template | Budget |
 | -------- | ------ |

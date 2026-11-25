@@ -66,7 +66,10 @@ is in **Quality review**, **3**.
 - **R10** is judged on a 1280×800 first screen: the answer, the decisions, and the next steps all
   start above y=800 in the rendered order. With a text-only read, judge by source order and say so
   in the coverage line. "Prepared by" applies only to a page for a VP or budget owner; on any other
-  page its absence is not a FAIL.
+  page its absence is not a FAIL. A page built from a template also fails R10 when it runs past
+  its template's length budget (**Page standard**, `templates.md`, section 5), which the page
+  check measures. Staying within the budget never passes R10 on its own: the first screen is still
+  judged, so a leadership page or section that must fit one screen still does.
 - **R11** always fails on these words anywhere a reader sees them (body text, chart labels, image
   alt text, button labels), outside quoted text (a creator's caption or name, someone's own words):
   an agent name (`atlas-...`), an Atlas tool name in any form (`search_posts`,

@@ -239,7 +239,7 @@ def rules(data, templates, tools, phrases):
     for path, value in reader_text(data):
         if path == "scope.brand" or QUOTED.search(path):
             continue
-        value = re.sub(r"(?i)%s" % re.escape(brand), " ", value) if brand else value
+        value = re.sub(r"(?i)(?<![\w-])%s(?![\w-])" % re.escape(brand), " ", value) if brand else value
         for pattern, form, instead in phrases:
             if pattern.search(value):
                 errs.append(("banned-phrase", path, "uses \"%s\": %s (glossary.md)" % (form, instead)))

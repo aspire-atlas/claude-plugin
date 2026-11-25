@@ -111,12 +111,17 @@ REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().split
             for codes, metrics in [line.split(":")] for code in codes.split()}
 # The page standard's structure rules (rubric.md). A page built from a template (data-template,
 # page-fill.md) carries every mark below; a hand-written page carries them where its blocks do.
-# A headline states the finding. A short one that ends in a topic word and holds no figure is a
-# label ("Creator performance overview", "Weekly social report"), as is one under three words.
-HEADLINE_WORDS = 3
-LABEL_WORDS = 4
-TOPIC = re.compile(r"(?i)\b(?:overview|summary|report|update|recap|review|analysis|dashboard|readout|results|performance"
-                   r"|snapshot|insights|highlights|breakdown|roundup|digest|findings|status)$")
+# A headline states the finding. One made only of label words, the brand's name and a period
+# ("Creator performance overview", "Weekly social report", "Q3 results") is a label, as is a single
+# word. Any other word ("drove", "unboxing", "big") makes it a finding, so a short finding passes.
+HEADLINE_WORDS = 2
+LABEL_VOCABULARY = frozenset("""
+a an the and of for our your this last next week weekly day daily month monthly quarter quarterly year yearly
+annual social media content creator creators influencer brand program campaign account accounts channel
+channels instagram tiktok youtube post posts performance overview summary report update recap review
+analysis dashboard readout results snapshot insights highlights breakdown roundup digest findings status
+metrics data numbers plan brief profile shortlist verdict
+""".split())
 # A quarter, a half or a year names a period, not a figure, so it does not make a label a finding.
 PERIOD = re.compile(r"(?i)\b(?:[QH][1-4]|FY\d{2,4}|(?:19|20)\d{2})\b")
 INSIGHTS_MAX = 3
@@ -322,6 +327,11 @@ def r2(nodes, regions, out):
             problems.append("the method section's platform counts %s differ from the scope's %s" % (again, top))
     return problems
 
+def strip_name(value, name):
+    # A name taken out as whole words only, so the brand "Go" leaves "Going forward" whole.
+    name = name.strip()
+    return re.sub(r"(?i)(?<![\w-])%s(?![\w-])" % re.escape(name), " ", value) if name else value
+
 def classes(node):
     return (node.attrs.get("class") or "").split()
 
@@ -350,9 +360,10 @@ def r3(nodes, regions, out):
     if len(heads) != 1:
         return ["the page needs exactly one h1, the headline that answers its question (found %d)" % len(heads)]
     shown, problems = text(heads[0], gap=" "), []
-    words = re.findall(r"[A-Za-z0-9]+", shown)
-    figure = re.search(r"\d", PERIOD.sub(" ", shown))
-    if len(words) < HEADLINE_WORDS or (len(words) <= LABEL_WORDS and TOPIC.search(shown.rstrip(" .")) and not figure):
+    brand = ((regions.get("scope") or [None])[0] or Node("div", [], None)).attrs.get("data-brand") or ""
+    words = re.findall(r"[A-Za-z0-9']+", shown)
+    rest = re.findall(r"[A-Za-z0-9']+", PERIOD.sub(" ", strip_name(shown, brand)).lower())
+    if len(words) < HEADLINE_WORDS or not [w for w in rest if w not in LABEL_VOCABULARY]:
         problems.append("the headline \"%s\" is a label, not a finding; write the answer as one sentence" % shown)
     if shown.endswith("?"):
         problems.append("the headline \"%s\" asks a question; the question is the title, the headline answers it" % shown[:60])
@@ -927,7 +938,8 @@ def argument_height(main, width=1080):
     return height
 
 def r10(nodes, regions, out):
-    # Returns None (unmarked) on a hand-written page: judge its length and its first screen by reading.
+    # Returns None (unmarked) on a hand-written page, and on a template page within its budget: judge
+    # the first screen by reading.
     main = template_of(nodes)
     if main is None:
         return None
@@ -940,8 +952,10 @@ def r10(nodes, regions, out):
     height = argument_height(main)
     screens = math.ceil(height / SCREEN[1] * 10) / 10
     out["length"] = {"template": name, "height": round(height), "screens": screens, "budget": budget}
+    # Within its budget the page is still judged: R10's first screen (reader-standard.md) is read, not
+    # measured, so the script fails R10 but never passes it.
     if budget is None or screens <= budget:
-        return []
+        return None
     return ["the page runs about %.1f screens to the end of its decisions, over the %s budget of %d: cut words from the answer, the insights, the next steps and the decisions, or move detail into the evidence"
             % (screens, (name + " " + length).strip(), budget)]
 
@@ -979,7 +993,7 @@ def r11(nodes, regions, out):
             problems.append("names %s: \"%s\"" % (kind, hit))
     # The brand's own name is its name, not a phrase the page chose ("Seamless").
     brand = ((regions.get("scope") or [None])[0] or Node("div", [], None)).attrs.get("data-brand") or ""
-    plain = re.sub(r"(?i)%s" % re.escape(brand.strip()), " ", shown) if brand.strip() else shown
+    plain = strip_name(shown, brand)
     for pattern, form, instead in PHRASES:
         if pattern.search(plain):
             problems.append("uses the banned phrase \"%s\": %s (glossary.md)" % (form, instead))
@@ -1429,7 +1443,7 @@ CAN_BE_NA = {"R2", "R6", "R15"}
 NA_REFUSED = {"R15": ("data-compare", "the page marks a comparison")}
 # What a check that returns None reports: n/a on its own terms, or unmarked, to be judged by reading.
 NO_RESULT = {"R4": ("unmarked", "the page has no insight or KPI block; read it for a number with nothing beside it, and count its insights"),
-             "R10": ("unmarked", "the page is not built from a template; judge its length and its first screen by reading"),
+             "R10": ("unmarked", "the script measures only a template page's length budget (the length entry); judge the first screen by reading"),
              "R5": ("unmarked", "the page has no decision, no next steps section, and no marked recommendation or trend to watch; read it for one"),
              "R7": ("unmarked", "the page cites no post and marks no explanation; read it for one, and mark every explanation"),
              "R13": ("n/a", "the page names no question code and cites no post"),

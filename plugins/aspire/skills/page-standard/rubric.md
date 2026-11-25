@@ -2,7 +2,8 @@
 
 The page check (`page-check.md`, run as `SKILL.md`, section 5 says) prints one line per check:
 `pass`, `fail`, `n/a`, or `unmarked` (no markup for the script to read, so judge it by reading).
-A `fail` stops the publish (`SKILL.md`, section 4, step 5): fix it and run the check again. This
+A `fail` holds an interactive publish, and a scheduled run publishes and reports it (`SKILL.md`,
+section 4, step 5): fix it and run the check again. This
 file says how each check is judged, what each scripted check fails on, and the fix.
 
 What each check asks is defined once, in
@@ -21,7 +22,7 @@ flow. Every check is pass, fail, or N/A, never a score.
 | Check | How |
 | ----- | --- |
 | R1 Reader and scope, R2 Platforms covered, R6 Decisions kept separate, R11 Plain language, R13 Required metrics, R14 Data freshness, R15 Like for like | Script, or by reading when the page is drawn in script or carries no markup. R14's wording beyond the entry itself is judged: the period wording ("Atlas has no data for {period}", `SKILL.md`, section 9.3), behind-pace notes, and refreshes skipped as recently refreshed. R15 is also judged: a comparison the markup missed, and whether a share's group size is the right whole (`comparisons.md`, **What is judged**) |
-| R3 Answer first, R4 Numbers have context, R10 Fits the reader | Script for the one headline, at most three insights, a comparison on every KPI tile and insight, and a template page's length budget; judgment for the rest (an insight that is not surprising, a comparison that is not like for like, the first screen), and on a page with no such marks |
+| R3 Answer first, R4 Numbers have context, R10 Fits the reader | Script for the one headline, at most three insights, a comparison on every KPI tile and insight, and a template page's length budget; judgment for the rest (an insight that is not surprising, a comparison that is not like for like), and on a page with no such marks. The script fails R10 over the budget but never passes it: within the budget it is `unmarked`, and the first screen is judged as `reader-standard.md` says |
 | R5 Clear next steps | Script for each recommendation's cost line, each trend to watch (`recommendations.md`) and each marked step's owner; judgment for who on an unmarked step, by when, what it should change, the arithmetic, and a recommendation or two-sided finding the markup missed |
 | R7 Real evidence | Script for the links (every cited post, every explanation's evidence, every saved capture) and the source labels; judgment for each figure, checked against what the run read |
 | R8, R12 | Judgment |
@@ -46,11 +47,11 @@ On a page built from a template, make every fix in the page data and fill the pa
 | ----- | ---------- | --- |
 | R1 | The scope is missing, comes after the first `h2`, or does not show its reader, brand and range | One `data-page="scope"` at the top whose words show each of its attributes |
 | R2 | A platform has no exact post count, a team page leaves one out, or the method's counts differ from the scope's | List Instagram, TikTok and YouTube with exact counts, or "not covered"; repeat the counts in the method |
-| R3 | There is no headline (no `h1`), more than one, a headline under three words or a short topic label ("Creator performance overview"), a headline that asks a question, or on a template page a headline outside the answer | Write the answer as the one `h1`: a sentence that states the finding ("Short how-to videos carried the week: post three more before Friday"). The question goes in the title above it |
+| R3 | There is no headline (no `h1`), more than one, a one-word headline, one made only of label words, the brand and a period ("Creator performance overview", "Q3 results"), a headline that asks a question, or on a template page a headline outside the answer | Write the answer as the one `h1`: a sentence that states the finding ("Short how-to videos carried the week: post three more before Friday"). The question goes in the title above it |
 | R4 | More than three insights, or a KPI tile or insight with no comparison (no `data-vs`, or one that says "none" or "n/a") | Keep the three insights that matter most and move the rest into the evidence. Put each number against something: the last period, the account's usual, peers of the same size, or a goal ("1.4 times the 8-week median of 291,000") |
 | R5 | A recommendation with no cost line, a trend to watch with one reading, or a next step with no owner, a placeholder owner ("TBD", "someone"), or an owner in `data-owner` the step does not show | Price it as `recommendations.md` says. Name the person or role who does the step ("Social lead"), on the step and in `data-owner` |
 | R6 | Decisions sit inside the next steps, a decision's date is not shown, or no decisions section says "Nothing needs approval" | One decisions section, apart from the steps, each decision with its shown date |
-| R7 | A cited post with no link to itself, an explanation with no linked evidence, a saved capture missing its parts, or a claim with no source label, a label that is not one of the six, or a label the reader cannot see | Link each post and each piece of evidence. End each insight, each next step and each evidence line with where it came from: Atlas, Brand memory, Web, You, Our read, or a connected tool by name (listed in the scope's `data-tools`, the page data's `scope.tools`) |
+| R7 | A cited post with no link to itself, an explanation with no linked evidence, a saved capture missing its parts, or a claim with no source label, a label that is neither one of the five nor a connected tool the scope lists, or a label the reader cannot see | Link each post and each piece of evidence. End each insight, each next step and each evidence line with where it came from: Atlas, Brand memory, Web, You, Our read, or a connected tool by name (listed in the scope's `data-tools`, the page data's `scope.tools`) |
 | R10 | A template page runs past its length budget (section 4) | Cut words from the answer, the insights, the steps and the decisions, or move detail into the evidence |
 | R11 | An agent, tool or system name, a report label, "organic" or "unpaid" said of another account's posts, or a phrase on the banned-phrase list (`glossary.md`, section 2), outside quoted words | Say what the thing is in the reader's words; use the replacement the glossary gives. Never change a creator's own words: mark them quoted |
 | R13 | A cited post lacks a metric its question requires and does not say why | Show the metric, or name it in `data-missing` with the reason beside it. Never show a missing metric as 0 |
@@ -86,4 +87,4 @@ The script estimates the height from the page's words and blocks at the default 
 browser, and prints it in the R10 line (`length`: the height in pixels, the screens rounded up to a
 tenth, and the budget). The estimate is within a few percent of the page as a browser draws it. A
 template whose budget grows with its items (Shortlist, Plan, Dashboard) prints its height and is
-never over. A hand-written page is `unmarked`: judge its first screen by reading, as R10 asks.
+never over. Within its budget, and on a hand-written page, R10 is `unmarked`: judge the first screen by reading, as R10 asks. A page for a VP or budget owner still puts the answer, the decisions and the next steps on the first screen, whatever its budget.
