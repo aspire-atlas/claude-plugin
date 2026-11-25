@@ -113,7 +113,7 @@ republish the page, run the role and edit checks, and post the step line when a 
 
 Per **The main thread's steps**, **Schedule**, with **Readouts**, Schedule, for the mechanics:
 offer the weekly call once after setup; C6 already approved the approval reminders and the daily
-results refresh, so show the always-allow block in SKILL.md **1.6** with C6, as 1.6 says. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
+results refresh, so show the always-allow block in SKILL.md **1.6** with C6, as 1.6 says.
 
 Unattended runs never ask, never decide, never pull the page data, and never launch an agent.
 They publish and post only, and publish a "setup needed" card when the records are missing.
@@ -297,7 +297,9 @@ The campaign object:
                  "use": "The hero, primary spend"}],
  "match": {"weights": {"performance": 0.30, "briefFit": 0.25, "paidHistory": 0.15,
                        "budget": 0.15, "contentReach": 0.15},
-           "tuned": {"performance": {"at": "2026-11-12T16:40:00Z", "by": "Name"}}}}
+           "tuned": {"performance": {"at": "2026-11-12T16:40:00Z", "by": "Name"}},
+           "talksToCamera": {"weights": {"speech": 45, "toCamera": 35, "explainer": 20},
+                             "minPosts": 20, "maxPosts": 100}}}
 ```
 
 `profileId` is the brand Profile the campaign runs for: the `profile_id` from Phase 2 + 3, an
@@ -339,9 +341,11 @@ score**), one per factor, and in `tuned` when and by whom each factor's weight w
 it leaves out, the defaults there stand. `basis` is optional: what the last tuning
 saved from the page learned from, `{decisions, agreement, at}`, the number of client decisions and
 the agreement on Aspire's score before and after, so the page's **About this data** and
-discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It reaches the record from **Match score tuning** on the
-page, offered in its own picker by **Pulling decisions** and written through the supersede rule, or
-from the CM saying it in the chat. It belongs to this campaign only, never to the brand as a whole. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
+discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It is written
+by **Match score tuning** (**Pulling decisions**) or the CM in the chat. Discovery and vetting read
+it in creator-ads mode, so they score with the same weights. `talksToCamera` is optional and
+agency only: the camera screen's weights, `minPosts` and `maxPosts` (**Camera screen**, Score and
+settings); without it, the defaults shown above stand. Controls to change it come later.
 
 `files` is optional too: the links Claude found while setting up the campaign in the chat (**1b**,
 **Files found in setup**), each with `label`, `category`, `url`, `round` (`all` or a round number),
