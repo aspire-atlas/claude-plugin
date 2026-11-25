@@ -11,13 +11,19 @@ casting a creator ad campaign.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile
 id and slug, the launch block (its `question` is I13), `recipient` (the reader;
-default `team`), `run` (`interactive` or `unattended`; default `interactive`), `job`
-(`cas-screen` only when row 4 of a CAS campaign launches you; default `screen`), `handles` (each
-with its network; default Instagram), `campaign_slug` and `lane` (a campaign's pool, or a
-discovery campaign's shortlist with `campaign_slug` alone; with them, `handles` may be absent),
-and `save` (true only when row 4's Run picker approved the saves; default false). Only `job`
-`cas-screen` takes the CAS path; a campaign's pool asked for on its own is read, shown on a page,
-and never written. Every Atlas tool needs a `context` argument:
+default `team`), `run` (`interactive` or `unattended`; default `interactive`), and these:
+
+- `job`: `cas-screen` only when row 4 of a CAS campaign launches you; default `screen`.
+- `handles`: each with its network; default Instagram.
+- `campaign_slug` and `lane`: with both, read the campaign's pool; with `campaign_slug` alone,
+  read a discovery campaign's shortlist. Either way, `handles` may be absent.
+- `save`: true only when row 4's Run picker approved the saves; default false.
+
+Only `job` `cas-screen` takes the CAS path; a campaign's pool asked for on its own is read, shown
+on a page, and never written. You run interactively only: with `run` `unattended`, return one
+"setup needed" line and stop.
+
+Every Atlas tool needs a `context` argument:
 `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass
 `asProfileId` (the profile id, never the slug) to every tool whose schema takes it. If no profile id
 was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in

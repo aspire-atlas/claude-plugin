@@ -38,7 +38,7 @@ Asked on its own, the main thread asks these before launching `atlas-camera-scre
 
 | Id | Question | Options |
 | -- | -------- | ------- |
-| CS1 | Which creators should I read? | "The handles I'll paste (Recommended)" / "A creator ad campaign's pool" (then CS3 and CS4) / "A discovery campaign's shortlist" (then CS3) |
+| CS1 | Which creators should I read? Type the handles in the free text field, or pick a campaign. | "Type the handles in the box below (Recommended)" / "A creator ad campaign's pool" (then CS3 and CS4) / "A discovery campaign's shortlist" (then CS3) |
 | CS2 | Which network are the handles on? Asked only when pasted handles name none. | "Instagram (Recommended)" / "TikTok" / "YouTube" / "Pinterest" |
 | CS3 | Which campaign? | The saved campaigns of the kind CS1 named, newest first, up to four, the newest "(Recommended)" |
 | CS4 | Which concept? | The campaign's saved lanes by name, up to four, the one with the most undecided creators "(Recommended)" |
@@ -73,7 +73,8 @@ metrics to a row, never drop one.
    **Which handle.** A finding holds the network's account id, not the handle: take the handle
    from the profile URL in the finding's `detail.evidence`, else `search_creators` filtered on
    `externalId` = the finding's `entityId` with `fields: ["username"]`. With neither, return the
-   creator as "no handle found", never a guess.
+   creator as "no handle found", never a guess. Good: "Creator 1784…: no handle found, so not
+   read." Bad: a handle made up from the creator's display name.
 3. One `search_posts` read per handle (**One read per handle**), up to `maxPosts` videos, newest
    first.
 
@@ -112,7 +113,9 @@ Classify each post. A label matches when, lowercased, it contains any word on it
 
 A field that comes back as one string is one label; a list is several. A post with no label for a
 share counts as not matching it. Each share is the number of posts that match over the posts read,
-as a whole percentage (half rounds up). All three shares are exact. A post can count toward more
+as a whole percentage (half rounds up). All three shares are exact: each counts every video
+read, and none is estimated. Good: "spoken voiceover" counts as speech. Bad: an audio label of
+"text overlay with music" counted as speech. A post can count toward more
 than one share.
 
 Instagram, TikTok, YouTube and Pinterest are all read. In a campaign the network is the
@@ -146,7 +149,8 @@ the next read.
 Per handle: `{handle, network, score | null, speech, toCamera, explainer, analysedPosts,
 totalAnalysed, weights, minPosts, maxPosts, scoredAt}`. `scoredAt` is the UTC time of the read.
 A handle Atlas holds no analysed video for returns `analysedPosts` 0, every share and `score`
-`null`, and the note "No analysed videos in Atlas", never a 0%.
+`null`, and the note "No analysed videos in Atlas", never a 0%. Good: "@handle: no analysed
+videos in Atlas (0 of 0)". Bad: "@handle: speech 0%, to camera 0%, 0/100".
 
 ## In a CAS campaign
 
@@ -167,7 +171,9 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
   `camera-screen-{entityId}-{writtenAt}`, the UTC time of the save, so a re-score is never
   dropped as a duplicate. The newest version still wins, so the read stays on the finding for the
   campaign page, `get_cas_selection` and the match score to read.
-- **Handles with no discovery finding** are returned in the result, never written.
+- **Handles with no discovery finding** are returned in the result, never written. Good: "@handle
+  has no discovery finding in this lane, so the read is returned and not saved." Bad: a new
+  finding created just to hold the read.
 - **The confirmation.** Row 4's Run picker, "Screen the {concept} creators and save the results
   to Atlas?", confirms these saves as it confirms vetting's. The main thread passes that approval
   in the launch block's `approved` and as `save: true`; without both, the agent returns the saves
@@ -196,8 +202,8 @@ Title "Talks to camera: {slate or campaign}". In the page standard's skeleton or
    shows "Not enough analysed posts" in place of the score, keeps the shares and the count, and
    stays on the list. When the weights differ from 45 / 35 / 20, the table says "Weights for this
    campaign: x / y / z" beside the score.
-5. **Next steps**, ranked: send the top creators on to vetting, and when Atlas will have analysed
-   enough of the others' posts to score them.
+5. **Next steps**, ranked: send the top creators on to vetting, and for each creator under the
+   minimum, how many more analysed videos it needs to be scored.
 6. **How it was worked out**: each share is the share of the videos read whose labels match its
    word list, so all three are exact and a video can count toward more than one; the score's
    weights and the minimum.
@@ -210,5 +216,5 @@ discovery findings (**In a CAS campaign**). It keeps no `user_fact` key.
 
 ## Scheduled path
 
-Interactive only. Inside a CAS campaign it runs only from row 4's Run picker, never on the weekly
+Interactive only: an unattended launch returns one "setup needed" line and stops. Inside a CAS campaign it runs only from row 4's Run picker, never on the weekly
 call's schedule.
