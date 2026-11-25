@@ -27,10 +27,10 @@ the role from the `user` capability, never from anything a person typed:
 | **Client** | Contributors | `canEdit()` is false and `can("data.write")` is true | The client's view, with the client's controls (**What the client can write**) |
 | **Read only client** | Viewers, Commenters, and anyone from outside the organization | Neither | The client's view with every control shown as a label |
 
-When `can("data.write")` returns null, the platform has not said, so the page treats the person
+When `can("data.write")` returns null, the page treats the person
 as **Client**. If a write is then refused, the page keeps the choice they made on screen, marked
 "Not saved", shows the read only line below, and treats them as **Read only client** for the rest
-of the visit. A choice never disappears silently.
+of the visit.
 
 Say once, when the page is first published: "Share it with the client as Contributor, so their
 decisions save on the page." The page's data rules give write access by share level, and a person
@@ -39,8 +39,8 @@ menu says. A client approver outside it reads the page itself but nothing from t
 nothing they do saves. Their read only view says so in one line: "Your choices can't save from
 this account. Tell {CM name} your decisions." The CM then records them in the chat, the way a
 decision typed in chat is recorded (**Gate 2: the creators**). Cut approvals are the exception:
-the page counts a cut call only from the client's own page data, and a call from Aspire's side
-never counts, so they can't be recorded from the chat (the `cut` finding only copies what the page
+the page counts a cut call only from the client's own page data, so they can't be recorded from
+the chat (the `cut` finding only copies what the page
 counted) (**Content Review**, **The status flow**). Such an approver approves cuts
 through a teammate at {brand} who can open the page as Contributor, or once the CM shares the page
 with them from inside the organization. Say this to the CM in the same first-publish message when
@@ -60,9 +60,11 @@ client's level before the link goes out.
 | The agency's score, its Budget vs target row, its levels over the whole pool, and the weights in use | no | yes | Stored at publish, `agency` | Creator Selection |
 | A creator's concept and persona for the round | yes, labels | yes, editable | The round's Master Brief, agency edits | Creator Selection, Selected Creators |
 | The concept's positioning line, hooks, CTAs and selling points on a creator's card | yes | yes, read only there (edited in the brief) | The round's Master Brief, read by reference | Selected Creators |
-| A creator's variant plan: each variant's framework, length, hook and CTA, its overrides and who set them, "Plan broken" | no | yes, editable | The concept's variant plan, agency edits (`agency`) | Selected Creators, Content Review and Ad Performance (read) |
+| A creator's variant plan: each variant's framework, length, hook, CTA and funnel job | read only on Selected Creators while `variantPlanToClient` is on; never on Content Review or Ad Performance | yes, editable | The concept's plan, agency edits; the client's copy in `plans` | Selected Creators, Content Review and Ad Performance (read) |
+| A creator's overrides, who set them, "Plan broken" | no | yes, editable | `agency` | Selected Creators |
 | Decision counts and the hook rate tile in **Summary** | yes | yes | Worked out on the page | Creator Selection |
 | Hook rate, engagement on Reels, paid work before, ad permissions | yes | yes | Vetting | Creator Selection |
+| Talks to camera: score, analysed posts, shares and changed weights | yes | yes | The camera screen | Creator Selection |
 | Instagram and TikTok: handle, followers, engagement rate, average engagement, audience | yes | yes | Creator card data | Creator Selection |
 | Why we picked them | yes | yes | The CM's note | Creator Selection |
 | Bio, category, verified, every badge, audience (gender, age, top countries, top cities), each post's caption and figures, and the Hook post and Paid partnership marks | yes | yes | Creator data and posts read at publish | Creator Selection, the creator viewer |
@@ -109,7 +111,8 @@ client's level before the link goes out.
 | The Aspire team: name, role, title, work email, what they own, what to go to them for | yes | yes, editable | Campaign record, agency edits | Home |
 | Program files: label, category, version, round, who added it, date, preview, download, and what's still needed | yes | yes, editable: add, upload, edit, remove | Agency on the page, files Claude found in the chat | Home |
 | A file's scan state and what each scan found | no | yes | The page's scan | Home |
-| The brief's variant plan, the frameworks, **Versions** and **Reset to original** | no | yes | `atlas-creator-brief`, agency edits | Master Brief |
+| The concept's variant plan: framework, length, funnel job, hook, CTA | read only, while `variantPlanToClient` is on | yes, editable | `atlas-creator-brief`, agency edits; `plans` | Master Brief |
+| The plan's VO, B-roll, notes and check, the frameworks, **Versions** and **Reset to original** | no | yes | `atlas-creator-brief`, agency edits | Master Brief |
 | Aspire notes (agency only), vetting evidence, safety detail, the recommendation | no | yes | Vetting, CM, agency on the page | Creator Selection, the creator viewer |
 | A surprise reason (Why pass?, What made them a yes?) on the client's own call | yes, their own editable | yes, read only | Client on the page | Creator Selection, the creator viewer |
 | Match score tuning: agreement by match level, our top 10, the agreement score and its verdict, surprises with their reason counts, What {brand} seems to value, Did it sell, the suggested weights, Apply tuned score and Back to default | no | yes | Worked out on the Editor's page; `agency/match-score` | Creator Selection |
@@ -144,8 +147,7 @@ who has a file to add sends it to the CM, who adds it. A scan's state and findin
 because they can name the budget.
 
 **Contact details.** The agency only row covers the creators' contact details: their email,
-phone and manager, which the client never sees. The Aspire team's work emails are a different
-thing. They are Aspire's own people, listed so the client can reach them, so each one shows to
+phone and manager. The Aspire team's work emails are different. They are Aspire's own people, listed so the client can reach them, so each one shows to
 everyone the page is shared with, in the page itself. Nothing else about a team member is
 private, and no creator's contact detail is ever listed under **Team**.
 
@@ -182,8 +184,7 @@ and `tags-agency`, **Tagging**).
 
 **The client's own calls stay the client's.** Their decision, reason, surprise reason, notes, sign offs, fee approval
 and cut approvals render read only for the agency, and their creator decisions, sign offs, fee
-approvals and cut calls are kept under their own id, where no Editor but the page's owner can write, so the record of what the client decided is the
-client's own. When the client gives a call in the chat or on the weekly sync, the CM records it in
+approvals and cut calls are kept under their own id, where no Editor but the page's owner can write. When the client gives a call in the chat or on the weekly sync, the CM records it in
 the chat (**Pulling decisions**), not on the page. The shipping record is shared:
 the client writes it to `client/creator-{net}-{handle}-r{round}` and the agency to
 `edits/creator-{net}-{handle}-r{round}`, and the page and the pull show the newer of the two, by
@@ -192,7 +193,7 @@ each field's `at` (**1e**, **Every editable value**).
 #### Preview as client
 
 The agency gets one **Preview as client** Switch in the header, on every tab. On, the page renders
-exactly what a Contributor on the client's side gets, built the same way the client's page is built,
+exactly what a Contributor on the client's side gets, built as the client's page is,
 from the page itself and the client readable page data (`client`, `edits`, `comments` and the shared
 documents), never by hiding agency parts of the agency's own view:
 
@@ -234,7 +235,6 @@ and item. Labels, eyebrows, titles and ledes are in **Page vocabulary**, **Tabs*
      meta line.
    - **Reset decisions**, for the agency only: an outline Button beside the Switch that clears the
      round's client decisions for everyone, after a Dialog confirm (**1e**, **Reset decisions**).
-     The client and read only viewers never see it.
    - **Inbox**, for everyone, at the end of the same row: on Home it opens the inbox for every tab,
      on any other tab the inbox for that tab, with its unread count (**Inbox**).
 2. **Round switcher**, under the header on every tab (**Round switcher** below).
@@ -293,8 +293,8 @@ round at a time: its steps, creators, brief, cuts and results, and nothing from 
 - **The control.** A segmented control under the header, built as a Tabs list with one trigger per
   round, oldest first. Each segment shows the label ("Round 2"), the month, the in-market dates
   ("Dec 1 to Dec 31") and the state as a Badge (**Status pills**). The selected segment is the
-  round in view, and the eyebrow names it. A campaign with one round shows the control too, so
-  the reader always knows which round they are in. On phone it is one row that scrolls sideways,
+  round in view, and the eyebrow names it. A campaign with one round shows the control too.
+  On phone it is one row that scrolls sideways,
   like the tabs, with the selected round scrolled into view.
 - **Which round opens.** A hash with a round wins. Otherwise the round the viewer picked last,
   kept for them in page data (`data/users/{id}/round`, **1e**), so it follows them to another
@@ -342,7 +342,7 @@ Meta ad account to see results" while no ad account is linked (**Ad Performance*
 Every section on every tab folds down to its header and a one line summary, and opens again when
 the person needs the detail. That covers every Home card, the program details, each concept's
 brief, the creator pool, the agency's panels, and the sections of Content Review and Ad
-Performance. What is open is remembered for each person.
+Performance.
 
 - **The header.** Each section is a Card whose header is a Collapsible trigger (**Component
   classes**, Collapsible): the section's title, its summary line under it, and a Lucide
@@ -353,8 +353,7 @@ Performance. What is open is remembered for each person.
   never inside it, and works the same whether the section is open or closed. Enter or Space on
   the trigger toggles it.
 - **The summary line.** One line in `text-sm text-muted-foreground`, worked out live from the
-  data the viewer can read, shown whether the section is open or closed, so a closed section
-  still answers the glance question. It names counts, states and dates in plain words, short
+  data the viewer can read, shown whether the section is open or closed. It names counts, states and dates in plain words, short
   enough for one line on a desktop, and wraps with `break-words` on a phone rather than running
   past the header. It never holds an agency only value for the client: where the agency's
   summary has one (a budget, a fee), the client's summary leaves that part out. **Sections per
@@ -393,8 +392,7 @@ Performance. What is open is remembered for each person.
   **1e**), so it follows them to another device. A saved state wins over the default. Expand all
   and Collapse all save every section on the tab in one write. Ids are stable and name the
   section (`home-steps`, `brief-{lane}`, `selection-summary`), never the round, so a section closed
-  in round 1 opens closed in round 2. Nothing about collapsing is ever logged or reaches Atlas,
-  and it never touches anyone else's view.
+  in round 1 opens closed in round 2. Nothing about collapsing is ever logged or reaches Atlas.
 - **Links open what they point at.** Opening a hash that lands in a closed section (from the
   inbox, History, **Waiting on you**, **Needs attention**, a tab summary or a gate packet) opens
   that section first and saves it open for the viewer, then scrolls to the item (**Header and
@@ -469,8 +467,8 @@ above. A click is
 anything that changes what is on screen: a tab, a round segment, a section's trigger, a row or
 link that opens an item, a Sheet or a Dialog. Typing, hovering, scrolling and the job's own action
 (the Approve, the save) are not counted. A job is reached when the view or control it needs is on
-screen. Where a job's control is added by its tab's own build, it goes in the section named here,
-so the count holds. A new section, tab or control keeps every row of this table at two or fewer;
+screen. Where a job's control is added by its tab's own build, it goes in the section named here.
+A new section, tab or control keeps every row of this table at two or fewer;
 a change that breaks one updates the table or moves the control.
 
 Across every page:
@@ -659,7 +657,7 @@ Sections, in order:
 
 1. **Where we stand** (`home-stand`). The round in view in the **Round switcher**, the current
    round unless the viewer picked another. Its summary line, with the summary classes from
-   **Component classes**, is the hero sentence, so it reads the same closed or open. The hero
+   **Component classes**, is the hero sentence. The hero
    sentence, by the round's state (**Rounds**):
 
    | State | Hero sentence |
@@ -693,7 +691,7 @@ Sections, in order:
      at least 10% of {z} and at least one video, **Running behind** when it is below {z} by at
      least 10% of {z} and at least one video, and **On track** otherwise, and always while {z}
      is 0. No record holds a filming lead time, so the spread starts on the build window's first
-     day, as the round's own dates set it.
+     day.
    - **The why line**, in `text-sm text-muted-foreground`: "{x} of {y} ad videos are in. We need
      {z} by today." Once every video is in: "All {y} ad videos are in." A Progress bar under it
      shows {x} of {y}, labelled for screen readers "{x} of {y} ad videos in".

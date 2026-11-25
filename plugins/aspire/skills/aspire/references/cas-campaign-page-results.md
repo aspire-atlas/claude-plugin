@@ -351,10 +351,8 @@ for a round with matched results in the results currency; otherwise the section 
 with the rest of the tab (**Not live yet**, **No Meta ad account linked**).
 
 **What the client sees, and what stays agency only.** The framework, hook and CTA groups are
-agency only, whole. The client reads each concept's own framework (its hero's, **A concept**) and
-its hooks and CTAs in the brief, but which variant used which is the agency's cut plan
-(**Concept and variant plan**, **What the client sees**), and a group's results can't be shown
-without it. So the client gets no framework,
+agency only, whole, whatever `variantPlanToClient` is. The client reads each concept's own
+framework (its hero's, **A concept**) and its hooks and CTAs in the brief. The client gets no framework,
 hook or CTA group, not even as a bare label like "H1" or "V1 PAS", and no insight card that names
 one. Those groups are worked out on the Editor's page by **Reading a creator's variant** and are
 never written to the page itself, client readable page data or the client's export. Concept,
@@ -1130,7 +1128,7 @@ left blank, never filled with a dash.
 | Creator Selection | Decisions | Creator with a call in the rounds in view | Creator, Network, Name, Concept, Product, Round, Your decision, What made the call, Your notes, Aspire notes for {brand}, Decided by, Decided on, Campaign match when decided, Why pass or why yes (the surprise reason in the client's words, blank when none), Status, Recommendation (agency only), Against the recommendation (agency only: Yes when the decision goes against the recommendation, as **A reason on the call** defines it, worked out on the page from both), Surprise (agency only: Yes for a pass on 75 or more or a pick under 60, as **Match score tuning** defines it), Expected cost (agency only), Aspire notes (agency only) |
 | Creator Selection | Match agreement (agency only) | Band in **Match score tuning**'s **Agreement**, then a row for our top 10 and one for the agreement score | Measure (the band, "Our top 10" or "Agreement score"), Picked, Decided, Share, Verdict (on the agreement score row), Rounds |
 | Creator Selection | Weights (agency only) | Factor in **Retune** | Factor, Weight in use, Default or tuned on, Suggested, Change, Decisions it learned from |
-| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Aspire notes for {brand}, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
+| Creator Selection | Creators | Creator the pool shows now, in its sort | Creator, Network, Name, Descriptor, City, Tier, Concept, Persona, Product, Rounds, Campaign match, Match band, Competitor (the conflict or past deals), Watch, Hook rate, Talks to camera, Engagement on Reels, Reach, Engaged accounts, Latest post, Paid work before, Ad permissions, Instagram followers, Instagram engagement rate, Instagram average engagement, Instagram audience, the same four for TikTok, Why we picked them, Status, Your decision, Your notes, Aspire notes for {brand}, Expected cost (agency only), Cost per 1K reach (agency only), Aspire notes (agency only), Reply window (agency only), Email (agency only), Phone (agency only), Manager (agency only) |
 | Selected Creators | Creator snapshot | Card the tab shows now, in its sort | Creator, Network, Name, Concept, Product, Returning, Step (a number, 0 to 8), Step name, Next or waiting on, Details to add (the count as the viewer counts them, so name and address only for the client), Missing (the details named, one per line, the same ones), Contract, Signed on (blank for the client until the fees are sent), Payment (the same), Payment date (the same), What they make, Usage, Exclusivity, If we drop them, Agreed fee and Fees approved on (each blank for the client until the fees are sent), Ship to (city and region, or pickup), Address confirmed, Footage files in, Footage files planned, one Footage column per deliverable ("Hooks in"), Shoot by, Status, Ad permissions, Brief state, Content state, Variants in, Variants approved, Variants planned, Content folder, Last update to {brand} (when the newest status update was posted), Waiting on (agency only), Last contact (agency only), Email (agency only), Phone (agency only), Manager (agency only), Paid so far (agency only) |
 | Selected Creators | Shipping list | Row in **Shipping** | Creator, Name, Item, Details from creator, Ship to (home or pickup), City, Region, Country, Visit date, Address confirmed, Carrier, Tracking, Shipped on, Delivered on, ETA, Product status, Source (the product status's tag), Updated by, Updated on, Address line 1 (agency only), Address line 2 (agency only), ZIP or postal code (agency only), Phone (agency only), Delivery note (agency only), Next step (agency only) |
 | Selected Creators | Rates and payments (agency only) | Row in **Contract and rates** | Creator, Concept, What they make, Usage, Exclusivity, Agreed fee (blank until agreed; Where it is says "In negotiation"), If we drop them, Where it is, Fees approved on, Payment status, Payment date, Contract, Signed on, UGC video rate, Reel collab rate, 90 day usage rate, Contracted total, Paid so far, Offer open, target and max (three columns), Counter, Expected cost, Cost per 1K reach |
@@ -1702,10 +1700,10 @@ prefixes.
     nothing about spend shows before the page holds the round's results, after which each
     in-market day's spend and ROAS equal that week's in **Weekly spend and return**.
 14. Master Brief: the status Badge follows step 4; the meter and counts match the brief and the
-    roster, and the client's meter leaves the variant plan out; every concept chip opens its
+    roster, and the client's meter counts the variant plan only while `variantPlanToClient` is on; every concept chip opens its
     concept; **Needs a concept** lists exactly the products in scope with no concept, then the
-    deferred concepts; the variant
-    plan, **Frameworks**, **Versions** and **Reset to original** never render for the client or
+    deferred concepts; the variant plan renders for the client read only and only while it is
+    on, and **Frameworks**, **Versions** and **Reset to original** never render for the client or
     in **Preview as client**; the rich text toolbar never calls `execCommand`, and a pasted
     `<script>`, `<img onerror>` or `javascript:` link leaves nothing but its text.
 15. Master Brief, import and rounds: **Import**, **Start from round {m}** and **Defer to next

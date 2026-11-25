@@ -599,11 +599,16 @@ Everything above applies, with these changes:
   for: `hookRate`, `reelsInteractionRate`, `pastPaidPartners` (the names), `partnershipReadiness`
   ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
   `reach`, `engagedAccounts`, `category` and `contactRoute` (the route in words, never the
-  address). `get_cas_selection` reads them for the selection widget; it also accepts the
+  address). One more key, `talksToCamera` (`{score, speech, toCamera, explainer, analysedPosts,
+  weights, scoredAt}`), is the camera screen's read: discovery never writes it, and when
+  discovery writes a new version of a finding that holds one, it copies `talksToCamera` from the
+  newest version unchanged. `get_cas_selection` reads them for the selection widget; it also accepts the
   Instagram field names cited below (`reelsHookRate`, `pastBrandPartnershipPartners`,
   `totalViews`, `accountInteractions`, `creatorMarketplaceReach`, `creatorEngagedAccounts`), so
   a finding written earlier still shows. The figures:
   - Hook rate (`instagram.reelsHookRate`)
+  - Talks to camera, from `detail.adFigures.talksToCamera` (**Creator card**, **Creator-ads
+    details**); "—" when the camera screen hasn't read the creator
   - Reels interaction rate (`instagram.reelsInteractionRate`)
   - Past paid partners (`instagram.pastBrandPartnershipPartners`, named, at most five)
   - Partnership readiness: "Ready" when `isPaidPartnershipMessagesEnabled` is true and the

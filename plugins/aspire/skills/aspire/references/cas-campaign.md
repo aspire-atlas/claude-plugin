@@ -18,7 +18,7 @@ Two names to keep apart. The **Campaign Manager** is this flow. The **CM** is th
 the campaign on the agency side, who sends the emails, pastes the replies, and confirms what the
 client decided on the page.
 
-The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
+The main thread's part of this flow. A bold section name
 in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Sections** index.
 
 ## Contents
@@ -53,10 +53,8 @@ decisions**, **1f**, **1g**, **Reminders and the weekly call**, **Unattended run
 and CTA recommendations, and the hook review between rounds, live in **Hooks and CTAs**.
 
 The Campaign Manager conducts the campaign from approved concepts through sourcing, negotiation,
-product shipping, and briefing. It reads where the campaign is, offers the single next step,
-launches the agent or section that does the work, records the outcome, and sets the reminder.
-It never does the heavy lifting itself. Everything a person sees uses the **Page
-vocabulary**. The flow never sends
+product shipping, and briefing (**Why it is a section, not an agent**). Everything a person
+sees uses the **Page vocabulary**. The flow never sends
 email, never reads a mailbox, and never writes to a sheet or a slides file: the CM sends from
 their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only when the
 session, or the agency person on the page, already has a Google Drive connector; the flow never
@@ -69,7 +67,7 @@ into page data the client can read (**1d**, **Who sees what**, and **1e**).
 
 ### Setup
 
-Run **1b** of the reference: `search_calibrations` first (skip to **Status** when the setup
+Run **1b**: `search_calibrations` first (skip to **Status** when the setup
 records exist), then C0 (the concepts; C2 only when C0 found nothing), then `get_cas_setup_form` (**The setup
 widget**). Where
 the host draws the setup form, it asks the rest and saves after its own Save; then record Gate 1
@@ -114,10 +112,9 @@ republish the page, run the role and edit checks, and post the step line when a 
 
 Per **The main thread's steps**, **Schedule**, with **Readouts**, Schedule, for the mechanics:
 offer the weekly call once after setup; C6 already approved the approval reminders and the daily
-results refresh, so show the always-allow block in SKILL.md **1.6** with C6, as 1.6 says. If the scheduled-task tools are missing, say so and stop; never fake a schedule.
+results refresh, so show the always-allow block in SKILL.md **1.6** with C6, as 1.6 says.
 
-Unattended runs never ask, never decide, never pull the page data, and never launch an agent.
-They publish and post only, and publish a "setup needed" card when the records are missing.
+Unattended runs follow **Unattended runs**.
 
 **From the guardrails:**
 
@@ -298,7 +295,8 @@ The campaign object:
                  "use": "The hero, primary spend"}],
  "match": {"weights": {"performance": 0.30, "briefFit": 0.25, "paidHistory": 0.15,
                        "budget": 0.15, "contentReach": 0.15},
-           "tuned": {"performance": {"at": "2026-11-12T16:40:00Z", "by": "Name"}}}}
+           "tuned": {"performance": {"at": "2026-11-12T16:40:00Z", "by": "Name"}}},
+ "variantPlanToClient": true}
 ```
 
 `profileId` is the brand Profile the campaign runs for: the `profile_id` from Phase 2 + 3, an
@@ -343,6 +341,11 @@ the agreement on Aspire's score before and after, so the page's **About this dat
 discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It reaches the record from **Match score tuning** on the
 page, offered in its own picker by **Pulling decisions** and written through the supersede rule, or
 from the CM saying it in the chat. It belongs to this campaign only, never to the brand as a whole. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
+
+`variantPlanToClient` is optional and agency only, never inside `match`: whether the client sees
+the variant plan read only. Anything but `false` reads as on. "Change setup" asks "Show the variant
+plan to {brand}?" ("Show it read only (Recommended)", "Keep it agency only") and writes it through
+the supersede rule. Tools follow at once, the page at its next publish.
 
 `files` is optional too: the links Claude found while setting up the campaign in the chat (**1b**,
 **Files found in setup**), each with `label`, `category`, `url`, `round` (`all` or a round number),
@@ -492,8 +495,8 @@ The schema-2 parts, each written per **Creator brief**, **Creator-ads mode**:
 | Promo flag | `concept.hooks[].promo`, `concept.ctas[].promo` | `true` when the line names a price, a code or an offer | Client and creator |
 | Claims | `concept.claims` | `[{claim, source}]`, `source` the product-page line the claim came from | `claim` for the client and creator; `source` for the agency only |
 | Pronunciation | `concept.pronunciation` | `[{term, say}]` | Client and creator |
-| Funnel job | `variants[].funnelJob` | `reach`, `consideration` or `conversion` | Agency only, with the variant plan |
-| Length | `variants[].length` | Required on every variant | Agency only, with the variant plan |
+| Funnel job | `variants[].funnelJob` | `reach`, `consideration` or `conversion` | With the variant plan: the client sees it when `variantPlanToClient` is on |
+| Length | `variants[].length` | Required on every variant | With the variant plan: the client sees it when `variantPlanToClient` is on |
 
 - **What it holds.** The brief as its writer last saw it: the brief agent's data block for its
   run (**Creator brief**, **Writes**), the page's parts after the edits a pull records (**Pulling
@@ -543,7 +546,7 @@ widgets use, so a field is renamed only here and in the same change on the serve
 
 | Record | Fields the agency only reads | A client caller gets |
 | ------ | ---------------------------- | -------------------- |
-| `brief` | `briefPage`, `content.variants` (each variant's `funnelJob` and `length` included), `content.variantCheck`, `content.concept.claims[].source`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
+| `brief` | `briefPage`, `content.variants` (each variant's framework, `funnelJob` and `length` included) while `variantPlanToClient` is off (on, a client gets only each variant's `n`, framework, length, funnel job, hook and CTA, never VO, B-roll or note), `content.variantCheck`, `content.concept.claims[].source`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
 | `cut` | `verdictBy.writer` (a page account id) and `verdictBy.confirmed` (the agency's "Aspire to confirm") | Every other field, `verdictBy.name` and `verdictBy.at` included. A version in Aspire QA is a view, not a secret (**1d**, **Content Review**), so `latestVersion` reads as "Aspire is checking version {k}"; a cut with no version sent has no file to show |
 
 Every other record type (`round`, `gate`, `roster`, `draft`, `reply`, `brief-revision`, `hook`,
@@ -1147,10 +1150,8 @@ Follow **Readouts**, Schedule, in SKILL.md for the mechanics, and **Reminders an
 call** below for names and prompts. After setup, offer the weekly call once with
 `AskUserQuestion` ("Set up the weekly call agenda for {campaign} at {slot}?" Options: "Yes
 (Recommended)" / "Not now"). Approval reminders need no offer: C6 approved them, so sending a
-step creates its reminder and closing it removes it. C6 also approved the daily results refresh,
-which the status screen creates once a round is in market or launches within 7 days, and
-removes once no round is in market or ended in the last 14 days and none launches within 7
-days; it republishes the page to the same link and posts nothing. If the scheduled-task tools
+step creates its reminder and closing it removes it. C6 also approved the daily results refresh
+(**Reminders and the weekly call**, **Results refresh**). If the scheduled-task tools
 are missing, say so and stop; never fake a schedule. Unattended runs follow **Unattended runs**.
 
 ## Gate packets
