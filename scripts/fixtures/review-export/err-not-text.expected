@@ -1,1 +1,2 @@
 {"error": "rows-1.jsonl line 1: Owners is not text"}
+exit 1

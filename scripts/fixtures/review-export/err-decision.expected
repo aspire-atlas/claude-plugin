@@ -1,1 +1,2 @@
 {"error": "rows-1.jsonl line 1: Decision 'approved' is not Approve, Maybe, Reject, or empty"}
+exit 1

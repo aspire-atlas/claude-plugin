@@ -21,7 +21,7 @@ run, since shell state does not carry between calls. A failed run removes the fo
 
 <!-- review-export-run -->
 ```
-d=$(mktemp -d) && awk '/^<!-- review-export -->$/{f=1;next} /^<!-- \/review-export -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/review-export.md" | sed '1d;$d' > "$d/review_export.py" && echo "$d" || rm -rf "$d"
+d=$(mktemp -d) && awk '/^<!-- review-export -->$/{f=1;next} /^<!-- \/review-export -->$/{f=0} f' "${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/review-export.md" | sed '1d;$d' > "$d/review_export.py" && [ -s "$d/review_export.py" ] && echo "$d" || rm -rf "$d"
 ```
 <!-- /review-export-run -->
 
@@ -31,11 +31,13 @@ Then:
    `{folder}/rows-2.jsonl`, and so on, at most 300 rows a file, in the order the file should have,
    and the Decision column's header (`{Campaign} Vetting`) as the only line of
    `{folder}/vetting-column.txt`. With no such file the header is `Vetting`.
-2. `python3 -I "{folder}/review_export.py" "{folder}" plan`. It prints one line: the plan, or
-   `{"error": ...}`. On an error, fix the row it names and run `plan` again.
+2. `python3 -I "{folder}/review_export.py" "{folder}" plan`. It prints one line, the plan. On an
+   error it prints `{"error": ...}` to stderr instead and exits 1: fix the row it names and run
+   `plan` again.
 3. For each part the plan lists, `python3 -I "{folder}/review_export.py" "{folder}" part {n} >
-   "{file path}"`, where the file path is the one **Creator CSV**, **File** names, with
-   `-part-{n}` before `.csv` when the plan has more than one part.
+   "{file path}"`, where the file path is the one **Creator CSV**, **A review's applicants**,
+   step 5 names, with ` part {n}` before `.csv` when the plan has more than one part. A run that
+   exits 1 has written no rows: remove that file and fix the error first.
 4. `rm -rf "{folder}"`, after the last part and whenever the export stops early.
 
 With no Python, say so and write the file by hand per **Creator CSV**, **File**, splitting it
@@ -47,21 +49,23 @@ One JSON object per line, one line per applicant. Its keys are the columns **Cre
 review's applicants**, step 4 lists (`email`, `First Name`, `Last Name`, `Instagram`, `YouTube`,
 `TikTok`, `Pinterest`, `Groups`, `Projects`, `Owners`, `Tags`), plus `Decision`, spelled exactly; a
 column with nothing in it may be left out. Every value is text. `Tags`, `Groups`, and `Projects`
-may be a list instead: the snippet removes any `|` or `,` from each item and joins them with `|`.
+may be a list instead, or text with its items split by `|`: either way the snippet removes any `|`
+or `,` from each item and joins them with `|`.
 `Decision` is `Approve`, `Maybe`, `Reject`, or empty; its key in the rows is always `Decision`,
 whatever `vetting-column.txt` names the column.
 
 The snippet never trusts a value to be safe: it turns line breaks into spaces, trims each cell, and
 puts a `'` in front of a cell that starts with `=`, `+`, `-`, `@`, or a tab, so no spreadsheet runs
-it as a formula.
+it as a formula. The header row is the plugin's own text and is left as it is, so the
+`{Campaign} Vetting` header always matches the Aspire field named after it.
 
 ## What it prints
 
 `plan` prints `{"rows", "parts": [{"part", "rows", "bytes"}], "decisions": {"Approve", "Maybe",
-"Reject", "none"}, "guarded", "no_email", "shared_email", "no_contact"}`: `guarded` counts the
+"Reject", "none"}, "guarded", "no_email", "shared_email"}`: `guarded` counts the
 cells that got a `'`, `no_email` counts rows with no email, `shared_email` lists each email on more
-than one row (Aspire makes those rows one member), and `no_contact` lists the row numbers of rows
-with no email, Instagram, TikTok, or YouTube, which Aspire has nothing to match a member on. Errors
+than one row (Aspire makes those rows one member; a row with no email fails in Aspire's import).
+Errors
 name the file and line: a line that is not a JSON object, an unknown column, a value that is not
 text, a `Decision` outside the four, or a row over the size limit by itself.
 
@@ -81,12 +85,12 @@ LISTS = {"Tags", "Groups", "Projects"}
 DECISIONS = {"Approve", "Maybe", "Reject", ""}
 MAX_ROWS = 4998          # rows a part holds; with its header it stays under 5,000
 MAX_BYTES = 2000000      # under 2 MB, counting the byte order mark
-BOM = "﻿".encode("utf-8")
+BOM = b"\xef\xbb\xbf"  # the UTF-8 byte order mark
 
 
 def fail(msg):
-    print(json.dumps({"error": msg}))
-    sys.exit(0)
+    print(json.dumps({"error": msg}), file=sys.stderr)
+    sys.exit(1)
 
 
 def clean(v):
@@ -145,6 +149,8 @@ def load():
                     v = obj.get(col, "")
                     if v is None:
                         v = ""
+                    if isinstance(v, str) and col in LISTS:
+                        v = v.split("|")
                     if isinstance(v, list) and col in LISTS:
                         if not all(isinstance(x, str) for x in v):
                             fail(f"{where}: {col} holds a value that is not text")
@@ -160,7 +166,7 @@ def load():
 
 
 rows, guard = load()
-header = line([cell(v, [0]) for v in COLUMNS[:-1] + [decision_header()]])
+header = line(COLUMNS[:-1] + [decision_header()])
 parts, cur, size = [], [], len(BOM) + len(header)
 for where, row in rows:
     b = line([cell(v, guard) for v in row])
@@ -176,21 +182,17 @@ parts.append((cur, size))
 if mode == "plan":
     dec = {"Approve": 0, "Maybe": 0, "Reject": 0, "none": 0}
     i_dec, i_email = COLUMNS.index("Decision"), COLUMNS.index("email")
-    contact = [COLUMNS.index(c) for c in ("email", "Instagram", "TikTok", "YouTube")]
-    no_contact, emails = [], {}
-    for n, (where, row) in enumerate(rows, 1):
+    emails = {}
+    for where, row in rows:
         dec[row[i_dec] or "none"] += 1
         if row[i_email]:
             key = row[i_email].lower()
             emails[key] = emails.get(key, 0) + 1
-        if not any(row[j] for j in contact):
-            no_contact.append(f"row {n}")
     print(json.dumps({"rows": len(rows),
                       "parts": [{"part": k, "rows": len(p), "bytes": s} for k, (p, s) in enumerate(parts, 1)],
                       "decisions": dec, "guarded": guard[0],
                       "no_email": sum(1 for _, r in rows if not r[i_email]),
-                      "shared_email": sorted(e for e, c in emails.items() if c > 1),
-                      "no_contact": no_contact}))
+                      "shared_email": sorted(e for e, c in emails.items() if c > 1)}))
 elif mode == "part":
     k = int(sys.argv[3])
     if not 1 <= k <= len(parts):

@@ -1,0 +1,7 @@
+{"rows": 1, "parts": [{"part": 1, "rows": 1, "bytes": 209}], "decisions": {"Approve": 0, "Maybe": 1, "Reject": 0, "none": 0}, "guarded": 0, "no_email": 0, "shared_email": []}
+== part 1
+<BOM>email,First Name,Last Name,Instagram,YouTube,TikTok,Pinterest,Groups,Projects,Owners,Tags,-Launch Vetting<CRLF>
+lee@example.com,,,leeposts,,,,Spring 2026,,,Atlas|Brand Safety: 2 Flags (Profanity Alcohol),Maybe<CRLF>
+== part 2, past the plan
+{"error": "there is no part 2; the plan has 1"}
+exit 1

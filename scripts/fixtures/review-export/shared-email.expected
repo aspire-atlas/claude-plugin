@@ -1,6 +1,9 @@
-{"rows": 3, "parts": [{"part": 1, "rows": 3, "bytes": 204}], "decisions": {"Approve": 1, "Maybe": 1, "Reject": 1, "none": 0}, "guarded": 0, "no_email": 1, "shared_email": ["ana@example.com"], "no_contact": ["row 3"]}
+{"rows": 3, "parts": [{"part": 1, "rows": 3, "bytes": 204}], "decisions": {"Approve": 1, "Maybe": 1, "Reject": 1, "none": 0}, "guarded": 0, "no_email": 1, "shared_email": ["ana@example.com"]}
 == part 1
 <BOM>email,First Name,Last Name,Instagram,YouTube,TikTok,Pinterest,Groups,Projects,Owners,Tags,Vetting<CRLF>
 Ana@Example.com,,,ana,,,,,,,,Approve<CRLF>
 ana@example.com,,,,,ana.tt,,,,,,Maybe<CRLF>
 ,Nobody,,,,,,,,,,Reject<CRLF>
+== part 2, past the plan
+{"error": "there is no part 2; the plan has 1"}
+exit 1

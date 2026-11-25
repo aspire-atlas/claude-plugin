@@ -185,7 +185,7 @@ then fit score, highest first, then applicant id. The columns, in this order:
 | `Instagram`, `TikTok` | The record's `instagramHandle` and `tiktokHandle`, without the `@` |
 | `YouTube` | Empty |
 | `Pinterest`, `Groups`, `Projects`, `Owners` | As **Columns** says |
-| `Tags` | `Atlas`, the brand safety tag, then any tags the user asked for. No vetting tag: tags add up on a member across campaigns, so the call goes only in the campaign's own `{Campaign} Vetting` column. The brand safety tag comes from the applicant's `recommendation` findings of its newest vetting run (one per network): n counts their `safety` results that start with `Flag` or `Fail` and their `redLineHits`, and the short name is the first `riskFlags` entry, else the first category its `categories` result names (the word after `Flag:` or `Fail:`, as in `Flag: obscenity_profanity Medium on 1 post`), else the first flagged result's name, with underscores as spaces, a run-together name split into its words (`criteriaExclusion` is `Criteria Exclusion`), and in title case. n = 0 is `Brand Safe`; no such finding (not screened, or can't vet) is `Brand Safety: Not Checked` |
+| `Tags` | `Atlas`, the brand safety tag, then any tags the user asked for. No vetting tag: tags add up on a member across campaigns, so the call goes only in the campaign's own `{Campaign} Vetting` column. The brand safety tag comes from the applicant's `recommendation` findings of its newest vetting run (one per network): n counts their `safety` results that start with `Flag` or `Fail` (the competitor check among them) and their `redLineHits`, plus 1 for a call its `rule` made on a saved competitor's own handle (short name `Competitor`), and the short name is the first `riskFlags` entry, else the first category its `categories` result names (the word after `Flag:` or `Fail:`, as in `Flag: obscenity_profanity Medium on 1 post`), else the first flagged result's name, with underscores as spaces, a run-together name split into its words (`criteriaExclusion` is `Criteria Exclusion`), and in title case. n = 0 is `Brand Safe`, since a recommendation other than Can't vet means 5 or more posts were read (**Creator vetting**, **The recommendation**), past the 3 analyzed posts **Tags** asks for; a Can't vet finding or none (not screened) is `Brand Safety: Not Checked` |
 | `{Campaign} Vetting` | The Decision (step 3): `Approve`, `Maybe`, `Reject`, or empty |
 
 The header row is exactly
@@ -209,8 +209,8 @@ taken, add ` 2`, ` 3` and so on. Save it where **File** says.
 **6. Hand-off.** Attach each file when the session can send files to the user, and give its full
 path and row count either way (several parts are imported one after another). Then the group in
 words with its count per Decision, and one line on what is empty or left out: rows with no email
-(an application always asks for one, but a row without it fails in Aspire's import), rows sharing an email (Aspire makes them one member), rows
-Aspire has nothing to match on (no email or handle), and any applicant the group named that Atlas
+(an application always asks for one, but a row without it fails in Aspire's import), rows sharing
+an email (Aspire makes them one member), and any applicant the group named that Atlas
 doesn't hold. When the Sheet
 holds Team calls Atlas doesn't hold yet, say how many and offer to save them (**Applicant
 screening**, **Reading the review Sheet**, with its own confirmation). Offer to write it again for

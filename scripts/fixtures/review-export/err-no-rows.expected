@@ -1,1 +1,2 @@
 {"error": "no rows-<n>.jsonl files in the folder"}
+exit 1

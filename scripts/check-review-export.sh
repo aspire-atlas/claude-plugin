@@ -23,20 +23,23 @@ show() { python3 -I -c 'import sys; b = sys.stdin.buffer.read(); t = b.decode("u
 
 # Every run for one case: setup, copy (or build) the rows, plan, then each part when $2 is "parts".
 runs() {
-  local src=$1 what=$2 dir plan n k
+  local src=$1 what=$2 dir plan n k st
   dir=$(CLAUDE_PLUGIN_ROOT="$PWD/plugins/aspire" bash -c "$cmd")
   case "$dir" in /*) ;; *) echo "no folder printed"; return ;; esac
   if [ -d "$src" ]; then cp "$src"/rows-*.jsonl "$src"/vetting-column.txt "$dir"/ 2>/dev/null || true; else python3 -I -c "$src" "$dir"; fi
-  plan=$(python3 -I "$dir/review_export.py" "$dir" plan)
+  st=0; plan=$(python3 -I "$dir/review_export.py" "$dir" plan 2>&1) || st=$?
   printf '%s\n' "$plan"
-  if [ "$what" = parts ]; then
+  [ "$st" -eq 0 ] || echo "exit $st"
+  if [ "$what" = parts ] && [ "$st" -eq 0 ]; then
     n=$(python3 -I -c 'import json, sys; print(len(json.loads(sys.argv[1]).get("parts", [])))' "$plan")
     k=1
     while [ "$k" -le "$n" ]; do
       echo "== part $k"
-      python3 -I "$dir/review_export.py" "$dir" part "$k" | show
+      { python3 -I "$dir/review_export.py" "$dir" part "$k" || true; } | show
       k=$((k + 1))
     done
+    echo "== part $((n + 1)), past the plan"
+    python3 -I "$dir/review_export.py" "$dir" part $((n + 1)) 2>&1 >/dev/null && echo "exit 0" || echo "exit $?"
   fi
   rm -rf "$dir"
 }
