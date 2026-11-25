@@ -24,7 +24,10 @@ the user approved saving the recommendations (R4), `visual_check` (from R5 or th
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
 `visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's new calls,
 reopened rows, and Rows to fix, when the list came from one; offer the new calls in F1 only when
-you were given any, per the reference's **Reading the review Sheet**), `fit_map` (the criteria
+you were given any, per the reference's **Reading the review Sheet**), `screened_earlier`
+(applicants already screened in the review: list them in a short "Screened earlier" section on the
+page with their saved recommendation and date, never vet them or write for them; the reference's
+**Applicant review**, **Applicant status**, Screened once), `fit_map` (the criteria
 map the first batch returned, on every later batch of a run; the reference's **How criteria become
 points**), and `recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
@@ -83,7 +86,7 @@ with no posts in the read window counts as missing, so look it up once like the 
 `AskUserQuestion`: anything that needs a decision becomes that applicant's Maybe with its question
 attached. Write as you go: once each ten applicants' calls are made (an applicant with both handles counts once), one `append_insights` call with
 those applicants' findings and their `applicant_screening` records, with the statuses and keys the
-reference's step 6 sets (`{run}` is the launch's `schedule_run`); the run summary goes last, as usual. Publish no page and run no storyline,
+reference's step 6 sets (`{run}` is the launch's `schedule_run`), each brand-safety reject marked `brandSafetyReject` on its finding, and every recommendation finding carrying `scheduleRun` (the launch's `schedule_run`); the run summary goes last, as usual. Never call `append_calibration`: the main thread saves brand-wide rejects (step 8b). Publish no page and run no storyline,
 visual check, CSV, or feedback question (skip every step about the page, its page check, and its delivery): return the packet with no `page-check` block, the counts per
 status, each applicant left unwritten and why, and "Needs the main thread" for the run summary to
 carry (the reference's step 6, **Never asks**).
@@ -146,7 +149,11 @@ carry (the reference's step 6, **Never asks**).
    the searches once they settle. Record every handle that stays unresolved and why.
 6. **Read what the team already said** per the reference, **What the team already said**:
    `search_insights` on the `creator-vetting-{profile}` and `creator-discovery-{profile}`
-   prefixes (paged, newest record per `entityId`), and the `brand_safety` role and
+   prefixes (paged, newest record per `entityId`; in an applicant review run, only this review's
+   findings, and its Team calls from `applicant-calls-{slug}`, never a call from another review,
+   except that for a creator with a brand-safety `creator:*` record you also read its source
+   review's Team calls, `applicant-calls-{source slug}`, only to work out the record's state),
+   and the `brand_safety` role and
    `content-review-{profile}` findings that name these creators. For a lane run, also the
    `roster` findings on the `cas-campaign-{profile}-` prefix for these creators, every campaign of
    the brand's, for the match score's expected cost and worked with the brand before.
@@ -179,8 +186,11 @@ carry (the reference's step 6, **Never asks**).
 11. **Ask for feedback** per **The feedback loop**.
     - If `AskUserQuestion` is in your tool list, ask F1, then F2 for the creator notes, then F3 when
       a lesson generalizes. Never ask F4: the main thread asks it after the last batch. Write the
-      answers per the reference: F1 as `feedback` findings, each note as a `creator:*` guideline, a
-      lesson as a `vetting:lesson-*` guideline. A creator who already has a `creator:*` record goes
+      answers per the reference: F1 as `feedback` findings (in an applicant review run, the review's
+      Team calls: `applicant-screening.md`, **Team calls on a review**), each note as a `creator:*`
+      guideline (in a review run, stance `note` only), a lesson as a `vetting:lesson-*` guideline.
+      Never ask B1 or the override questions, and never save a brand-safety reject: the main thread
+      does (**Brand-wide brand-safety rejects**). A creator who already has a `creator:*` record goes
       under "Needs the main thread" instead of a new record. After each answer that approves, edits,
       or rejects, call `report_checkpoint` yourself with `kind: "feedback"`, the run's `runId`,
       `agent`, `pass`, that question's gate id as `gate`, `feedback: {"verdict": "approved"}` (or
@@ -206,14 +216,18 @@ carry (the reference's step 6, **Never asks**).
 - Visual check, when one ran: its name and kind, the count per result and confidence, the
   creators at Low confidence to confirm, the Can't check creators with why, and the frame
   extractor that ran.
-- Saved calls applied: the `creator:*` records and lessons that changed a call.
+- Saved calls applied: the `creator:*` records and lessons that changed a call, each brand-safety
+  reject from another review named with its state (active, unconfirmed, or disputed).
+- Brand-safety rejects, in an applicant review run: `#n @handle (network) | aspireApplicantId |
+  check | evidence`, for the main thread's B1 (`references/applicant-screening.md`, **Brand-wide
+  brand-safety rejects**).
 - Feedback: either "asked" with the user's answers and what was saved, or the feedback packet: the
   numbered recommendations as `#n @handle | recommendation | two reasons`, the new Sheet calls
   numbered `s1`, `s2`, …, each as a call line (`references/applicant-screening.md`, **Reading
   the review Sheet**), any proposed lesson, and the run's `vettedAt`, which the main thread uses for the
   F1 findings' keys.
   Gate ids (your `gate` checkpoint and each proposal's `"gate"`): `approve-recommendations` (F1),
-  `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-visual-check` (F4, which the main
+  `approve-creator-notes` (F2), `approve-lesson` (F3), `approve-brand-safety` (B1, which the main thread asks), `approve-visual-check` (F4, which the main
   thread asks and reports), and `approve-record-changes` for "Needs the main thread".
 - Needs the main thread: each change to a saved record, as `key | current wording | proposed
   wording or "retract" | why`, including each proposed change to the criteria, with the finding

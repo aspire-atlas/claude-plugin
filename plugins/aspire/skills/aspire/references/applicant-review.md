@@ -83,7 +83,7 @@ part, `-client-view`, stays within the length Atlas allows after the colon.
 | `-visuals` | `guideline` | `{concern: "requirement", appliesTo: ["applicant-review", "{slug}"], body}`; body one check per line: `named: <name> = <what counts as a pass>`, or `free: <what to look for>` | What to look for in each applicant's videos |
 | `-client-view` | `guideline` | `{concern: "ceiling", appliesTo: ["applicant-review", "{slug}"], body}`; body `client sees: <final-list, content \| final-list \| none>` and `hidden: scores, notes, maybes, team calls` | What the client contributor role sees |
 | `-sheet` | `policy` | `{area: "routing", body}`; body `sheet: <link>` or `sheet: none (<reason>)` | The campaign's review Sheet |
-| `-schedule` | `policy` | `{area: "cadence", body}`, with no `cadence` field (`append_calibration` refuses `"hourly"`; the body holds the schedule); body lines `screen: hourly` or `screen: daily <HH:MM> <IANA timezone>`, `fetch: instagram, tiktok`, `save: recommendations, statuses, sheet calls`, and `sheet: write` or `sheet: none` | The standing approval for scheduled screening (**Scheduled screening setup**) |
+| `-schedule` | `policy` | `{area: "cadence", body}`, with no `cadence` field (`append_calibration` refuses `"hourly"`; the body holds the schedule); body lines `screen: hourly` or `screen: daily <HH:MM> <IANA timezone>`, `fetch: instagram, tiktok`, `save: recommendations, statuses, sheet calls, brand-safety rejects`, and `sheet: write` or `sheet: none` | The standing approval for scheduled screening (**Scheduled screening setup**) |
 
 `-red-lines`, `-form-rules`, and `-visuals` may be declined: a declined question is written
 as kind `decline` with the same key (`{topic: "<the question>"}`), so it is never asked again and
@@ -320,6 +320,11 @@ holds the applicants, and the next import adds the rows.
 **8. Summarize** in one line: "{new} applicants added to the {campaign} review ({existing} were
 already there), {rows} rows added to the review Sheet."
 
+However the import ends (after step 8, with nothing to write at step 4, on "Not now", or on a
+stop), the list the run goes on with (this file's applicants, or the list as it was) then loses
+every applicant already `screened` in this review, before the launch (**Applicant status**,
+Screened once).
+
 ## Applicant status
 
 Atlas holds each applicant's status in its newest `applicant_screening` record: `new` until one is
@@ -339,6 +344,75 @@ Every vetting run on a review writes them, under its own `runKey`:
   an applicant the run did not finish gets none: both stay `new`, so a scheduled run screens them.
 - **A scheduled run** writes them as **Applicant screening**, **Scheduled screening** says, which also
   claims each batch first.
+
+**Screened once.** An applicant whose status is `screened` is not screened again in its review
+unless the team asks: its recommendation stands, and the team's call goes in the Sheet's Team call
+or in F1. Two asks put it back on the list, and its new result is a newer `applicant_screening`
+record (records are only ever added):
+
+- **A cleared Team call.** A row the team cleared in the review Sheet is reopened (**Applicant
+  screening**, **Reopened rows**) and vetted again by the next interactive run, screened or not. A
+  scheduled run saves the Sheet's calls and screens only `new` and stale `waiting_on_data`
+  applicants (**Scheduled screening**, steps 2 and 3), so it leaves a reopened screened row to the
+  next interactive run.
+- **Changed criteria.** When the criteria or thresholds the review uses (its `-criteria` and
+  `-thresholds` records, or the records they point to) were saved after an applicant's
+  `screenedAt`, the check asks once, in its own `AskUserQuestion`: "{campaign}'s criteria changed
+  after {n} of these applicants were screened. Vet them again?", with "Keep their results
+  (Recommended)" (description: "They keep the recommendation from the old criteria") and "Vet
+  them again" (description: "Each gets a new recommendation under the current criteria"). It is
+  asked in the check's place in the run, before any later question, and at most once a run: the
+  answer holds for the rest of it, so the check that follows a CSV import (below) applies it
+  without asking again, and asks only when the first check did not.
+
+Every
+interactive run on a review checks as soon as it knows the review, before any later question, the
+storyline, or the page is built on its list (**Applicant screening**, **Reading the review Sheet**
+and **Before the launch**):
+
+- **A review Sheet**: as soon as **Applicant screening**, **Reading the review Sheet** finishes
+  the list, before R2.
+- **A CSV or pasted handles**: right after R2 picks the review and it is read back (step 3b),
+  before R5 (step 3c), the import, and the storyline draft. R2 to R4 come first, in one call on the
+  whole list, since the review is not known until R2 answers: R3's count can include screened
+  applicants, and its approval then covers only the creators still on the list, so no screened
+  applicant is looked up. It needs no import: a CSV entry carries its id or handles from the file.
+  For a CSV, it runs again on the list the run goes on with once **Importing applicants** (step 3d)
+  ends, whatever it wrote (new applicants, nothing new, "Not now", or a stop).
+
+When a long list is split into runs (**Getting the list**, or R5's runs of 25), the parts are cut
+from the list as it was read, in file order, and keep their names and slugs ("{list name} (part
+{n} of {k})", `{slug}-part-{n}`), so a rerun after some parts were screened updates the same part
+pages. Each part loses its screened applicants, and a part left empty is not run: its page, when an
+earlier run published one, stays as last published with those applicants' results, and the count
+line below names the parts left empty, whose applicants' results are in Atlas. A part that is run lists the applicants it
+kept off in a short "Screened earlier" section on its page, each with the recommendation and date
+from `list_applicants`, passed in the launch as `screened_earlier` (**Applicant screening**,
+**Before the launch**),
+so the republished page still shows everyone in the part. When that
+changes the number of runs said earlier (in **Getting the list**, at R5, or after the check that
+follows the import), the run says the new count once, in the line before the launch:
+"{n} of the {k} runs still have applicants to vet; part {p} has no one left, its results are
+in Atlas" (for two or more, "parts {p1} and {p2} have no one left, their results are in Atlas").
+R5's split note (a list read over 25) counts its runs of 25 the same way, with that line when
+a part is left empty, else the plain run count.
+
+It reads the statuses with `list_applicants` (`asProfileId` the brand profile,
+`reviewId` the review's slug, `statuses` `["screened"]`, `limit` 1000, paged to the end) and keeps
+off the list every entry that matches a screened applicant, except a reopened Sheet row and the
+applicants a "Vet them again" answer covers, which stay on it to be vetted again: by `aspireApplicantId` when the entry
+has one, otherwise by its handle, normalized per **Creator vetting**, **Getting the list**, and
+only on the same network: an Instagram handle against the record's `instagramHandle`, a TikTok
+handle against its `tiktokHandle` (as **Applying the form rules**, step 1, matches). It says "{n} {campaign} applicants were already screened, so they keep
+their results", counting only the applicants it kept off (no line when that is none). On a CSV run the first pass holds its line, said
+once after the import's check, counting each matched applicant record once across both passes
+(kept off by handle, then by id, is one); a first pass that leaves no one says it then. When that leaves no one to vet, it skips every question still to come, the
+storyline, the launch, and the page: for a review Sheet R2 to R5 (a Sheet with new calls still
+asks its Sheet-only F1), for a CSV or pasted handles R5 and the import. Without `list_applicants` in the
+session, it skips the check and says once that applicants already screened may be screened again.
+An applicant that is `new`, `waiting_on_data`, or `cant_vet` stays on the list, since Atlas may
+hold its posts by now. A scheduled run screens only `new` and stale `waiting_on_data` applicants
+already (**Applicant screening**, **Scheduled screening**, step 3).
 
 One record:
 
@@ -472,8 +546,10 @@ done**). Offer: "Screen new {campaign} applicants on a schedule?" Options: 1) Se
 Each run fetches the Instagram and TikTok accounts Atlas doesn't hold yet or holds with no recent
 posts (a TikTok account costs one paid lookup), saves each applicant's recommendation and status and the team's new calls from
 the review Sheet to {brand}'s Atlas{, and writes the results to the review Sheet}, without asking
-each time. It never sends anything, never saves a creator note or a lesson, and never changes the
-review.{ It runs none of the review's visual checks: run one from /aspire:aspire on the applicants
+each time. A creator it rejects for brand safety is also rejected across {brand}'s other campaigns
+and kept out of creator discovery, marked not confirmed and listed in the run's summary until
+someone confirms or lifts it in /aspire:aspire. It never sends anything, never saves any other
+creator note or a lesson, and never changes the review.{ It runs none of the review's visual checks: run one from /aspire:aspire on the applicants
 it approves or marks maybe.}" The last sentence is there only when `-visuals` holds a check. Options: 1) Save and create it (Atlas tools are set to Always allow) (Recommended); 2) Not
 now. On option 1:
 
@@ -523,7 +599,10 @@ a missing pointer is asked per steps 3 and 4.
 6. **Hand it over.** The resolved review goes in the vetting launch as the criteria source: the
    slug, the campaign's name and `campaign key`, criteria, thresholds, the `reject:`
    checks, the review's red lines, form rules, visual checks, the client view, and the Sheet link.
-   **How screening applies a review** says how screening applies each.
+   **How screening applies a review** says how screening applies each. For a CSV or pasted
+   handles, once the review is read back, before R5, and again after any import (**Creator
+   vetting**, step 3d), the list loses every applicant already screened in the review
+   (**Applicant status**, Screened once); a review Sheet's list was checked before R2.
 
 ## How screening applies a review
 

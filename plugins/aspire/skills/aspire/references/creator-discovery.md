@@ -223,9 +223,13 @@ Rules:
   tiers 1 and 2 alone is a good run, not a shallow one.
 - Record the tier and the exact source on every candidate; the page shows it.
 - Never surface the brand's own handles, any `competitor` handle, any handle already
-  decided for this campaign, or any creator whose `creator:*` calibration has stance `reject`
-  (the team's call from creator vetting, **Creator vetting**). Any other stance is shown on
-  the card under "Notes".
+  decided for this campaign, or any creator whose active `creator:*` calibration has stance `reject`
+  (the team's call from creator vetting, **Creator vetting**) and applies to this brand: one whose
+  body names a brand profile (a brand-safety reject from an applicant review, **Applicant
+  screening**, **Brand-wide brand-safety rejects**) applies only to that profile, confirmed,
+  unconfirmed, or disputed alike. Any other stance, a lifted reject included, is shown on the
+  card under "Notes". A reject from an applicant review for anything but brand safety stays in
+  that review and never hides a creator here.
 - Web research is evidence, never a write: a web-sourced candidate still enters the pool
   through `lookup_creators`, with the source URL in its evidence.
 
@@ -595,11 +599,16 @@ Everything above applies, with these changes:
   for: `hookRate`, `reelsInteractionRate`, `pastPaidPartners` (the names), `partnershipReadiness`
   ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
   `reach`, `engagedAccounts`, `category` and `contactRoute` (the route in words, never the
-  address). `get_cas_selection` reads them for the selection widget; it also accepts the
+  address). One more key, `talksToCamera` (`{score, speech, toCamera, explainer, analysedPosts,
+  weights, scoredAt}`), is the camera screen's read: discovery never writes it, and when
+  discovery writes a new version of a finding that holds one, it copies `talksToCamera` from the
+  newest version unchanged. `get_cas_selection` reads them for the selection widget; it also accepts the
   Instagram field names cited below (`reelsHookRate`, `pastBrandPartnershipPartners`,
   `totalViews`, `accountInteractions`, `creatorMarketplaceReach`, `creatorEngagedAccounts`), so
   a finding written earlier still shows. The figures:
   - Hook rate (`instagram.reelsHookRate`)
+  - Talks to camera, from `detail.adFigures.talksToCamera` (**Creator card**, **Creator-ads
+    details**); "—" when the camera screen hasn't read the creator
   - Reels interaction rate (`instagram.reelsInteractionRate`)
   - Past paid partners (`instagram.pastBrandPartnershipPartners`, named, at most five)
   - Partnership readiness: "Ready" when `isPaidPartnershipMessagesEnabled` is true and the
