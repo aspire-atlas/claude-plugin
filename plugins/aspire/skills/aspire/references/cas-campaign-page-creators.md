@@ -421,7 +421,7 @@ has removed doesn't show here; a part still blank in the brief shows as its brac
 creator with no live concept shows the agency the warning Badge "Needs a concept"; the client sees
 no part of the brief for them.
 
-**The variant plan, agency only.** Under a dashed rule headed "Agency only", a Table of V1 to
+**The variant plan.** For the agency, under a dashed rule headed "Agency only", a Table of V1 to
 V{v}, {v} being the program terms' variants per creator (**Variants per creator**), at most 5.
 Columns: Variant, Framework, Length, Hook, CTA, Live post, and From. On a phone it is a stack of Cards, one
 per variant, with the same fields (**Responsive**, **Tables**).
@@ -496,10 +496,10 @@ handle a link to their card's block, so an Editor changing the brief's plan sees
 
 **What the client sees.** The concept and persona as labels, the product, and the brief's
 positioning line, hooks, CTAs and selling points, all of which they read in the brief already.
-Not the variant plan: no framework, length, hook or CTA per variant, no override, and no "Broken"
-Badge. Their **Variants this round** shows V1 to V{v} with each cut's status only. The plan and
-the overrides live only in `agency`, so neither the page itself nor any client readable document
-holds them (**Who sees what**; **1e**, **Checking the roles**).
+While `variantPlanToClient` is on, the plan read only from `plans/{net}-{handle}-r{round}`:
+Variant, Framework, Length, Hook, CTA and Funnel job as labels, never a Live post, From, override
+or "Broken"; off, none. **Variants this round** shows each cut's status only. Overrides and who
+set them live only in `agency` (**Who sees what**; **1e**, **Checking the roles**).
 
 **Reading a creator's variant.** Content Review and Ad Performance name a variant's framework, hook
 and CTA by reading them through this block's rule, never from a copy, so all three tabs agree:

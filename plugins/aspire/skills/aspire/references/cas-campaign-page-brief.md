@@ -119,7 +119,8 @@ Inside:
   line, at least one persona, trigger, framework, story, product, problem, agitate, solve, every
   hook's type and line, every CTA's type and line, the body, its length, and at least 10 B-roll
   shots. For the agency it also needs every variant's framework, length, hook and CTA. The
-  client's meter leaves the variant plan out, so it never counts what they can't see.
+  client's meter counts the variant plan only while `variantPlanToClient` is on, so it never
+  counts what they can't see.
 - **The counts**, one soft Badge each, in a row that wraps: "Hooks {h} of {H}", "CTAs {c} of
   {C}" ({H} being 3 and {C} 2 for each concept in the round), "Creators briefed {b} of {m}" (the round's contracted creators whose brief state is
   sent, accepted, changed, approved or locked), "{k} open comments" (unresolved comments on the
@@ -133,7 +134,7 @@ Inside:
 - **The overview.** One row per concept: the chip, product, trigger, personas, the hook types
   ("H1 Question · H2 Demo first · H3 Result first"), the CTA types, the creators on it as
   Avatars with their handles, and its open comments. A Table from 640px, a stack of Cards on
-  phone (**Responsive**). A row opens its concept. This is the scan of every concept.
+  phone (**Responsive**). A row opens its concept.
 - **Changes from round {m}.** Once lines from Ad Performance are applied to this round (**Ad
   Performance**, **Changes for round {t}**, where this round is {t} and the results' round {m}),
   anchored `#brief/r{n}/overview/changes`: one row per applied line, in the lines' order, grouped
@@ -142,7 +143,7 @@ Inside:
   reads every line, the others under an "Agency only" rule from `agency/brief-round-r{round}`, and
   for the agency only each part a line wrote carries the same soft Badge beside its label, with the
   line and its figures in the Tooltip, until someone edits that part by hand. The client sees those
-  parts as any agency edit, with no mark of where they came from. The rows are notes, not parts of
+  parts as any agency edit. The rows are notes, not parts of
   the brief: nobody edits them here, and the creator copy never holds them. A brief run or an
   import leaves them as they are; a reset or a restore to a version from before the apply removes
   them with the parts they wrote, and their lines read as accepted, not applied, again.
@@ -198,8 +199,8 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
    "Shown:" and "Overlay:" lines, and the reason in `text-xs text-muted-foreground`. A hook whose
    line names a price, a code or an offer carries a warning Badge "Promo"; the agency turns it on
    or off with a Switch "Promo" beside the type.
-5. **CTAs.** C1 and C2, each with its type, the line, "Sends to:" (a bracketed blank stays a
-   bracketed blank until someone fills it), "Lands at:" and the reason, and the same "Promo"
+5. **CTAs.** C1 and C2, each with its type, the line, "Sends to:" (a bracketed blank stays
+   one until someone fills it), "Lands at:" and the reason, and the same "Promo"
    Badge and Switch as a hook.
 6. **Body.** The body as long text, its length ("30 seconds"), the beats with their seconds,
    and the runtime per platform. Then the **Proof point**: its line and the moment it lands
@@ -229,8 +230,7 @@ job) are Selects.
 Two people can work on the brief at once. Each concept is its own document and every part its own
 key (**1e**, **Every editable value**), so two people editing two concepts, or two parts of one
 concept, both keep their work. A hook, a CTA, a beat, a B-roll shot, the runtime and the product
-are each one part, saved whole, so two people changing the same hook at the same moment keep the
-later save. Two people saving the same part at the same moment: the later save wins for that
+are each one part, saved whole. Two people saving the same part at the same moment: the later save wins for that
 part only, and the other sees "{name} changed this {time}. Saving keeps yours." while
 the part is open.
 
@@ -284,8 +284,8 @@ Tab in a list, and Enter on an empty list item work as in any editor, and each h
 
 #### The variant plan
 
-For the agency only, at the end of each concept under an "Agency only" rule, and never in the page
-itself (**Who sees what**): a Table of V1 to V{v}, {v} being the program terms' variants per creator
+For the agency, at the end of each concept, under an "Agency only" rule when the campaign keeps the
+plan from the client (**Who sees what**): a Table of V1 to V{v}, {v} being the program terms' variants per creator
 (**Selected Creators**, **Variants per creator**), at most 5. Columns: Variant, Framework (a Select of the campaign's frameworks; it starts on the
 framework for that slot), Length (required: an empty one shows a warning Badge "Needs a length"),
 Funnel job (a Select of Reach, Consideration and Conversion, what the variant is built to do and
@@ -295,12 +295,16 @@ numbers, picked from the concept's numbered list, shown "B02, B05, B09"), and No
 its first column and header pinned (**Responsive**, **Tables**) and is a stack of Cards on phone. A
 variant that names a hook, CTA or shot that was removed shows it struck through with a warning
 Badge "Removed", so nobody cuts from a part that is gone; a creator's card, Content Review and Ad
-Performance show the same thing as "Broken", since there it is a cut's plan that is broken. Under the
+Performance show the same thing as "Broken". Under the
 Table, one line names the creators on the concept who override it, linking to each card
 (**Selected Creators**, **Concept and variant plan**, **Under the brief's own plan**): a change
 here reaches every other creator on the concept. Changing a variant's framework, hook or CTA here
 when any creator following it already has a cut for that variant first opens a Dialog: "{k}
 creators following V{n} already have a cut made with {old}. Change the plan anyway?"
+
+**The client's copy.** While `variantPlanToClient` is on, the client sees the Table read only, from
+`plans/{lane}-r{round}` (**1e**): Variant, Framework, Length, Funnel job, Hook and CTA as labels,
+with no VO, B-roll, Note, Badge, check, override line or comment. Off, they see no plan.
 
 #### Frameworks
 
@@ -345,13 +349,13 @@ Cancel (outline) and Reset (destructive). **Versions** opens a Sheet: "Brief ver
 first, one row per saved version ("Before a reset by {name}, {time}", "Before a restore by
 {name}, {time}", "Original, written by Claude {date}"), each with what it covers and a Restore
 Button that confirms in a Dialog the same way. Restoring a version saves the brief as it is now
-first too, so every reset and restore can itself be undone. How versions are kept, and their
+first too. How versions are kept, and their
 limits, are in **1e**, **Brief versions and Reset to original**.
 
 #### Importing a brief
 
 When the client or the agency wrote the master brief as a document, the agency imports it into
-these parts rather than typing it in again. **Import** (outline Button, Lucide `file-input`) sits
+these parts. **Import** sits
 in the **Brief status** header row for the agency. It renders while the round is not done and no
 concept in it is signed off, because a signed off concept is the text the client approved and an
 import never replaces it ("Signed off concepts can't be replaced. Start the next round from this
@@ -378,7 +382,7 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
    text**; a link is never an error. A link outside Google Docs, a Drive folder, a Slides deck or
    a Sheet is not read: "This link isn't a brief the page can read. Paste the brief's text." A
    file the page can only see as pictures (an image, or a PDF with almost no text) is not
-   imported either, because nothing can be checked word for word against a picture: "This file
+   imported either: "This file
    has no text to import. Paste the brief's text." Text
    longer than `sample.limits()` allows after the instruction is not imported, and the Dialog
    says "This brief is longer than the page can read at once. Ask Claude in the chat to import
@@ -398,8 +402,7 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
      another round, or for another concept in this round, goes to **Couldn't use**, "Used in round
      {r}", because every hook and CTA in the log is refused in every round (**Rounds**, **The new
      round's brief**). One the log holds for this concept in this round is the brief's own, not a
-     reuse, and is kept. A refused hook or CTA leaves its slot as it is now, never empty, so the
-     agency or the next brief run decides what goes there.
+     reuse, and is kept. A refused hook or CTA leaves its slot as it is now, never empty.
    - **Will change**: per concept, "{k} parts will change", and every edit not yet pulled that the
      import replaces, by name ("{name}'s edit to Story on {date}"), with the line "The brief as it
      is now is saved first, so you can bring it back from Versions."
@@ -427,8 +430,7 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
    has no section for at all keeps its value and is listed under **Not in the document**. A list
    part the document does have (personas, selling points, beats, hooks, CTAs, do's, don'ts,
    B-roll shots) is replaced whole: every higher numbered key the document doesn't carry gets a
-   stamp with `value` `null`, as **Loading the brief** does, so the concept never mixes the
-   document's items with older ones. The variant plan is never imported: it is the agency's own
+   stamp with `value` `null`, as **Loading the brief** does. The variant plan is never imported: it is the agency's own
    build, kept as it is, and a variant that names a hook, CTA or shot the import removed shows it
    as **Removed** (**The variant plan**). A concept the document names that the round doesn't have is added as **Add a concept**
    adds one (`added`, the slug rule in **1a**). Then `sourceDoc`, `importedAt:` and `importKey:` on
@@ -438,12 +440,11 @@ write (**1e**, **Program files and the scan**, **Who adds and scans**).
    than step 4's `sentAt`, even when step 4 is open, until step 4 is sent again (**Brief status**).
    The import reaches Atlas through **Pulling decisions**, which takes step 4 back to planned.
    While the Badge shows Draft this way, the client's Sign off and Request changes render as a label,
-   "Aspire is updating this brief. It comes back to you to sign off.", so nobody signs off text
-   that is about to go back to Draft. A sign off stamped before `importedAt` is dropped by the
+   "Aspire is updating this brief. It comes back to you to sign off." A sign off stamped before `importedAt` is dropped by the
    pull and named ("{name}'s sign off from before the brief was sent again, not recorded").
 
-**Repeatable mapping.** A model can put the same passage in a different part on two runs, so the
-page doesn't trust one run to be the same as the next. Importing the same document twice gives the
+**Repeatable mapping.** A model can put the same passage in a different part on two runs.
+Importing the same document twice gives the
 same brief because:
 
 - **The mapping is stored and reused.** Each mapping is saved under the document's key in
@@ -459,7 +460,7 @@ same brief because:
   character. The page works it out with `String.normalize` and `crypto.subtle`. The page also saves a `text-` key for the text it read from a file, pointing at the
   same mapping (`sameAs:`), so the same document uploaded again finds it too. A document whose key
   is stored is mapped from the store, with no call to Claude, and gives the same parts every time.
-  A changed Google Doc has a new modified time, so it is mapped again, as it should be. **Map
+  A changed Google Doc has a new modified time, so it is mapped again. **Map
   again** is the only way to replace a stored mapping, and it saves the new one in its place.
 - **Claude only points, it never writes.** Claude is asked for the data block's shape
   (**Creator brief**, **The data block**) with every text value copied word for word from the
@@ -516,8 +517,7 @@ from an earlier round, imported, or written by the brief run.
   same step. For the agency, a round with an earlier signed off brief also gets **Start from round
   {m}** (outline Button, Lucide `copy`) in the **Brief status** header row, {m} being the newest
   earlier round whose step 4 is cleared. It renders while the round is not done, its step 4 is
-  not sent, and no concept in it is signed off, so a brief the client is reviewing is never
-  replaced with one whose hooks are empty. It opens a Dialog: "Start round {n}'s brief from round {m}?", the concepts it
+  not sent, and no concept in it is signed off. It opens a Dialog: "Start round {n}'s brief from round {m}?", the concepts it
   brings, the deferred ones marked "Carried forward", the edits it replaces by name, the line
   "Round {m}'s brief doesn't change. The brief as it is now is saved first, so you can bring it
   back from Versions.", and Cancel (outline) and Start from round {m} (default). On Start the
@@ -569,8 +569,7 @@ too, as a line without the Button, since they asked for it. When round {n+1} alr
 brief must still be open for the concept: when round {n+1}'s step 4 is not sent and no concept in
 it is signed off, the deferred concept is copied into it at once, as **Starting from the last
 round** copies one. Otherwise **Defer** is disabled with "Round {n+1}'s brief is already with the
-client. Remove the concept, or bring it into a later round.", so a deferred concept always reaches
-a round. **Bring back** is offered only while round {n+1} doesn't hold the concept, or holds it as
+client. Remove the concept, or bring it into a later round." **Bring back** is offered only while round {n+1} doesn't hold the concept, or holds it as
 copied with no edit since, no sign off and no approved creator on it in round {n+1}; with
 creators on it there, it is disabled with "{k} creators are on {concept} in round {n+1}." When
 round {n+1} holds the copy, **Bring back** also writes `removed` true and `carriedForward` `null`
@@ -1024,7 +1023,7 @@ stay in view while the columns between them scroll. Each row is anchored
 | Column | Shows | Sorts by |
 | ------ | ----- | -------- |
 | Creator | Avatar, handle, name, tier Badge (outline), socials (Instagram and TikTok icons with followers, each a link to the profile), city, status Badge, and the round chips | Name |
-| Campaign match | The Score ring with the match score, a button "Why {score}?" that opens its reasons, the band Badge, the competitor lines, or "Not scored yet" for a creator Claude hasn't scored (**The match score**), then the paid signals in `text-xs text-muted-foreground`: hook rate, engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
+| Campaign match | The Score ring with the match score, a button "Why {score}?" that opens its reasons, the band Badge, the competitor lines, or "Not scored yet" for a creator Claude hasn't scored (**The match score**), then the paid signals in `text-xs text-muted-foreground`: hook rate, talks to camera ("63/100 (26 posts)", "Not enough analysed posts (15)" or "—"), engagement on Reels, reach and engaged accounts, and "Scored without hook rate, which TikTok doesn't report" on a TikTok creator | Match |
 | Concept | The concept chip, the persona under it, and the product; for the agency, the Concept and Persona Selects (**The match score**, **Concept and persona**) | Concept |
 | Latest posts | Up to three thumbnails, the evidence posts first, each a button with the play glyph on video and the **Hook post** and **Paid partnership** marks (**The creator viewer**, **Posts**), then "Latest post {date}" | Latest post |
 | Notes | Why we picked them, the newest note with "{n} notes" and "Add note" (**The creator viewer**, **What the list shows of notes**), and for the agency, under a dashed rule headed "Agency only": the newest Aspire note, the recommendation, expected cost and cost per 1K reach | None |
@@ -1048,7 +1047,7 @@ discovery's own page does.
 Thumbnails show the evidence posts first, with the **Hook post** and **Paid partnership** marks
 and the play glyph on video, embedded as **The creator viewer**, **How the media reaches the
 viewer**, says; a thumbnail opens the viewer at that post and the handle at the first post. The `{DETAILS}` block: Hook
-rate (watched past 3s), Engagement on Reels, Reach, Engaged accounts, Paid work before, Ad
+rate (watched past 3s), Talks to camera, Engagement on Reels, Reach, Engaged accounts, Paid work before, Ad
 permissions, Status, Product, City, Instagram and TikTok followers, Why we picked them, any
 question for the client, and the newest note with "{n} notes" and "Add note". For the agency only, under a dashed rule headed
 "Agency only": the recommendation, the newest Aspire note, expected cost and cost per 1K reach, vetting
@@ -1499,6 +1498,7 @@ these when Claude publishes; nothing on the page calls Atlas.
 | Status, round chips | Creator | The `roster` findings per round, and the page's `edits` |
 | Campaign match, band, factors, competitor lines | Campaign match, sort, the fit ring, the score's reasons | Stored per creator per round by Claude at publish (**The match score**), from the inputs that section lists |
 | Hook rate | Campaign match, Hook rate tile, sort | `detail.adFigures`, from `instagram.reelsHookRate` |
+| Talks to camera | Campaign match, card, the score's reasons | `detail.adFigures.talksToCamera`, the camera screen's read |
 | Engagement on Reels | Campaign match, sort | `instagram.reelsInteractionRate` |
 | Reach | Campaign match, sort, cost per 1K reach | `instagram.creatorMarketplaceReach` |
 | Engaged accounts | Campaign match, sort | `instagram.creatorEngagedAccounts`, which discovery writes in its ad figures |
@@ -1707,8 +1707,10 @@ there is no Watch line.
      signal. Under it, its inputs in `text-xs text-muted-foreground`: "Hook rate 52% · Engagement
      on Reels 4.1% · Engaged accounts 38K", or "Matches 3 of 4 keywords: {keyword} (bio),
      {keyword} (post), {keyword} (post)", each post a link.
-  4. The Watch line, then "Scored without" and the inputs left out.
-  5. **About this data**, a Collapsible, closed at first.
+  4. Talks to camera, with a read: "63/100 from 26 analysed video posts: speech 70%, to camera
+     60%, explainer 52%", plus "Weights 60 / 20 / 20" when not 45 / 35 / 20. Not a factor.
+  5. The Watch line, then "Scored without" and the inputs left out.
+  6. **About this data**, a Collapsible, closed at first.
 - **About this data** says in plain words where each input comes from (Meta's creator figures
   through Aspire Atlas, the creator's posts in Atlas, the round's Master Brief and the brand's
   saved competitors, and for the agency the expected cost and the target rate); that the score is
