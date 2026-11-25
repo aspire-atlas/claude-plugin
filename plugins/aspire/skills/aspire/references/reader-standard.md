@@ -63,7 +63,7 @@ is in **Quality review**, **3**.
   requester, never onto the page. R9 is N/A ("gaps go to the requester"). R2 passes when the page
   lists the platforms it covers with their post counts and claims no others; a page that names a
   platform Atlas could not collect fails **4.11**, item 5, not R2.
-- **R10** is judged on a 1280×800 first screen. On a page or section for a VP or budget owner, and
+- **R10** is judged on a 1280×800 first screen. On a page or section for a VP or budget owner, or
   in a flow whose reference sets one screen, the answer, the decisions, and the next steps all
   start above y=800 in the rendered order. On any other page, the answer starts above y=800, and
   the page stays within its template's length budget when it is built from one. With a text-only

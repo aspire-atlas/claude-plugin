@@ -111,33 +111,29 @@ REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().split
             for codes, metrics in [line.split(":")] for code in codes.split()}
 # The page standard's structure rules (rubric.md). A page built from a template (data-template,
 # page-fill.md) carries every mark below; a hand-written page carries them where its blocks do.
-# A headline states the finding. One made only of label words, the brand's name and a period, with
-# at least one topic noun ("Creator performance overview", "This week's social report", "October
-# campaign report", "Q3 results"), is a label, as is a single word. Any other word ("drove",
-# "unboxing", "big") makes it a finding. So does opening with a verb ("Post daily", "Plan the next
-# campaign"): an instruction is an answer, not a label.
+# A headline states the finding. The script fails only the clear label: one that ends in a topic noun
+# ("Creator performance overview", "Q3 results"), or opens with one and a colon ("Recap: October
+# campaign"), and holds no verb and no number once its periods are taken out. A single word is a
+# label too. Anything else ("Unboxing videos drove results", "Post daily", "Holiday campaign") is
+# left to the English read, so a finding is never held as a label.
 HEADLINE_WORDS = 2
-LABEL_VOCABULARY = frozenset("""
-a an the and of for our your this last next new week weekly day daily month monthly quarter quarterly year yearly
-annual social media content creator creators influencer brand program campaign account accounts channel
-channels instagram tiktok youtube post posts performance overview summary report update recap review
-analysis dashboard readout results snapshot insights highlights breakdown roundup digest findings status
-metrics data numbers plan brief profile shortlist verdict
-january february march april may june july august september october november december
-jan feb mar apr jun jul aug sep sept oct nov dec
-spring summer fall autumn winter season seasonal holiday holidays christmas easter halloween thanksgiving
-black friday cyber monday back to school
-""".split())
 TOPIC_NOUNS = frozenset("""
-overview summary report update recap review analysis dashboard readout results snapshot insights highlights
-breakdown roundup digest findings status metrics data numbers performance plan brief profile shortlist verdict
+overview summary report recap roundup digest dashboard readout snapshot highlights breakdown update review
+analysis status results performance insights findings metrics
 """.split())
-# Label words that are also verbs: a headline that opens with one gives an instruction.
-IMPERATIVES = frozenset("post plan review update brief report recap".split())
-# A quarter, a half, a year, a week number or a date names a period, not a figure, so it does not
-# make a label a finding.
-PERIOD = re.compile(r"(?i)\b(?:[QH][1-4]|FY\d{2,4}|(?:19|20)\d{2}|w(?:ee)?k\.?\s*\d{1,2}"
-                    r"|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?)\b")
+# A verb makes a headline a finding: a word ending in -ed or -ing, or one of these.
+VERBS = frozenset("""
+is are was were be been being has have had do does did can could will would should must
+drove drive drives beat beats grew grow grows rose rise rises fell falls led leads won win wins lost lose loses
+made make makes got get gets went go goes ran run runs hit hits held hold holds kept keep keeps saw see sees
+took take takes gave give gives brought bring brings came come comes sold sell sells spent spend spends paid
+pays cut cuts doubled tripled halved need needs works worked beat outperformed lags lagged
+""".split())
+# A quarter, a half, a year, a week number, a month or a date names a period, not a figure, so it
+# is taken out before looking for a number. "May" counts only with a day, since it is also a verb.
+MONTH = r"(?:january|february|march|april|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)"
+PERIOD = re.compile(r"(?i)(?<![\w-])(?:[QH][1-4]|FY\d{2,4}|(?:19|20)\d{2}|w(?:ee)?k\.?\s*\d{1,2}"
+                    r"|(?:%s|may)\.?\s+\d{1,2}(?:st|nd|rd|th)?|%s\.?)(?![\w-])" % (MONTH, MONTH))
 INSIGHTS_MAX = 3
 FIXED_SOURCES = ("Atlas", "Brand memory", "Web", "You", "Our read")
 NO_OWNER = {"tbd", "tba", "tbc", "someone", "anyone", "unassigned", "owner", "n/a", "na", "none", "-"}
@@ -341,15 +337,19 @@ def r2(nodes, regions, out):
             problems.append("the method section's platform counts %s differ from the scope's %s" % (again, top))
     return problems
 
+def headline_words(headline):
+    # The words of a headline, quotes and possessives taken off: "Week's" and "Creators'" are one word.
+    plain = re.sub(r"[\u2018\u2019\u201b`]", "'", headline).replace("\u201c", '"').replace("\u201d", '"')
+    return [re.sub(r"'(?:s)?$", "", w.strip("'")) for w in re.findall(r"[A-Za-z0-9']+", plain) if w.strip("'")]
+
 def is_label(headline):
-    # Every word a label word or a period, at least one topic noun, and no opening verb. A possessive
-    # ("week's", "week\u2019s") counts as its word.
-    plain = PERIOD.sub(" ", headline.replace("\u2019", "'")).lower()
-    rest = [w for w in (re.sub(r"'s$", "", w) for w in re.findall(r"[a-z0-9']+", plain)) if w.strip("'")]
-    if not rest:
+    words = [w.lower() for w in headline_words(PERIOD.sub(" ", re.sub(r"[\u2018\u2019]", "'", headline)))]
+    if not words:
         return True
-    return (all(w in LABEL_VOCABULARY for w in rest) and any(w in TOPIC_NOUNS for w in rest)
-            and not (len(rest) > 1 and rest[0] in IMPERATIVES))
+    if any(re.search(r"\d", w) or w in VERBS or (len(w) > 4 and re.search(r"(?:ed|ing)$", w)) for w in words):
+        return False
+    opens = re.match(r"\s*[\W_]*([A-Za-z]+)\s*:", headline)
+    return words[-1] in TOPIC_NOUNS or bool(opens and opens.group(1).lower() in TOPIC_NOUNS)
 
 def strip_name(value, name):
     # A name taken out as whole words only, and in the case it is written, so the brand "Go" leaves
@@ -385,9 +385,7 @@ def r3(nodes, regions, out):
     if len(heads) != 1:
         return ["the page needs exactly one h1, the headline that answers its question (found %d)" % len(heads)]
     shown, problems = text(heads[0], gap=" "), []
-    brand = ((regions.get("scope") or [None])[0] or Node("div", [], None)).attrs.get("data-brand") or ""
-    words = re.findall(r"[A-Za-z0-9]+", shown)
-    if len(words) < HEADLINE_WORDS or is_label(strip_name(shown, brand)):
+    if len(headline_words(shown)) < HEADLINE_WORDS or is_label(shown):
         problems.append("the headline \"%s\" is a label, not a finding; write the answer as one sentence" % shown)
     if shown.endswith("?"):
         problems.append("the headline \"%s\" asks a question; the question is the title, the headline answers it" % shown[:60])
