@@ -891,8 +891,8 @@ every finding of one run), `handle`, `network`, `name` (from the list, when give
 `recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`,
 `fitBreakdown` (**How criteria become points**: `[{component, weight, points, basis: "criteria" |
 "default" | "not-available", reason, criteria: [{id, credit: 1 | 0.5 | 0 | null, points, count,
-evidence[]}]}]`, `credit` null for a criterion with no data), `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
-and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
+evidence[]}]}]`, `credit` null for a criterion with no data), `safety` (`{check: result}`;
+`categories`: `Pass (25 analyzed posts, all low risk)`), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
 (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`, `estFee` when the calculator
 gives one, `visualCheck` when the run had a visual check and it ran on the creator (left out for a
 "Not checked" creator and for a check on a person's appearance) (`{name, kind: "named" |

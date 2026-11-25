@@ -42,7 +42,7 @@ Then:
 
 With no Python, say so and write the file by hand in **Creator CSV**, **File**'s format, named
 as **A review's applicants**, step 5 says, splitting it
-yourself at 4,998 rows.
+yourself at 4,998 rows or before a file reaches 2 MB, whichever comes first.
 
 ## The rows
 
