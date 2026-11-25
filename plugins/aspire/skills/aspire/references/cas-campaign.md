@@ -53,9 +53,7 @@ decisions**, **1f**, **1g**, **Reminders and the weekly call**, **Unattended run
 and CTA recommendations, and the hook review between rounds, live in **Hooks and CTAs**.
 
 The Campaign Manager conducts the campaign from approved concepts through sourcing, negotiation,
-product shipping, and briefing. It reads where the campaign is, offers the single next step,
-launches the agent or section that does the work, records the outcome, and sets the reminder.
-It never does the heavy lifting itself. Everything a person sees uses the **Page
+product shipping, and briefing. Everything a person sees uses the **Page
 vocabulary**. The flow never sends
 email, never reads a mailbox, and never writes to a sheet or a slides file: the CM sends from
 their own mail and pastes the replies. A Google Docs, Slides or Sheets link is read only when the
@@ -98,6 +96,7 @@ message and runs here with its own confirmation; widgets never write.
 
 - `atlas-creator-discovery` (rows 2, 3): run mode `interactive`, `campaign_type` `creator-ads`,
   the campaign slug, the lane, `recipient` `campaign`.
+- `atlas-camera-screen` (row 4, before vetting): the slug and the lane.
 - `atlas-creator-vetting` (row 4): the lane's pool, the lane as criteria, `recipient`
   `campaign` then `brand`.
 - `atlas-creator-brief` (row 10, and `revision` for a creator's changed brief): `brief_mode`
@@ -932,7 +931,7 @@ vocabulary and start with the round once the campaign has more than one: "Round 
 | 1 | No lanes saved | "No concepts yet." | Set up the campaign | **CAS campaign**, Setup | The setup records, Gate 1 cleared | None. After setup, offer the weekly call. |
 | 2 | Lanes saved, pool empty | "{n} concepts ready. No creators yet." | Find creators for every concept | `atlas-creator-discovery`, creator-ads mode | Discovery's undecided findings, one pool per lane | None |
 | 3 | Pool below target on any lane | "{concept}: {n} of {target} creators." One line per concept. | Find more creators for {concept} (the emptiest first) | `atlas-creator-discovery`, creator-ads mode | Same as row 2 | None |
-| 4 | Pool at target, Gate 2 not sent | "Every concept has enough creators to screen." or "Screened. Ready for the client." | Screen the {concept} creators, until every concept is screened; then send the creators for approval | `atlas-creator-vetting` with the lane as criteria; then **Gate 2 packet** below | Vetting's findings; then a `roster` candidate per slate creator and Gate 2 `open` | Reminder at its due time |
+| 4 | Pool at target, Gate 2 not sent | "Every concept has enough creators to screen." or "Screened. Ready for the client." | Screen the {concept} creators, until every concept is screened; then send the creators for approval | `atlas-camera-screen`, then `atlas-creator-vetting` with the lane as criteria; then **Gate 2 packet** below | Each creator's talks to camera read, and vetting's findings; then a `roster` candidate per slate creator and Gate 2 `open` | Reminder at its due time |
 | 5 | Gate 2 open | "Creators with {approver} since {sent}. Due {due}." Past due: "{n} days late." | Pull the client's decisions. Past due: log the delay, or chase the backup. | **CAS campaign**, Run, **Pulling decisions** | `roster` approved (with `priority` for a Priority Yes), maybe, or rejected (with `rejectReason` when given), discovery verdicts, Gate 2 `cleared` once no creator awaits a decision; a `ledger` line when late | Removes the reminder |
 | 6 | Gate 2 cleared, no rates | "{n} creators approved. No fees yet." | Draft the fees and the offer emails | **Rates and terms** | `roster` rate `offered` with the offer; an offer `draft` per creator | None |
 | 7 | Rates drafted, Gate 3 not sent | "Offers out to {n} creators. {c} countered. {r} with no reply yet." | Record a reply. When every creator has agreed or declined: send the fees for approval. | **Rates and terms**, Replies; then **Gate 3 packet** below | `reply`, `roster`, the next `draft`; then Gate 3 `open` | Reminder at its due time |
@@ -1061,12 +1060,14 @@ Performance**, **Reading the results**).
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
-- **Vetting** (row 4): `atlas-creator-vetting` with the lane's pool as the list (the lane's
+- **Vetting** (row 4): first `atlas-camera-screen` with the campaign slug and the lane, which
+  reads each undecided creator in the pool with no read yet (**Camera screen**, In a CAS
+  campaign); then `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
-  (`campaign`, then `brand`). The Run picker is the write confirmation: "Screen the {concept}
-  creators and save the results to Atlas?" If `vetting:thresholds` is missing, the run uses the
-  defaults (70 and 50), labelled as defaults; you may offer V2 from **Creator vetting** first
-  and write it with its own confirmation, but it is not required.
+  (`campaign`, then `brand`). The Run picker confirms both agents' saves, passed in each launch
+  block's `approved`: "Screen the {concept} creators and save the results to Atlas?" Without
+  `vetting:thresholds`, you may offer V2 from **Creator vetting** first, with its own
+  confirmation; it is not required.
 - **Sending a step for approval** (rows 4, 7, 11): per **Gate packets**. The campaign page is the
   approval page, linked to Creator Selection, Selected Creators or Master Brief; the CM shares it
   with the client as Contributor. The briefs can also be sent from the page's Send for sign off;

@@ -271,7 +271,7 @@ code.
 | I6 | How did the program do this quarter? Keep, grow, or cut? | `leadership` | `atlas-quarterly-signal` | Ready |
 | I11 | How is the program doing this month, and what should I change? | `team` | `atlas-program-dashboard` | Ready |
 | I12 | Which affiliates are driving sales, and what do we owe in commission? | `team` | `atlas-affiliate-manager` | Ready |
-| I13 | Which creators on this slate talk to camera? | `team` | None | Waiting on the talks to camera screen |
+| I13 | Which creators on this slate talk to camera? | `team` | `atlas-camera-screen` | Ready |
 | P1 | Which creator posts should we run as ads, and how do we cut them? | `performance`, then `creative` | `atlas-ad-reuse` | Ready |
 | P2 | There's profanity in this video. Can it run on paid? | `performance` | `atlas-post-analysis` | Ready |
 | P3 | Which posts do we still have rights to, and when do they expire? | `performance` | `atlas-content-library` | Ready |
@@ -416,6 +416,7 @@ below, never from what an agent's prompt says it may do.
 | ----- | ----- | --------------- |
 | `atlas-ad-reuse` | write | Saves the ranked candidates |
 | `atlas-affiliate-manager` | send | Creates discount codes in a connected store |
+| `atlas-camera-screen` | write | Saves each read on the creator's discovery finding |
 | `atlas-campaign-orchestrator` | read | Ranks next actions; writes nothing |
 | `atlas-content-library` | write | Saves the library's records |
 | `atlas-content-review` | write | Saves findings and review lessons |

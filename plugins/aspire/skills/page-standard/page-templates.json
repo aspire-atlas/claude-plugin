@@ -20,7 +20,7 @@
       "needs": [],
       "allows": ["kpis", "creators", "posts"],
       "length": {"default": {"screens": null, "growsWith": ["sections.creators", "sections.posts"]}},
-      "agents": ["creator-discovery", "creator-vetting", "ad-reuse"]
+      "agents": ["creator-discovery", "creator-vetting", "ad-reuse", "camera-screen"]
     },
     "verdict": {
       "name": "Verdict",

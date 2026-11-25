@@ -148,7 +148,7 @@ A screen is 1280 by 800 pixels. `page-templates.json` holds each budget as data.
 | Template | Agents |
 | -------- | ------ |
 | Readout | daily-insights-report, weekly-insights-report, market-signal, quarterly-signal, profile-analyst |
-| Shortlist | creator-discovery, creator-vetting, ad-reuse |
+| Shortlist | creator-discovery, creator-vetting, ad-reuse, camera-screen |
 | Verdict | content-review, post-analysis, quality-review |
 | Profile | creator-profile |
 | Plan | creator-brief, shops, creator-outreach, creator-negotiation |

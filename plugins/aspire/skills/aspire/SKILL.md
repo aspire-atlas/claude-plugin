@@ -133,6 +133,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Readouts** (its Schedule is the scheduling steps other flows follow) | `references/readout.md` |
 | **Market signal** | `references/market-signal.md` |
 | **Quarterly signal** | `references/quarterly-signal.md` |
+| **Camera screen** | `references/camera-screen.md` |
 | **Theme** (Setup, Applying) | `references/theme.md` |
 | **Fee calculator** (Setup, Applying) | `references/fees.md` |
 | **Theme**, Offers; **Fee calculator**, Offers; **Quality review**, The offer; **Decision audit**, The offer | `references/offers.md` (when: **Offers** below) |
@@ -177,6 +178,7 @@ Basic work (reading what Atlas holds, publishing a page, drafting a message) run
 | `atlas-program-ledger` | sonnet | Records and matches rows exactly, leaves doubtful ones unmatched, never pays |
 | `atlas-program-dashboard` | sonnet | Shows saved numbers against goals; acts on nothing |
 | `atlas-shops` | sonnet | A plan from held data; platform rules hedged and never stated without a source |
+| `atlas-camera-screen` | sonnet | Counts labels post by post and scores; judges nothing |
 
 Record the model in the decision log's launch line (**Decision audit**) as one clause ("on
 sonnet", "on the session model", "on opus by request").
