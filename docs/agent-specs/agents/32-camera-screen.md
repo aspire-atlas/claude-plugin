@@ -20,7 +20,7 @@ to-camera ad and skip the ones who only post voiceover or text.
 
 | Code | Question | Primary reader | Eval reader | Kind of page | Approved example | Eval question |
 | ---- | -------- | -------------- | ----------- | ------------ | ---------------- | ------------- |
-| I13 | Which creators on this slate talk to camera? | Self | team | Shortlist | None yet | Not yet |
+| I13 | Which creators on this slate talk to camera? | Self | team | Shortlist | None yet | I13 |
 
 ## Skills carried (1)
 

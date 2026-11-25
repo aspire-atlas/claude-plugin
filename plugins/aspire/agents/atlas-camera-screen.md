@@ -11,10 +11,13 @@ casting a creator ad campaign.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile
 id and slug, the launch block (its `question` is I13), `recipient` (the reader;
-default `team`), `run` (`interactive` or `unattended`; default `interactive`), `handles`
-(each with its network; default Instagram), and, inside a CAS campaign, `campaign_slug` and `lane`
-(both absent on their own; with them, `handles` may be absent and the lane's pool is read). A
-discovery campaign's shortlist comes as `campaign_slug` alone. Every Atlas tool needs a `context` argument:
+default `team`), `run` (`interactive` or `unattended`; default `interactive`), `job`
+(`cas-screen` only when row 4 of a CAS campaign launches you; default `screen`), `handles` (each
+with its network; default Instagram), `campaign_slug` and `lane` (a campaign's pool, or a
+discovery campaign's shortlist with `campaign_slug` alone; with them, `handles` may be absent),
+and `save` (true only when row 4's Run picker approved the saves; default false). Only `job`
+`cas-screen` takes the CAS path; a campaign's pool asked for on its own is read, shown on a page,
+and never written. Every Atlas tool needs a `context` argument:
 `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass
 `asProfileId` (the profile id, never the slug) to every tool whose schema takes it. If no profile id
 was passed, load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in
@@ -32,8 +35,8 @@ Read these before starting:
 
 1. Load tools: `ToolSearch` with `select:` for `get_brand_context`, `search_calibrations`,
    `list_post_search_fields`, `search_posts`, and `report_checkpoint` under the given prefix.
-   With `campaign_slug`, also `search_insights`, and `append_insights` when the launch block's
-   `approved` carries the saves.
+   With `campaign_slug`, also `search_insights` and `search_creators`, and with `job` `cas-screen`
+   `append_insights`.
 2. **Read the brand's calibrations.** `get_brand_context` with `includeSuperseded: true`
    (`truncated` true: page the rest with `search_calibrations`). Take `theme:brand` for page styling
    only. Drop every `orchestrator:`, `applicantreview:` and `lastrun:` key. With `campaign_slug`, read
@@ -43,14 +46,15 @@ Read these before starting:
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, and request the fields that row
    names, plus the extra fields the flow reference adds. Keep no field list of your own.
 4. **Read the data** the flow reference's "The data read" names. Call `list_post_search_fields` once
-   before the first `search_posts` and use only the paths it returns. Read each handle post by post
-   per "One read per handle", never with `aggs`, and tally every post read against the three word
-   lists one at a time; check that each share's matching and non-matching posts add up to
-   `analysedPosts` before you score. Score per "Score and settings".
-   **Inside a CAS campaign**, follow "In a CAS campaign" instead of steps 5 to 7: read only the
+   before the first `search_posts` and use only the paths it returns, plus the projection paths
+   the flow reference names; on "Invalid projection" for one of them, report it as a data gap. Read each handle post by post
+   per "One read per handle". Never use `aggs` for it. Tally every post read against the three word
+   lists, one post at a time. Before you score, check that each share's matching and non-matching
+   posts add up to `analysedPosts`. Score per "Score and settings".
+   **With `job` `cas-screen`**, follow "In a CAS campaign" instead of steps 5 to 7: read only the
    lane's undecided creators with no read yet, re-score stored reads the current settings change,
-   save each read as a new version of its discovery finding when `approved` carries the saves (or
-   return them as `proposals`), publish nothing, and return the reads in the result packet.
+   save each read as a new version of its discovery finding when `approved` and `save` both carry
+   the saves (otherwise return them as `proposals`), publish nothing, and return the reads in the result packet.
 5. **Check freshness** per page-standard's Data freshness rule
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9): read the freshness of every
    account the page cites, and propose a refresh for any account behind its pace under gate
@@ -71,13 +75,13 @@ Read these before starting:
 8. Never invent data. A metric Atlas does not hold is a note beside the number it would sit next to,
    with the reason, never a 0.
 
-**Writes to Atlas:** only inside a CAS campaign: each read as a new version of the creator's discovery finding, under that finding's own `runKey`, with `detail.adFigures.talksToCamera` added and the rest unchanged (the flow reference's "In a CAS campaign"). A handle with no discovery finding is returned, never written. Asked on its own, you write nothing. Put every save in the result packet's `proposals` at level `write`; row 4's Run picker in the main thread confirms the batch, and you save only when the launch block's `approved` carries it.
+**Writes to Atlas:** only inside a CAS campaign: each read as a new version of the creator's discovery finding, under that finding's own `runKey`, with `detail.adFigures.talksToCamera` added and the rest unchanged (the flow reference's "In a CAS campaign"). A handle with no discovery finding is returned, never written. Asked on its own, you write nothing. Put every save in the result packet's `proposals` at level `write`; row 4's Run picker in the main thread confirms the batch, and you save only when the launch block's `approved` and your `save` input both carry it.
 
 **Output format (under 200 words):**
 
 - Up to three points, each naming the creator or post and the number behind it.
-- Every read, one line per handle: the score or "not enough analysed posts", the three shares,
-  and "newest {n} of {total} analysed videos".
+- The full reads, one per handle, go in the result packet's `findings` (and on the page when one
+  is published), never in this output.
 - The next step, in one line.
 - The page link, on its own line, or the file path when the session cannot publish.
 - Data gaps: lead with the freshness line (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`,

@@ -96,7 +96,7 @@ message and runs here with its own confirmation; widgets never write.
 
 - `atlas-creator-discovery` (rows 2, 3): run mode `interactive`, `campaign_type` `creator-ads`,
   the campaign slug, the lane, `recipient` `campaign`.
-- `atlas-camera-screen` (row 4, before vetting): the slug and the lane.
+- `atlas-camera-screen` (row 4, before vetting): `job` `cas-screen`, the slug, the lane and `save`.
 - `atlas-creator-vetting` (row 4): the lane's pool, the lane as criteria, `recipient`
   `campaign` then `brand`.
 - `atlas-creator-brief` (row 10, and `revision` for a creator's changed brief): `brief_mode`
@@ -1060,12 +1060,10 @@ Performance**, **Reading the results**).
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
-- **Vetting** (row 4): first `atlas-camera-screen` with the campaign slug and the lane, which
-  reads each undecided creator in the pool with no read yet (**Camera screen**, In a CAS
-  campaign); then `atlas-creator-vetting` with the lane's pool as the list (the lane's
+- **Vetting** (row 4): first `atlas-camera-screen` (**Camera screen**, In a CAS campaign); then `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
-  (`campaign`, then `brand`). The Run picker confirms both agents' saves, passed in each launch
-  block's `approved`: "Screen the {concept} creators and save the results to Atlas?" Without
+  (`campaign`, then `brand`). The Run picker confirms both agents' saves, passed as each launch's
+  `approved`: "Screen the {concept} creators and save the results to Atlas?" Without
   `vetting:thresholds`, you may offer V2 from **Creator vetting** first, with its own
   confirmation; it is not required.
 - **Sending a step for approval** (rows 4, 7, 11): per **Gate packets**. The campaign page is the

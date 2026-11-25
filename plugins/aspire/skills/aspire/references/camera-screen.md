@@ -38,11 +38,13 @@ Asked on its own, the main thread asks these before launching `atlas-camera-scre
 
 | Id | Question | Options |
 | -- | -------- | ------- |
-| CS1 | Which creators should I read? | "The handles I'll paste (Recommended)" / "A creator ad campaign's pool" (then which campaign and concept) / "A discovery campaign's shortlist" (then which campaign) |
+| CS1 | Which creators should I read? | "The handles I'll paste (Recommended)" / "A creator ad campaign's pool" (then CS3 and CS4) / "A discovery campaign's shortlist" (then CS3) |
 | CS2 | Which network are the handles on? Asked only when pasted handles name none. | "Instagram (Recommended)" / "TikTok" / "YouTube" / "Pinterest" |
+| CS3 | Which campaign? | The saved campaigns of the kind CS1 named, newest first, up to four, the newest "(Recommended)" |
+| CS4 | Which concept? | The campaign's saved lanes by name, up to four, the one with the most undecided creators "(Recommended)" |
 
-A campaign's pool reads the newest undecided candidates of that campaign's discovery findings, by
-handle. Inside a CAS campaign the main thread asks nothing of its own: row 4's Run picker covers
+A campaign's pool reads the newest undecided candidates of that campaign's discovery findings
+(**Which handle** below), shows them on the page and writes nothing. Inside a CAS campaign the main thread asks nothing of its own: row 4's Run picker covers
 the read and its saves (**In a CAS campaign**).
 
 ## The reader
@@ -68,6 +70,10 @@ metrics to a row, never drop one.
 2. The creators: the pasted handles, or, for a campaign, `search_insights` with `prefix` on
    `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}`, newest first, paged; the
    newest record per `entityId` wins (**Creator discovery**, **State written to Atlas**).
+   **Which handle.** A finding holds the network's account id, not the handle: take the handle
+   from the profile URL in the finding's `detail.evidence`, else `search_creators` filtered on
+   `externalId` = the finding's `entityId` with `fields: ["username"]`. With neither, return the
+   creator as "no handle found", never a guess.
 3. One `search_posts` read per handle (**One read per handle**), up to `maxPosts` videos, newest
    first.
 
@@ -82,9 +88,9 @@ Read the creator's newest analysed videos, post by post, with `search_posts`:
 
 - Filter: `author.username` = the handle, `network` = the account's network,
   `analysis.analyzedAt` exists, `mediaKind` = `video`.
-- Sort `postedAt` descending. Project only `analysis.productionAnalysis.audioStyle`,
-  `analysis.productionAnalysis.cameraTechniques` and `analysis.emotionalAnalysis.tone`, and
-  exclude `media` and the account objects (**Atlas search**).
+- Sort `postedAt` descending. Project only the three analysis fields page-standard's Camera
+  screen row names (audio style, camera techniques, tone), and exclude `media` and the account
+  objects (**Atlas search**).
 - Read up to `maxPosts` videos: one call of `limit: 100`, then the `nextCursor` for each further
   100, stopping at `maxPosts` or when no `nextCursor` comes back. Count only the first `maxPosts`
   hits.
@@ -92,7 +98,9 @@ Read the creator's newest analysed videos, post by post, with `search_posts`:
   `totalAnalysed`, the number of analysed videos Atlas holds.
 
 Never use `aggs` for this read: the labels are free text, a terms aggregation caps at 100
-distinct labels and a large account has hundreds, so label totals undercount.
+distinct labels and a large account has hundreds, so label totals undercount. Good: "@handle:
+speech 62% (31 of the newest 50 videos read)". Bad: "@handle: speech 18%", from an aggregation
+that counted only the 100 most common audio labels.
 
 Classify each post. A label matches when, lowercased, it contains any word on its list:
 
@@ -107,16 +115,19 @@ share counts as not matching it. Each share is the number of posts that match ov
 as a whole percentage (half rounds up). All three shares are exact. A post can count toward more
 than one share.
 
-Instagram, TikTok, YouTube and Pinterest are all read. In a CAS campaign the read is of the
-creator's Instagram account.
+Instagram, TikTok, YouTube and Pinterest are all read. In a campaign the network is the
+finding's `schema` (Instagram for a CAS campaign).
 
 ## Score and settings
 
 Score = speech × 45% + to camera × 35% + explainer × 20%, rounded (half up), out of 100, using
-the weights in force.
+the weights in force. The score is worked out from the whole-percent shares, so a re-score from
+stored shares gives the same number.
 
 Fewer analysed videos read than `minPosts`: no score (`null`). The shares and the count are still
 returned, the creator shows "not enough analysed posts", and is never dropped from the slate.
+Good: "@handle: not enough analysed posts (newest 12 of 12 analysed videos), speech 58%". Bad:
+"@handle: 0/100", or the creator left off the slate.
 
 | Setting | Default | Allowed |
 | ------- | ------- | ------- |
@@ -134,31 +145,34 @@ the next read.
 
 Per handle: `{handle, network, score | null, speech, toCamera, explainer, analysedPosts,
 totalAnalysed, weights, minPosts, maxPosts, scoredAt}`. `scoredAt` is the UTC time of the read.
-A handle Atlas holds no analysed video for returns `analysedPosts` 0, every share 0 and `score`
-`null`, and says so.
+A handle Atlas holds no analysed video for returns `analysedPosts` 0, every share and `score`
+`null`, and the note "No analysed videos in Atlas", never a 0%.
 
 ## In a CAS campaign
 
-Launched from row 4 with the campaign slug and the lane.
+Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `save`.
 
 - **Who is read.** Every undecided candidate in the lane's pool (the newest finding per
   `entityId` is an `action_item` with `detail.lane` the lane) whose finding has no
   `detail.adFigures.talksToCamera` yet. A creator added by a refill (row 3) is read the next time
   row 4 runs. A creator whose stored read gives another score under the current weights or
-  minimum is re-scored from it, with no new read.
+  minimum is re-scored from it, with no new read. When the newest version has no read but an
+  older version of the same `entityId` has one, that read is carried forward (re-scored when the
+  settings changed) instead of reading again.
 - **What is saved.** For each read, a new version of that discovery finding: `append_insights`
   under the finding's own `runKey`, with its role, kind, priority, `schema`, `entityKind`,
   `entityId` and summary, and its `detail` unchanged except
   `detail.adFigures.talksToCamera = {score, speech, toCamera, explainer, analysedPosts,
-  totalAnalysed, weights, scoredAt}`. `idempotencyKey` `camera-screen-{entityId}-{scoredAt}`.
-  The newest version still wins, so vetting, the campaign page and `get_cas_selection` read it.
+  totalAnalysed, weights, scoredAt}`. `idempotencyKey`
+  `camera-screen-{entityId}-{writtenAt}`, the UTC time of the save, so a re-score is never
+  dropped as a duplicate. The newest version still wins, so the read stays on the finding for the
+  campaign page, `get_cas_selection` and the match score to read.
 - **Handles with no discovery finding** are returned in the result, never written.
 - **The confirmation.** Row 4's Run picker, "Screen the {concept} creators and save the results
   to Atlas?", confirms these saves as it confirms vetting's. The main thread passes that approval
-  in the launch block's `approved`; without it, the agent returns the saves as `proposals` and
-  writes nothing.
-- **No page.** The result packet carries the reads; vetting's slate and the campaign page show
-  them.
+  in the launch block's `approved` and as `save: true`; without both, the agent returns the saves
+  as `proposals` and writes nothing.
+- **No page.** The result packet carries the reads.
 
 ## The storyline
 
