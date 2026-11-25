@@ -24,7 +24,10 @@ the user approved saving the recommendations (R4), `visual_check` (from R5 or th
 the check's name, kind `named` or `free-text`, key, definition, and `appearance`),
 `visual_check_refused` when a check was refused, `sheet_calls` (the review Sheet's new calls,
 reopened rows, and Rows to fix, when the list came from one; offer the new calls in F1 only when
-you were given any, per the reference's **Reading the review Sheet**), `fit_map` (the criteria
+you were given any, per the reference's **Reading the review Sheet**), `screened_earlier`
+(applicants already screened in the review: list them in a short "Screened earlier" section on the
+page with their saved recommendation and date, never vet them or write for them; the reference's
+**Applicant review**, **Applicant status**, Screened once), `fit_map` (the criteria
 map the first batch returned, on every later batch of a run; the reference's **How criteria become
 points**), and `recipient` (one or more lenses per
 `recipient-lens.md`; default `team`). Every Atlas tool needs a `context` argument: `[<runId>]`, then
