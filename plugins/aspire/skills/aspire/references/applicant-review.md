@@ -351,14 +351,19 @@ or in F1. Two asks put it back on the list, and its new result is a newer `appli
 record (records are only ever added):
 
 - **A cleared Team call.** A row the team cleared in the review Sheet is reopened (**Applicant
-  screening**, **Reopened rows**) and vetted again, screened or not.
+  screening**, **Reopened rows**) and vetted again by the next interactive run, screened or not. A
+  scheduled run saves the Sheet's calls and screens only `new` and stale `waiting_on_data`
+  applicants (**Scheduled screening**, steps 2 and 3), so it leaves a reopened screened row to the
+  next interactive run.
 - **Changed criteria.** When the criteria or thresholds the review uses (its `-criteria` and
   `-thresholds` records, or the records they point to) were saved after an applicant's
   `screenedAt`, the check asks once, in its own `AskUserQuestion`: "{campaign}'s criteria changed
   after {n} of these applicants were screened. Vet them again?", with "Keep their results
   (Recommended)" (description: "They keep the recommendation from the old criteria") and "Vet
   them again" (description: "Each gets a new recommendation under the current criteria"). It is
-  asked in the check's place in the run, before any later question.
+  asked in the check's place in the run, before any later question, and at most once a run: the
+  answer holds for the rest of it, so the check that follows a CSV import (below) applies it
+  without asking again, and asks only when the first check did not.
 
 Every
 interactive run on a review checks as soon as it knows the review, before any later question, the
@@ -378,8 +383,9 @@ and **Before the launch**):
 When a long list is split into runs (**Getting the list**, or R5's runs of 25), the parts are cut
 from the list as it was read, in file order, and keep their names and slugs ("{list name} (part
 {n} of {k})", `{slug}-part-{n}`), so a rerun after some parts were screened updates the same part
-pages. Each part loses its screened applicants, and a part left empty is not run, so its page stays
-as last published, with those applicants' results. A part that is run lists the applicants it
+pages. Each part loses its screened applicants, and a part left empty is not run: its page, when an
+earlier run published one, stays as last published with those applicants' results, and the count
+line below names the parts left empty, whose applicants' results are in Atlas. A part that is run lists the applicants it
 kept off in a short "Screened earlier" section on its page, each with the recommendation and date
 from `list_applicants`, passed in the launch as `screened_earlier` (**Applicant screening**,
 **Before the launch**),
@@ -392,11 +398,12 @@ applicants to vet after the check.
 
 It reads the statuses with `list_applicants` (`asProfileId` the brand profile,
 `reviewId` the review's slug, `statuses` `["screened"]`, `limit` 1000, paged to the end) and keeps
-off the list every entry that matches a screened applicant: by `aspireApplicantId` when the entry
+off the list every entry that matches a screened applicant, except a reopened Sheet row and the
+applicants a "Vet them again" answer covers, which stay on it to be vetted again: by `aspireApplicantId` when the entry
 has one, otherwise by its handle, normalized per **Creator vetting**, **Getting the list**, and
 only on the same network: an Instagram handle against the record's `instagramHandle`, a TikTok
 handle against its `tiktokHandle` (as **Applying the form rules**, step 1, matches). It says "{n} {campaign} applicants were already screened, so they keep
-their results". When that leaves no one to vet, it skips every question still to come, the
+their results", counting only the applicants it kept off (no line when that is none). When that leaves no one to vet, it skips every question still to come, the
 storyline, the launch, and the page: for a review Sheet R2 to R5 (a Sheet with new calls still
 asks its Sheet-only F1), for a CSV or pasted handles R5 and the import. Without `list_applicants` in the
 session, it skips the check and says once that applicants already screened may be screened again.

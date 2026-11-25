@@ -55,8 +55,9 @@ stays on one id even after Atlas starts holding the row's other account.
   **Rows to fix**.
 - **Already screened**: an undecided row that is not reopened, whose applicant is `screened` in
   this review, is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
-  Recommendation stands for the team to call in the Sheet. A reopened row is vetted again even when
-  its applicant is screened: clearing the call is the team's ask to look again.
+  Recommendation stands for the team to call in the Sheet. In an interactive run, a reopened row is
+  vetted again even when its applicant is screened: clearing the call is the team's ask to look
+  again. A scheduled run leaves it to the next interactive run (**Scheduled screening**, step 3).
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
@@ -107,8 +108,8 @@ in an interactive run", and the run reports it.
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when its Team call
 carries a `sheetValue`: the team took back in the Sheet a call saved from there (as it stood or
 changed in F1), and no newer call on the applicant was saved since in this review. It is vetted
-like any undecided row, and the team's F1 answer on it replaces the old call. It is vetted even
-when its applicant is already `screened` in this review (**Already screened**).
+like any undecided row, and the team's F1 answer on it replaces the old call. An interactive run vets
+it even when its applicant is already `screened` in this review (**Already screened**).
 
 **Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
 wait for the next run, and the next run offers them, since nothing was saved for them.
@@ -226,7 +227,9 @@ means the list is not counted as a campaign's applicants.
   (**Applicant review**, **Applicant status**, Screened once).
 - **Add `screened_earlier` to the launch** (step 4), for a review Sheet too: the entries the
   screened check kept off this run's list or part, each with its handle, network, applicant id,
-  recommendation, and `screenedAt`. The agent lists them on the page and never vets them.
+  recommendation, and `screenedAt`. The agent lists them on the page and never vets them. A list
+  run in batches passes them to the first batch only, as with the new calls (**Reading the review
+  Sheet**), so the section appears once.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in
