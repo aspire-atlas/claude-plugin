@@ -53,19 +53,15 @@ stays on one id even after Atlas starts holding the row's other account.
   campaign does not keep the row off the list.
 - **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
   **Rows to fix**.
-- **Already screened**: an undecided row, reopened or not, whose applicant is `screened` in this
-  review is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
-  Recommendation stands for the team to call in the Sheet. Such a row is not treated as reopened:
-  **Reopened rows** and **`sheet_calls`** leave it out, so it is not vetted, gets no
-  `sheet_calls` entry, and is not asked in F1. When it would otherwise be reopened, it is listed
-  in **Rows to fix** as "Team call cleared: the saved {call} stands until a call is set in the
-  Sheet".
+- **Already screened**: an undecided row that is not reopened, whose applicant is `screened` in
+  this review, is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
+  Recommendation stands for the team to call in the Sheet. A reopened row is vetted again even when
+  its applicant is screened: clearing the call is the team's ask to look again.
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
 calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet,
-Sheet calls on creators Atlas doesn't hold yet, cleared Team calls on applicants already screened
-(**Already screened**), and, in a run with nobody present, Sheet calls that conflict with Atlas
+Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that conflict with Atlas
 (below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
@@ -111,8 +107,8 @@ in an interactive run", and the run reports it.
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when its Team call
 carries a `sheetValue`: the team took back in the Sheet a call saved from there (as it stood or
 changed in F1), and no newer call on the applicant was saved since in this review. It is vetted
-like any undecided row, and the team's F1 answer on it replaces the old call. A row whose
-applicant is already `screened` in this review is never reopened (**Already screened**).
+like any undecided row, and the team's F1 answer on it replaces the old call. It is vetted even
+when its applicant is already `screened` in this review (**Already screened**).
 
 **Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
 wait for the next run, and the next run offers them, since nothing was saved for them.
@@ -228,6 +224,9 @@ means the list is not counted as a campaign's applicants.
   review**, **Applying the form rules**, step 1). "Not now", or an import that stops, leaves the
   list as it was. Either way, the check for applicants already screened runs again on that list
   (**Applicant review**, **Applicant status**, Screened once).
+- **Add `screened_earlier` to the launch** (step 4), for a review Sheet too: the entries the
+  screened check kept off this run's list or part, each with its handle, network, applicant id,
+  recommendation, and `screenedAt`. The agent lists them on the page and never vets them.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in

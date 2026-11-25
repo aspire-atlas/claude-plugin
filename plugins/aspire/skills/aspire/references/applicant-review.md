@@ -345,10 +345,25 @@ Every vetting run on a review writes them, under its own `runKey`:
 - **A scheduled run** writes them as **Applicant screening**, **Scheduled screening** says, which also
   claims each batch first.
 
-**Screened once.** An applicant whose status is `screened` is never screened again in its review:
-its recommendation stands, and the team's call goes in the Sheet's Team call or in F1. Every
+**Screened once.** An applicant whose status is `screened` is not screened again in its review
+unless the team asks: its recommendation stands, and the team's call goes in the Sheet's Team call
+or in F1. Two asks put it back on the list, and its new result is a newer `applicant_screening`
+record (records are only ever added):
+
+- **A cleared Team call.** A row the team cleared in the review Sheet is reopened (**Applicant
+  screening**, **Reopened rows**) and vetted again, screened or not.
+- **Changed criteria.** When the criteria or thresholds the review uses (its `-criteria` and
+  `-thresholds` records, or the records they point to) were saved after an applicant's
+  `screenedAt`, the check asks once, in its own `AskUserQuestion`: "{campaign}'s criteria changed
+  after {n} of these applicants were screened. Vet them again?", with "Keep their results
+  (Recommended)" (description: "They keep the recommendation from the old criteria") and "Vet
+  them again" (description: "Each gets a new recommendation under the current criteria"). It is
+  asked in the check's place in the run, before any later question.
+
+Every
 interactive run on a review checks as soon as it knows the review, before any later question, the
-storyline, or the page is built on its list (**Creator vetting**, **Main thread: the run**):
+storyline, or the page is built on its list (**Applicant screening**, **Reading the review Sheet**
+and **Before the launch**):
 
 - **A review Sheet**: as soon as **Applicant screening**, **Reading the review Sheet** finishes
   the list, before R2.
@@ -363,17 +378,24 @@ storyline, or the page is built on its list (**Creator vetting**, **Main thread:
 When a long list is split into runs (**Getting the list**, or R5's runs of 25), the parts are cut
 from the list as it was read, in file order, and keep their names and slugs ("{list name} (part
 {n} of {k})", `{slug}-part-{n}`), so a rerun after some parts were screened updates the same part
-pages. Each part loses its screened applicants, and a part left empty is not run. When that
+pages. Each part loses its screened applicants, and a part left empty is not run, so its page stays
+as last published, with those applicants' results. A part that is run lists the applicants it
+kept off in a short "Screened earlier" section on its page, each with the recommendation and date
+from `list_applicants`, passed in the launch as `screened_earlier` (**Applicant screening**,
+**Before the launch**),
+so the republished page still shows everyone in the part. When that
 changes the number of runs said earlier (in **Getting the list**, at R5, or after the check that
 follows the import), the run says the new count once, in the line before the launch:
-"{n} of the {k} runs still have applicants to vet".
+"{n} of the {k} runs still have applicants to vet". R5 counts its runs of 25 the same way: its
+split note appears when the list as read is over 25, with the count of runs that still have
+applicants to vet after the check.
 
 It reads the statuses with `list_applicants` (`asProfileId` the brand profile,
 `reviewId` the review's slug, `statuses` `["screened"]`, `limit` 1000, paged to the end) and keeps
 off the list every entry that matches a screened applicant: by `aspireApplicantId` when the entry
-has one, otherwise by its Instagram or TikTok handle, normalized per **Creator vetting**, **Getting
-the list**, against the record's `instagramHandle` or `tiktokHandle` (as **Applying the form
-rules**, step 1, matches). It says "{n} {campaign} applicants were already screened, so they keep
+has one, otherwise by its handle, normalized per **Creator vetting**, **Getting the list**, and
+only on the same network: an Instagram handle against the record's `instagramHandle`, a TikTok
+handle against its `tiktokHandle` (as **Applying the form rules**, step 1, matches). It says "{n} {campaign} applicants were already screened, so they keep
 their results". When that leaves no one to vet, it skips every question still to come, the
 storyline, the launch, and the page: for a review Sheet R2 to R5 (a Sheet with new calls still
 asks its Sheet-only F1), for a CSV or pasted handles R5 and the import. Without `list_applicants` in the
