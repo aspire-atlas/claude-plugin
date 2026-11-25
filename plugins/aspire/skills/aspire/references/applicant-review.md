@@ -393,9 +393,9 @@ so the republished page still shows everyone in the part. When that
 changes the number of runs said earlier (in **Getting the list**, at R5, or after the check that
 follows the import), the run says the new count once, in the line before the launch:
 "{n} of the {k} runs still have applicants to vet; part {p} has no one left, its results are
-in Atlas" (one "part {p}" clause naming every part left empty, or none when no part is). R5 counts its runs of 25 the same way: its
-split note appears when the list as read is over 25, with the count of runs that still have
-applicants to vet after the check.
+in Atlas" (for two or more, "parts {p1} and {p2} have no one left, their results are in Atlas").
+R5's split note (a list read over 25) counts its runs of 25 the same way, with that line when
+a part is left empty, else the plain run count.
 
 It reads the statuses with `list_applicants` (`asProfileId` the brand profile,
 `reviewId` the review's slug, `statuses` `["screened"]`, `limit` 1000, paged to the end) and keeps
@@ -404,9 +404,9 @@ applicants a "Vet them again" answer covers, which stay on it to be vetted again
 has one, otherwise by its handle, normalized per **Creator vetting**, **Getting the list**, and
 only on the same network: an Instagram handle against the record's `instagramHandle`, a TikTok
 handle against its `tiktokHandle` (as **Applying the form rules**, step 1, matches). It says "{n} {campaign} applicants were already screened, so they keep
-their results", counting only the applicants it kept off (no line when that is none). On a CSV run the check after
-the import counts only applicants the first pass did not keep off, so the line says each one
-once. When that leaves no one to vet, it skips every question still to come, the
+their results", counting only the applicants it kept off (no line when that is none). On a CSV run the first pass holds its line, said
+once after the import's check, counting each matched applicant record once across both passes
+(kept off by handle, then by id, is one); a first pass that leaves no one says it then. When that leaves no one to vet, it skips every question still to come, the
 storyline, the launch, and the page: for a review Sheet R2 to R5 (a Sheet with new calls still
 asks its Sheet-only F1), for a CSV or pasted handles R5 and the import. Without `list_applicants` in the
 session, it skips the check and says once that applicants already screened may be screened again.
