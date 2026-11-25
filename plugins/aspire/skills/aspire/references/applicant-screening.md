@@ -53,8 +53,8 @@ stays on one id even after Atlas starts holding the row's other account.
   campaign does not keep the row off the list.
 - **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
   **Rows to fix**.
-- **Already screened**: an undecided row that is not reopened, whose applicant is `screened` in
-  this review, is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
+- **Already screened**: an undecided row that is not reopened and not covered by a "Vet them
+  again" answer (changed criteria), whose applicant is `screened` in this review, is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
   Recommendation stands for the team to call in the Sheet. In an interactive run, a reopened row is
   vetted again even when its applicant is screened: clearing the call is the team's ask to look
   again. A scheduled run leaves it to the next interactive run (**Scheduled screening**, step 3).
@@ -128,7 +128,7 @@ option 3 saves none. In option 2 the user changes or drops one by its number ("r
 s3"); a dropped call is asked again on the next run. Each Note is the user's reason for its call,
 for F2 and F3.
 
-**When the list is empty** (every row decided in the Sheet or in Atlas, already screened, a duplicate, or skipped), after **Check what Atlas
+**When the list is empty** (every row decided in the Sheet or in Atlas, already screened and not covered by a "Vet them again" answer, a duplicate, or skipped), after **Check what Atlas
 holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
 Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
