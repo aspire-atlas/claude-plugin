@@ -65,8 +65,7 @@ is in **Quality review**, **3**.
   platform Atlas could not collect fails **4.11**, item 5, not R2.
 - **R10** is judged on a 1280×800 first screen. On a page or section for a VP or budget owner, or
   in a flow whose reference sets one screen, the answer, the decisions, and the next steps all
-  start above y=800 in the rendered order. On any other page, the answer starts above y=800, and
-  the page stays within its template's length budget when it is built from one. With a text-only
+  start above y=800 in the rendered order. On any other page, the answer starts above y=800. With a text-only
   read, judge by source order and say so in the coverage line. "Prepared by" applies only to a page for a VP or budget owner; on any other
   page its absence is not a FAIL. A page built from a template also fails R10 when it runs past
   its template's length budget (**Page standard**, `templates.md`, section 5), which the page
