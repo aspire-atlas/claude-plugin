@@ -285,9 +285,9 @@ What the **Creator vetting** section of SKILL.md does around the agent.
    Product on screen and for a free-text check), the built-in definition for Product on screen, or,
    for a free-text check, the definition the main thread words once from the user's words before the
    first launch: what to look for, what counts, what does not), `visual_check_refused` (the one-line
-   reason, when a check was refused), `sheet_calls` (**Reading the review Sheet**; else none), and
-   `recipient`. A list over 100 creators runs in batches of
-   100, and a run with a visual check in batches of 25, since each creator's frames take room in the
+   reason for a refused check), `sheet_calls` (**Reading the review Sheet**; else none), `screened_earlier`
+   (first batch only; else none), and `recipient`. A list over 100 creators runs in batches of
+   100, and a run with a visual check in batches of 25, since frames fill the
    agent's context; say how many and launch them one at a time, every batch with the same
    `visual_check`, and every batch after the first with the `fit_map` the first one returned
    (**How criteria become points**). A run on an applicant review passes the review's saved map,
