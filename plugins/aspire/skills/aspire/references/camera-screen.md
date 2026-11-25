@@ -154,8 +154,8 @@ Per handle: `{handle, network, score | null, speech, toCamera, explainer, analys
 totalAnalysed, weights, minPosts, maxPosts, scoredAt}`. `scoredAt` is the UTC time of the read.
 A handle Atlas holds no analysed video for is under the minimum like any other: it returns
 `analysedPosts` 0, every share and `score` `null`, and shows "Not enough analysed posts" with the
-note "No analysed videos in Atlas", never a 0%. It stays on the slate. Good: "@handle: no analysed
-videos in Atlas (0 of 0)". Bad: "@handle: speech 0%, to camera 0%, 0/100".
+note "No analysed videos in Atlas", never a 0%. It stays on the slate. Good: "@handle: Not enough
+analysed posts (no analysed videos in Atlas, 0 of 0)". Bad: "@handle: speech 0%, to camera 0%, 0/100".
 
 ## In a CAS campaign
 
@@ -176,6 +176,9 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
   `camera-screen-{entityId}-{writtenAt}`, the UTC time of the save, so a re-score is never
   dropped as a duplicate. The newest version still wins, so the read stays on the finding for the
   campaign page, `get_cas_selection` and the match score to read.
+- **A read with an unreadable share** (Atlas rejected one of the three projections) is returned
+  with its data gap and never saved, so a saved `score` of `null` always means under the
+  minimum. The creator keeps no read and is read again at the next row 4 run.
 - **Handles with no discovery finding** are returned in the result, never written. Good: "@handle
   has no discovery finding in this lane, so the read is returned and not saved." Bad: a new
   finding created just to hold the read.
