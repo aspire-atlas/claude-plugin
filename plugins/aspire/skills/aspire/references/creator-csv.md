@@ -3,8 +3,8 @@
 Whenever a flow returns a list of creators from a search (a discovery shortlist, a vetting run, the
 creators on a creator brief, a creator-ads lane, or a search the main thread ran) and the user asks
 for it as a CSV, the file is an Aspire member import in this format. It is the only CSV format for
-a list of creators; never invent other columns or reorder these. Files that are not a list of
-creators (the order sheet, the code sheet, the finance CSV, the CAS page's **Export**) keep their
+a list of creators; never invent other columns or reorder these (a review's applicants leave out
+the personal detail columns and add a `{Campaign} Vetting` column: **A review's applicants**). Files that are not a list of creators (the order sheet, the code sheet, the finance CSV, the CAS page's **Export**) keep their
 own formats.
 
 The main thread's part of this flow, moved from `SKILL.md` (only pointers changed). A bold section name
@@ -18,6 +18,7 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 - [Tags](#tags)
 - [File](#file)
 - [Hand-off](#hand-off)
+- [A review's applicants](#a-reviews-applicants)
 
 ## Creator CSV (a list of creators as an Aspire member import)
 
@@ -126,3 +127,101 @@ example "12 of 40 rows have no email; Atlas holds none for them. 8 rejected crea
 out." Say once that the file imports into Aspire as members, and offer to write it again with
 Aspire groups, projects, owners or more tags. Writing the file is not an Atlas write and needs no
 confirmation.
+
+## A review's applicants
+
+How the team takes a campaign's applicants, or any group of them, from an applicant review
+(**Applicant review**) into Aspire. Trigger when the user asks for it ("export the {campaign}
+review for Aspire", "a CSV of everyone Atlas approved", "every Team call of Approve", "export what
+we filtered in the Sheet"). The review Sheet's own .xlsx download is not an Aspire import: its
+columns are the team's working view, so this file is written from Atlas instead. It follows every
+rule above except where this section says otherwise: it leaves out the columns it never fills and
+adds a `{Campaign} Vetting` column.
+
+Interactive only, and never in an unattended run. Writing the file is not an Atlas write and needs
+no confirmation; a question below only picks the rows.
+
+**1. Pick the review and the group.** The review is the one the user named, matched against the
+profile's active `applicantreview:*-campaign` records as **Applicant review**, **Reading the setup
+back (screening)**, step 1, finds them; with more than one and none named, ask which by campaign
+name. When the user's words name the group, use it without asking; otherwise ask "Which {campaign}
+applicants should go in the Aspire file?" with 1) Decision: Approve (Recommended); 2) Decision:
+Approve and Maybe; 3) Every applicant. The tool's free text takes any other group below.
+
+| Group | Rows |
+|---|---|
+| Decision {calls} | Applicants whose **Decision** (step 3) is one of the calls named |
+| Atlas recommended {calls} | Applicants whose Atlas recommendation is one of them, whatever the team said |
+| Team call {calls} | Applicants whose Team call (step 3) is one of them |
+| Every applicant | Every applicant of the review, those with no Decision included |
+| A Sheet filter | The rows of the review Sheet that meet the conditions the user gives in words, on the Sheet's columns ("Status screened and Team call blank", "Fit score 80 and up"), read fresh and matched on Aspire applicant id. The connector can't see a filter someone set on screen, so "what I filtered" is asked back once: "Which columns and values did you filter on?" |
+
+A group may combine these ("Decision Approve, fit score 80 and up"). Repeat the group in words in
+the hand-off.
+
+**2. Read Atlas.** `list_applicants` with `asProfileId`, `reviewId` = the slug, no `statuses`,
+`limit` 1000, paged with `cursor` to the end: each applicant's id, handles, `formAnswers`,
+status, and recommendation. The review's Team calls per **Applicant screening**, **Team calls on a
+review**. For the brand safety tag, the review's `recommendation` findings
+(`search_insights` on the `creator-vetting-{profile}` prefix, as that section reads it, paged to the
+end, keeping the hits with `findingType` `recommendation` and `applicantReview` the slug, grouped by
+`aspireApplicantId`). When `-sheet` holds a link and the Claude Docs connector is in the session
+(load its guide first), read the Sheet's Aspire applicant id and Team call columns too, plus the
+columns a Sheet filter names. Never start discovery or lookups for the file.
+
+**3. Decision.** The Team call when the applicant has one, otherwise Atlas's recommendation when the
+status is `screened`, otherwise blank. The Team call is the Sheet's when its Team call cell reads as
+a call (**Applicant screening**, **Reading the review Sheet**, What each row becomes), so a call
+typed since the last run counts; otherwise the review's saved Team call, unless the row is
+reopened there. Count the Sheet calls Atlas doesn't hold yet for the hand-off.
+
+**4. Rows.** One per applicant in the group, ordered by Decision (Approve, Maybe, Reject, blank),
+then fit score, highest first, then applicant id. The columns, in this order:
+
+| Column | What goes in it |
+|---|---|
+| `email` | The applicant's email answer (**Applicant review**, **Importing applicants**, step 1's Email row); empty when there is none |
+| `First Name`, `Last Name` | The application's first and last name answers, or its name answer split as **Columns** splits a display name; with neither, as **Columns** says |
+| `Instagram`, `TikTok` | The record's `instagramHandle` and `tiktokHandle`, without the `@` |
+| `YouTube` | Empty |
+| `Pinterest`, `Groups`, `Projects`, `Owners` | As **Columns** says |
+| `Tags` | `Atlas`, the brand safety tag, then any tags the user asked for. No vetting tag: tags add up on a member across campaigns, so the call goes only in the campaign's own `{Campaign} Vetting` column. The brand safety tag comes from the applicant's `recommendation` findings of its newest vetting run (one per network): n counts their `safety` results that start with `Flag` or `Fail` and their `redLineHits`, and the short name is the first `riskFlags` entry, else the first category its `categories` result names (the word after `Flag:` or `Fail:`, as in `Flag: obscenity_profanity Medium on 1 post`), else the first flagged result's name, with underscores as spaces, a run-together name split into its words (`criteriaExclusion` is `Criteria Exclusion`), and in title case. n = 0 is `Brand Safe`; no such finding (not screened, or can't vet) is `Brand Safety: Not Checked` |
+| `{Campaign} Vetting` | The Decision (step 3): `Approve`, `Maybe`, `Reject`, or empty |
+
+The header row is exactly
+`email,First Name,Last Name,Instagram,YouTube,TikTok,Pinterest,Groups,Projects,Owners,Tags,{Campaign} Vetting`,
+with the campaign's name as the review saves it (`Spring Seeding Vetting`). `Birthday`, `phone`,
+the address columns, and `Comments` are left out, even when the application gave them: the file
+never fills them, and Aspire already holds the applicant's details. The `{Campaign} Vetting` column
+goes in a custom field on the member, so each campaign gets its own field and a later campaign's
+import never overwrites an earlier campaign's call. The campaign is otherwise named by the file,
+not a column. There is no applicant id column: Aspire makes a member's id from the email, and most
+applicant ids are made by Atlas at import, which Aspire would not know.
+
+**5. Write the file** with the **Review export snippet**, never by
+hand when Python is there: it checks every row, applies **File**'s quoting, formula guard, byte
+order mark and line ends, and splits the file into parts that each stay under Aspire's import
+limits of 5,000 rows and 2 MB. Name it `{Brand} {Campaign} Applicant Review.csv`, with the brand's
+and the campaign's names as the review saves them, any `/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, or
+`|` removed, and ` part {n}` before `.csv` when there is more than one part. When that name is
+taken, add ` 2`, ` 3` and so on. Save it where **File** says.
+
+**6. Hand-off.** Attach each file when the session can send files to the user, and give its full
+path and row count either way (several parts are imported one after another). Then the group in
+words with its count per Decision, and one line on what is empty or left out: rows with no email
+(an application always asks for one, but a row without it fails in Aspire's import), rows sharing an email (Aspire makes them one member), rows
+Aspire has nothing to match on (no email or handle), and any applicant the group named that Atlas
+doesn't hold. When the Sheet
+holds Team calls Atlas doesn't hold yet, say how many and offer to save them (**Applicant
+screening**, **Reading the review Sheet**, with its own confirmation). Offer to write it again for
+another group or with Aspire groups, projects, owners, or more tags.
+
+Then how to import it into Aspire, with the campaign's real name in place of `{Campaign}`:
+
+1. Create a custom contact field (first time for this campaign only): Go to **Contacts** →
+   **Settings** → **Create New Field**. Name it `{Campaign} Vetting`, exactly as the file's last
+   column. Choose **Single Select**, add `Approve`, `Maybe` and `Reject` as options, then **Save**.
+2. Go back to **Contacts** and select the upload button in the upper right corner.
+3. Check that each column is mapped to an **Import To** field, and that `{Campaign} Vetting` is
+   mapped to the field from step 1. If it isn't, pick it from the list.
+4. Select **Next** and finish the import.

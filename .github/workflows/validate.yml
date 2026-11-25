@@ -104,6 +104,9 @@ jobs:
       - name: The applicant CSV snippet gives every fixture its result
         run: bash scripts/check-applicant-csv.sh
 
+      - name: The review export snippet gives every fixture its result
+        run: bash scripts/check-review-export.sh
+
       - name: The skill layout check gives every fixture its result
         run: bash scripts/check-skill-layout.sh --fixtures
 

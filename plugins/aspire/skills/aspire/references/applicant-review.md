@@ -168,7 +168,8 @@ each vetting run, **Writing the review Sheet** fills in Recommendation, Fit scor
 question, and Status from Atlas. **Creator vetting** reads the Team call column back and saves new
 calls to Atlas through its feedback questions (**Reading the review Sheet**); Atlas stays the
 record, and no flow writes a call back to the Sheet. Vetting owns the five vetting columns; the
-team owns Team call and any column it adds.
+team owns Team call and any column it adds. The Sheet's .xlsx download is not an Aspire import: to take
+applicants into Aspire, **Creator CSV**, **A review's applicants**, writes the file from Atlas.
 
 1. **Create it** after the confirmation's option 1, through the Claude Docs connector as a Sheet
    (load the connector's guide first and follow it). Name it "{brand} · {campaign} applicant

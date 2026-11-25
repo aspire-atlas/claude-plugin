@@ -1,0 +1,3 @@
+{"First Name": "=HYPERLINK(\"http://x\")", "Instagram": "zoe", "Last Name": "Line one\r\nline two, with a comma and \"quotes\"", "Tags": ["Atlas", "Brand Safety: 2 Flags (Profanity, Alcohol)", "Vetting: Maybe", "Spring | Launch"], "Groups": ["Pets, US", "@Top"], "Decision": "Maybe"}
+{"First Name": "Zoë", "Last Name": "Müller-Ñúñez", "TikTok": "zoe.tt", "Owners": "+owner@example.com", "Tags": "Atlas|Brand Safe", "Decision": "Approve"}
+{"Owners": "   ", "Decision": "Reject"}
