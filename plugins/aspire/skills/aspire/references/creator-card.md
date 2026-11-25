@@ -739,7 +739,7 @@ ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with t
 | Meta recommends | One chip per ranking: High ad performance, Most ads experience, Similar brands. Leave the pair out when there are none |
 
 Chips inside a `<dd>` are `<span class="ac-badge ac-outline">` in a `<span class="ac-badges">`.
-A figure Atlas does not hold reads "Not in Atlas", never a guess. Never add a period to views or
+Talks to camera aside, a figure Atlas does not hold reads "Not in Atlas", never a guess. Never add a period to views or
 interactions ("30-day", "lifetime"): Atlas reports none. A TikTok card shows one line instead of the hook rate,
 "Hook rate is not available on TikTok.", and still shows Talks to camera, which the camera screen
 reads on every network. These labels are the only words the card shows; the

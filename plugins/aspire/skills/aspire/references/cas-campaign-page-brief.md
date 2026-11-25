@@ -76,7 +76,7 @@ the page keeps**, and where each comes from in **Loading the brief** below.
 - **A B-roll shot**: its number (B01, B02, …), what is filmed, and the beat it serves. A number is
   never reused in the round: removing B04 leaves B03 and B05, so a variant that names B05 still
   means the same shot.
-- **The variant plan** (agency only): V1 up to the program terms' variants per creator
+- **The variant plan** (read only for the client while `variantPlanToClient` is on): V1 up to the program terms' variants per creator
   (**Selected Creators**, **Variants per creator**), at most 5. A
   variant has its number, framework, length, hook number, CTA number, VO, the B-roll shot
   numbers it uses, and a note.
@@ -214,7 +214,7 @@ glance (**Sections per tab**). Open, it is the editor, in this order:
    "Edited since the check" when a page edit is newer than it. The variant plan's own check shows
    with the plan, for the agency only. The page doesn't check coverage
    itself; the next brief run does.
-10. **Variant plan**, agency only, under an "Agency only" rule (**The variant plan** below).
+10. **Variant plan**, under an "Agency only" rule, or read only for the client while `variantPlanToClient` is on (**The variant plan** below).
 11. **Comments**: a ghost Button, size sm, "{k} comments" that opens **Comments** narrowed to the
     concept, and the comment Button beside every part (**Comments and sign off** below).
 12. **Copy creator brief**, for everyone (**Comments and sign off**), then for the agency:
@@ -594,7 +594,7 @@ the comment (**1e**, **What the page keeps**) and opened by its hash (**Header a
 | A field in a concept: product, name, line, trigger, framework, personas or one persona, story, selling points or one, problem, agitate, solve, each beat, each hook, each CTA, body, length, runtime, the B-roll list or one shot | `brief-{lane}-r{round}` | `product`, `name`, `line`, `trigger`, `framework`, `personas`, `persona-{id}`, `story`, `points`, `point-{id}`, `problem`, `agitate`, `solve`, `beat-{n}`, `hook-{n}`, `cta-{n}`, `body`, `length`, `runtime`, `broll`, `broll-{n}` |
 | A variant in the variant plan, agency only | `brief-{lane}-r{round}` | `variant-{n}` |
 
-A comment on a variant is always agency only, since the variant plan is (**Who sees what**): its
+A comment on a variant is always agency only, even when the client sees the plan (**Who sees what**): its
 box has no choice and reads "Agency only".
 
 **Commenting on a part.** Beside every anchor's label sits a ghost icon Button, size sm, with the

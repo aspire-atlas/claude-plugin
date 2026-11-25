@@ -229,8 +229,8 @@ to that hash opens the card expanded and scrolls to it.
     whose record has nothing in it yet shows "Not recorded yet" under it.
   - **Details to add**: each missing detail as a row with its fix (below).
   - **Concept and variant plan**: the concept and persona Selects, the product, the brief's hooks,
-    CTAs and selling points for the concept, and, for the agency only, the variant plan with its
-    overrides (**Concept and variant plan** below); then the brief state, content state and
+    CTAs and selling points for the concept, and the variant plan (the client's read only while
+    `variantPlanToClient` is on; overrides the agency's) (**Concept and variant plan** below); then the brief state, content state and
     content folder.
   - **Shipping**: the three step timeline, the shipping record and its controls, as in
     **Shipping** below, for this creator.
@@ -497,7 +497,7 @@ handle a link to their card's block, so an Editor changing the brief's plan sees
 **What the client sees.** The concept and persona as labels, the product, and the brief's
 positioning line, hooks, CTAs and selling points, all of which they read in the brief already.
 While `variantPlanToClient` is on, the plan read only from `plans/{net}-{handle}-r{round}`:
-Variant, Framework, Length, Hook, CTA and Funnel job as labels, never a Live post, From, override
+Variant, Framework, Length, Hook, CTA and Funnel job (the concept's) as labels, never a Live post, From, override
 or "Broken"; off, none. **Variants this round** shows each cut's status only. Overrides and who
 set them live only in `agency` (**Who sees what**; **1e**, **Checking the roles**).
 
@@ -1036,12 +1036,11 @@ fit and keep the master in Drive or Frame.io.
 #### What the client sees
 
 The tiles, the filter, the creator tabs and their dots, and per variant the poster, "V{n}", the
-version, the stage, the status and the open comments. Not Hook + CTA or Framework: they are the
-creator's variant plan, which is agency only (**Concept and variant plan**, **What the client
-sees**), so those columns and the plan under an empty slot never render for the client or in
-**Preview as client**, and the client's export leaves them out. Showing them would need a client
-readable copy Claude writes at publish and a new **Who sees what** row, which this tab doesn't
-add.
+version, the stage, the status and the open comments. Not Hook + CTA or Framework: this tab
+keeps the creator's variant plan agency only, even while `variantPlanToClient` shows it on the
+card (**Concept and variant plan**, **What the client sees**), so those columns and the plan under
+an empty slot never render for the client or in **Preview as client**, and the client's export
+leaves them out.
 
 The client sees that a cut is With Aspire QA, but works on what was sent to them: their row shows
 the newest version sent, "Version 1 · Aspire is checking version 2", and a cut with no version

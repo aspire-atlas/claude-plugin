@@ -60,7 +60,7 @@ client's level before the link goes out.
 | The agency's score, its Budget vs target row, its levels over the whole pool, and the weights in use | no | yes | Stored at publish, `agency` | Creator Selection |
 | A creator's concept and persona for the round | yes, labels | yes, editable | The round's Master Brief, agency edits | Creator Selection, Selected Creators |
 | The concept's positioning line, hooks, CTAs and selling points on a creator's card | yes | yes, read only there (edited in the brief) | The round's Master Brief, read by reference | Selected Creators |
-| A creator's variant plan: each variant's framework, length, hook, CTA and funnel job | read only, while `variantPlanToClient` is on | yes, editable | The concept's plan, agency edits; the client's copy in `plans` | Selected Creators, Content Review and Ad Performance (read) |
+| A creator's variant plan: each variant's framework, length, hook, CTA and funnel job | read only on Selected Creators while `variantPlanToClient` is on; never on Content Review or Ad Performance | yes, editable | The concept's plan, agency edits; the client's copy in `plans` | Selected Creators, Content Review and Ad Performance (read) |
 | A creator's overrides, who set them, "Plan broken" | no | yes, editable | `agency` | Selected Creators |
 | Decision counts and the hook rate tile in **Summary** | yes | yes | Worked out on the page | Creator Selection |
 | Hook rate, engagement on Reels, paid work before, ad permissions | yes | yes | Vetting | Creator Selection |
