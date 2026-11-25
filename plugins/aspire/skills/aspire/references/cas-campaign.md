@@ -546,7 +546,7 @@ widgets use, so a field is renamed only here and in the same change on the serve
 
 | Record | Fields the agency only reads | A client caller gets |
 | ------ | ---------------------------- | -------------------- |
-| `brief` | `briefPage`, `content.variants` (each variant's framework, `funnelJob` and `length` included) while `variantPlanToClient` is off, `content.variantCheck`, `content.concept.claims[].source`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
+| `brief` | `briefPage`, `content.variants` (each variant's framework, `funnelJob` and `length` included) while `variantPlanToClient` is off (on, a client gets only each variant's `n`, framework, length, funnel job, hook and CTA, never VO, B-roll or note), `content.variantCheck`, `content.concept.claims[].source`, `agencyEdits`, `agencyFromResults`, `importedFrom`; and on a finding with no `content` (written before these fields), `edits` and `fromResults` too, since those could hold agency lines | Every other field |
 | `cut` | `verdictBy.writer` (a page account id) and `verdictBy.confirmed` (the agency's "Aspire to confirm") | Every other field, `verdictBy.name` and `verdictBy.at` included. A version in Aspire QA is a view, not a secret (**1d**, **Content Review**), so `latestVersion` reads as "Aspire is checking version {k}"; a cut with no version sent has no file to show |
 
 Every other record type (`round`, `gate`, `roster`, `draft`, `reply`, `brief-revision`, `hook`,

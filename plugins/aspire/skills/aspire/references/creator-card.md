@@ -726,7 +726,7 @@ ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with t
 | Label | Value |
 | ----- | ----- |
 | Hook rate | Rate, one decimal |
-| Talks to camera | "{score}/100 ({n} posts)"; "Not enough analysed posts ({n})" under the campaign's minimum; "—" when the camera screen hasn't read the creator |
+| Talks to camera | From `detail.adFigures.talksToCamera`, which `atlas-camera-screen` writes: "{score}/100 ({n} posts)"; "Not enough analysed posts ({n})" when its `score` is null (under the campaign's minimum, `minPosts` in `match.talksToCamera`, default 20); "—" with no read |
 | Reels interaction rate | Rate, one decimal |
 | Past paid partners | Up to five names, comma separated |
 | Partnership readiness | Ready, Partly, or Not yet |

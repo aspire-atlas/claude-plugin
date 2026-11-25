@@ -285,7 +285,7 @@ Tab in a list, and Enter on an empty list item work as in any editor, and each h
 #### The variant plan
 
 For the agency, at the end of each concept, under an "Agency only" rule when the campaign keeps the
-plan from the client (**Who sees what**): a Table of V1 to V{v}, {v} being the program terms' variants per creator
+plan from the client, and never in the page itself (**Who sees what**): a Table of V1 to V{v}, {v} being the program terms' variants per creator
 (**Selected Creators**, **Variants per creator**), at most 5. Columns: Variant, Framework (a Select of the campaign's frameworks; it starts on the
 framework for that slot), Length (required: an empty one shows a warning Badge "Needs a length"),
 Funnel job (a Select of Reach, Consideration and Conversion, what the variant is built to do and
@@ -304,7 +304,8 @@ creators following V{n} already have a cut made with {old}. Change the plan anyw
 
 **The client's copy.** While `variantPlanToClient` is on, the client sees the Table read only, from
 `plans/{lane}-r{round}` (**1e**): Variant, Framework, Length, Funnel job, Hook and CTA as labels,
-with no VO, B-roll, Note, Badge, check, override line or comment. Off, they see no plan.
+with no VO, B-roll, Note, Badge, check, override line or comment, and never from the page itself.
+Off, they see no plan.
 
 #### Frameworks
 
@@ -1708,7 +1709,7 @@ there is no Watch line.
      on Reels 4.1% · Engaged accounts 38K", or "Matches 3 of 4 keywords: {keyword} (bio),
      {keyword} (post), {keyword} (post)", each post a link.
   4. Talks to camera, with a read: "63/100 from 26 analysed video posts: speech 70%, to camera
-     60%, explainer 52%", plus "Weights 60 / 20 / 20" when not 45 / 35 / 20. Not a factor.
+     60%, explainer 52%", plus "Weights 60 / 20 / 20" when not the campaign's default (`match.talksToCamera`, else 45 / 35 / 20). Not a factor.
   5. The Watch line, then "Scored without" and the inputs left out.
   6. **About this data**, a Collapsible, closed at first.
 - **About this data** says in plain words where each input comes from (Meta's creator figures

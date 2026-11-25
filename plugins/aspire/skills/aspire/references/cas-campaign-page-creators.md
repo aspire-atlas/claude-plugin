@@ -499,7 +499,7 @@ positioning line, hooks, CTAs and selling points, all of which they read in the 
 While `variantPlanToClient` is on, the plan read only from `plans/{net}-{handle}-r{round}`:
 Variant, Framework, Length, Hook, CTA and Funnel job (the concept's) as labels, never a Live post, From, override
 or "Broken"; off, none. **Variants this round** shows each cut's status only. Overrides and who
-set them live only in `agency` (**Who sees what**; **1e**, **Checking the roles**).
+set them live only in `agency`, and the plan is never in the page itself (**Who sees what**; **1e**, **Checking the roles**).
 
 **Reading a creator's variant.** Content Review and Ad Performance name a variant's framework, hook
 and CTA by reading them through this block's rule, never from a copy, so all three tabs agree:
