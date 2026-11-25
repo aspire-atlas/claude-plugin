@@ -312,7 +312,8 @@ words ("page check: 9 pass, 2 fixed, 1 n/a").
 - `stillFailing`: one entry per `fail`, as "R5 Clear next steps: {why it could not be fixed}".
   Every `n/a` has its reason here too, as "R2 n/a: {reason}".
 - `gaps`: on a page shared outside the team, what Atlas could not read, for the main thread to
-  tell the requester. Empty on a team page, whose gaps are on the page.
+  tell the requester; on any page a scheduled run published with a failing check, each such check
+  (section 4, step 5). Otherwise empty on a team page, whose gaps are on the page.
 - `comparisons`: every comparison on the page, as the script's R15 line lists them (`comparisons.md`); written by hand in the same shape when the script did not run; `[]` when the page compares nothing. `explanations`: as the script's R7 line lists them (`explanations.md`, section 5); `[]` when the page explains nothing. `scripted`: `ran`, `read` (no Python, or a page drawn in script), or `unmarked`. `englishRead`: as `english-read.md` sets it. `uxReview`: as `ux-review.md` sets it.
 
 ## 8. Required metrics, by kind of question
