@@ -53,12 +53,17 @@ stays on one id even after Atlas starts holding the row's other account.
   campaign does not keep the row off the list.
 - **Anything else** ("Yes", "?"): undecided too, read like a blank, and the value is listed in
   **Rows to fix**.
+- **Already screened**: an undecided row that is not reopened and not covered by a "Vet them
+  again" answer (changed criteria), whose applicant is `screened` in this review, is not vetted again (**Applicant review**, **Applicant status**, Screened once): its
+  Recommendation stands for the team to call in the Sheet. In an interactive run, a reopened row is
+  vetted again even when its applicant is screened: clearing the call is the team's ask to look
+  again. A scheduled run leaves it to the next interactive run (**Scheduled screening**, step 3).
 - **No applicant id or no handle**: skipped, and listed in **Rows to fix**.
 
 **Rows to fix** is one list, given in chat and on the page under What's missing: unreadable Team
 calls (read like a blank), skipped rows, duplicate rows left to decide in the Sheet,
-Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that
-conflict with Atlas (below).
+Sheet calls on creators Atlas doesn't hold yet, and, in a run with nobody present, Sheet calls that conflict with Atlas
+(below).
 
 **Duplicate rows.** Counted after the skipped rows are set aside. Rows that repeat one applicant id
 with the same Team call (as read under **What each row becomes**) count as one row; with different
@@ -103,7 +108,8 @@ in an interactive run", and the run reports it.
 **Reopened rows.** An undecided row (blank or unreadable) is **reopened** only when its Team call
 carries a `sheetValue`: the team took back in the Sheet a call saved from there (as it stood or
 changed in F1), and no newer call on the applicant was saved since in this review. It is vetted
-like any undecided row, and the team's F1 answer on it replaces the old call.
+like any undecided row, and the team's F1 answer on it replaces the old call. An interactive run vets
+it even when its applicant is already `screened` in this review (**Already screened**).
 
 **Offered this run.** At most 50 new Sheet calls, in applicant id order; F1 says how many more
 wait for the next run, and the next run offers them, since nothing was saved for them.
@@ -122,7 +128,7 @@ option 3 saves none. In option 2 the user changes or drops one by its number ("r
 s3"); a dropped call is asked again on the next run. Each Note is the user's reason for its call,
 for F2 and F3.
 
-**When the list is empty** (every row decided in the Sheet or in Atlas, a duplicate, or skipped), after **Check what Atlas
+**When the list is empty** (every row decided in the Sheet or in Atlas, already screened and not covered by a "Vet them again" answer, a duplicate, or skipped), after **Check what Atlas
 holds** (**Main thread: the run**, step 2), skip R2 to R5, the launch, and the page. With no new
 Sheet calls, say so in one line with **Rows to fix** under it, and stop. Otherwise ask a Sheet-only F1: "Save the {k}
 new calls from the review Sheet to {brand}'s Atlas?" with 1) Save them (Recommended); 2) Change
@@ -207,7 +213,9 @@ means the list is not counted as a campaign's applicants.
   scheduled run's claim less than 12 hours old (**Scheduled screening**, step 3), saying in one
   line "{n} applicants are being screened by the schedule right now". The schedule finishes them.
   This run writes no claims, so a scheduled run that starts while it is open can screen an
-  applicant it is screening too; the newer result then decides the applicant's status.
+  applicant it is screening too; the newer result then decides the applicant's status. For a CSV
+  or pasted handles, the list then loses every applicant already screened in the review, before
+  R5 (**Applicant review**, **Applicant status**, Screened once).
 - **Import the applicant export (step 3d)** when R2 named an applicant review and the list came
   from a CSV: per **Applicant review**, **Importing applicants**, with its own found-and-missing
   report and confirmation, before the launch. From then on the run's list is this file's
@@ -215,7 +223,13 @@ means the list is not counted as a campaign's applicants.
   review's other applicants, so the handles R3 approved are the ones looked up. Each list entry
   carries its `aspireApplicantId`, so the agent finds the applicant's answers (**Applicant
   review**, **Applying the form rules**, step 1). "Not now", or an import that stops, leaves the
-  list as it was.
+  list as it was. Either way, the check for applicants already screened runs again on that list
+  (**Applicant review**, **Applicant status**, Screened once).
+- **Add `screened_earlier` to the launch** (step 4), for a review Sheet too: the entries the
+  screened check kept off this run's list or part, each with its handle, network, applicant id,
+  recommendation, and `screenedAt`. The agent lists them on the page and never vets them. A list
+  run in batches passes them to the first batch only, as with the new calls (**Reading the review
+  Sheet**), so the section appears once.
 
 How the run changes for a review (criteria, thresholds, hard stops, red lines, language on camera,
 form rules, visual checks, the page, and what each finding records) is set out once, in

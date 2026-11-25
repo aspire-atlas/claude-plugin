@@ -229,8 +229,8 @@ to that hash opens the card expanded and scrolls to it.
     whose record has nothing in it yet shows "Not recorded yet" under it.
   - **Details to add**: each missing detail as a row with its fix (below).
   - **Concept and variant plan**: the concept and persona Selects, the product, the brief's hooks,
-    CTAs and selling points for the concept, and, for the agency only, the variant plan with its
-    overrides (**Concept and variant plan** below); then the brief state, content state and
+    CTAs and selling points for the concept, and the variant plan (the client's read only while
+    `variantPlanToClient` is on; overrides the agency's) (**Concept and variant plan** below); then the brief state, content state and
     content folder.
   - **Shipping**: the three step timeline, the shipping record and its controls, as in
     **Shipping** below, for this creator.
@@ -421,7 +421,7 @@ has removed doesn't show here; a part still blank in the brief shows as its brac
 creator with no live concept shows the agency the warning Badge "Needs a concept"; the client sees
 no part of the brief for them.
 
-**The variant plan, agency only.** Under a dashed rule headed "Agency only", a Table of V1 to
+**The variant plan.** For the agency, under a dashed rule headed "Agency only", a Table of V1 to
 V{v}, {v} being the program terms' variants per creator (**Variants per creator**), at most 5.
 Columns: Variant, Framework, Length, Hook, CTA, Live post, and From. On a phone it is a stack of Cards, one
 per variant, with the same fields (**Responsive**, **Tables**).
@@ -496,10 +496,10 @@ handle a link to their card's block, so an Editor changing the brief's plan sees
 
 **What the client sees.** The concept and persona as labels, the product, and the brief's
 positioning line, hooks, CTAs and selling points, all of which they read in the brief already.
-Not the variant plan: no framework, length, hook or CTA per variant, no override, and no "Broken"
-Badge. Their **Variants this round** shows V1 to V{v} with each cut's status only. The plan and
-the overrides live only in `agency`, so neither the page itself nor any client readable document
-holds them (**Who sees what**; **1e**, **Checking the roles**).
+While `variantPlanToClient` is on, the plan read only from `plans/{net}-{handle}-r{round}`:
+Variant, Framework, Length, Hook, CTA and Funnel job (the concept's) as labels, never a Live post, From, override
+or "Broken"; off, none. **Variants this round** shows each cut's status only. Overrides and who
+set them live only in `agency`, and the plan is never in the page itself (**Who sees what**; **1e**, **Checking the roles**).
 
 **Reading a creator's variant.** Content Review and Ad Performance name a variant's framework, hook
 and CTA by reading them through this block's rule, never from a copy, so all three tabs agree:
@@ -1036,12 +1036,11 @@ fit and keep the master in Drive or Frame.io.
 #### What the client sees
 
 The tiles, the filter, the creator tabs and their dots, and per variant the poster, "V{n}", the
-version, the stage, the status and the open comments. Not Hook + CTA or Framework: they are the
-creator's variant plan, which is agency only (**Concept and variant plan**, **What the client
-sees**), so those columns and the plan under an empty slot never render for the client or in
-**Preview as client**, and the client's export leaves them out. Showing them would need a client
-readable copy Claude writes at publish and a new **Who sees what** row, which this tab doesn't
-add.
+version, the stage, the status and the open comments. Not Hook + CTA or Framework: this tab
+keeps the creator's variant plan agency only, even while `variantPlanToClient` shows it on the
+card (**Concept and variant plan**, **What the client sees**), so those columns and the plan under
+an empty slot never render for the client or in **Preview as client**, and the client's export
+leaves them out.
 
 The client sees that a cut is With Aspire QA, but works on what was sent to them: their row shows
 the newest version sent, "Version 1 · Aspire is checking version 2", and a cut with no version

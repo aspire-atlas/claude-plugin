@@ -726,6 +726,7 @@ ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with t
 | Label | Value |
 | ----- | ----- |
 | Hook rate | Rate, one decimal |
+| Talks to camera | From `detail.adFigures.talksToCamera`, which `atlas-camera-screen` writes: "{score}/100 ({n} posts)"; "Not enough analysed posts ({n})" when its `score` is null (under the campaign's minimum, `minPosts` in `match.talksToCamera`, default 20); "—" with no read |
 | Reels interaction rate | Rate, one decimal |
 | Past paid partners | Up to five names, comma separated |
 | Partnership readiness | Ready, Partly, or Not yet |
@@ -738,9 +739,10 @@ ad figures in `{DETAILS}`, one `<dt>`/`<dd>` pair each, in this order and with t
 | Meta recommends | One chip per ranking: High ad performance, Most ads experience, Similar brands. Leave the pair out when there are none |
 
 Chips inside a `<dd>` are `<span class="ac-badge ac-outline">` in a `<span class="ac-badges">`.
-A figure Atlas does not hold reads "Not in Atlas", never a guess. Never add a period to views or
-interactions ("30-day", "lifetime"): Atlas reports none. A TikTok card shows one line instead,
-"Hook rate is not available on TikTok." These labels are the only words the card shows; the
+Talks to camera aside, a figure Atlas does not hold reads "Not in Atlas", never a guess. Never add a period to views or
+interactions ("30-day", "lifetime"): Atlas reports none. A TikTok card shows one line instead of the hook rate,
+"Hook rate is not available on TikTok.", and still shows Talks to camera, which the camera screen
+reads on every network. These labels are the only words the card shows; the
 field names stay in the references.
 
 ## Icons
