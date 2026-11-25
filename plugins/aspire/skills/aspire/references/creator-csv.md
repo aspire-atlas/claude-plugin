@@ -225,3 +225,15 @@ Then how to import it into Aspire, with the campaign's real name in place of `{C
 3. Check that each column is mapped to an **Import To** field, and that `{Campaign} Vetting` is
    mapped to the field from step 1. If it isn't, pick it from the list.
 4. Select **Next** and finish the import.
+
+Then, under the heading **After you upload the file**, how to apply the calls to the campaign's
+applicants in Aspire:
+
+1. Go to **Campaign** and select {Campaign}.
+2. Under **Applicants**, select **Applied**.
+3. Select **Add Filter**, choose **All Data** in the drop-down, and search for the
+   `{Campaign} Vetting` field.
+4. Choose the operator **is**, type `Approve`, and select **Add**.
+5. Select all the applicants shown and select **Approve**.
+6. Change the filter to **is** `Maybe`, select those applicants, and select **Maybe**.
+7. Change the filter to **is** `Reject`, select those applicants, and select **Reject**.
