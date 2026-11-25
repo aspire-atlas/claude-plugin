@@ -66,7 +66,7 @@ empty; never fill one from a guess, a web search, or another connector.
 
 | Column | What goes in it |
 |---|---|
-| `email` | The contact email Atlas holds for the creator (`instagram.email`, or `contact.email` on a program roster row). Empty when none is held |
+| `email` | The contact email Atlas holds for the creator (`instagram.email`, or `contact.email` on a program roster row). Empty when none is held, though Aspire's import fails a row with no email |
 | `First Name`, `Last Name` | From the creator's display name, the same name the creator card's subtitle uses (`instagram.name`, `tiktok.displayName`, `youtube.displayName`, the part before `\|`, `•` or `·`). Two or more words: the first word is the first name and the rest the last name. One word: first name only. No name, or a name that is only the handle or a brand: both empty. Never split a handle into a name |
 | `Instagram`, `TikTok` | The handle on that network, without the `@`. Empty when the creator has no channel there |
 | `YouTube` | The channel's link: `https://www.youtube.com/{custom URL}` when the YouTube custom URL Atlas holds starts with `@`, else `https://www.youtube.com/channel/{channel id}`. Empty when the creator has no YouTube channel in Atlas |
@@ -123,8 +123,8 @@ Remove any `|` or `,` from a tag's text so it stays one tag. Example:
 ## Hand-off
 
 Give the file path and the row count, then one line on what is empty or left out and why, for
-example "12 of 40 rows have no email; Atlas holds none for them. 8 rejected creators are left
-out." Say once that the file imports into Aspire as members, and offer to write it again with
+example "12 of 40 rows have no email, so Aspire's import will fail them; Atlas holds none for
+them. 8 rejected creators are left out." Say once that the file imports into Aspire as members, and offer to write it again with
 Aspire groups, projects, owners or more tags. Writing the file is not an Atlas write and needs no
 confirmation.
 
@@ -185,7 +185,7 @@ then fit score, highest first, then applicant id. The columns, in this order:
 | `Instagram`, `TikTok` | The record's `instagramHandle` and `tiktokHandle`, without the `@` |
 | `YouTube` | Empty |
 | `Pinterest`, `Groups`, `Projects`, `Owners` | As **Columns** says |
-| `Tags` | `Atlas`, the brand safety tag, then any tags the user asked for. No vetting tag: tags add up on a member across campaigns, so the call goes only in the campaign's own `{Campaign} Vetting` column. The brand safety tag comes from the applicant's `recommendation` findings of its newest vetting run (one per network): n counts their `safety` results that start with `Flag` or `Fail` (the competitor check among them) and their `redLineHits`, plus 1 for a call its `rule` made on a saved competitor's own handle (short name `Competitor`), and the short name is the first `riskFlags` entry, else the first category its `categories` result names (the word after `Flag:` or `Fail:`, as in `Flag: obscenity_profanity Medium on 1 post`), else the first flagged result's name, with underscores as spaces, a run-together name split into its words (`criteriaExclusion` is `Criteria Exclusion`), and in title case. n = 0 is `Brand Safe`, since a recommendation other than Can't vet means 5 or more posts were read (**Creator vetting**, **The recommendation**), past the 3 analyzed posts **Tags** asks for; a Can't vet finding or none (not screened) is `Brand Safety: Not Checked` |
+| `Tags` | `Atlas`, the brand safety tag, then any tags the user asked for. No vetting tag: tags add up on a member across campaigns, so the call goes only in the campaign's own `{Campaign} Vetting` column. The brand safety tag comes from the applicant's `recommendation` findings of its newest vetting run (one per network): n counts their `safety` results that start with `Flag` or `Fail` (the competitor check among them) and their `redLineHits`, plus 1 when its `rule` rejected a saved competitor's own handle and no competitor result already counts. The short name is `Competitor` for that added 1, else the first `riskFlags` entry, else the first category its `categories` result names (the word after `Flag:` or `Fail:`, as in `Flag: obscenity_profanity Medium on 1 post`), else the first flagged result's name, with underscores as spaces, a run-together name split into its words (`criteriaExclusion` is `Criteria Exclusion`), and in title case. n = 0 is `Brand Safe` only when the finding's `categories` result starts with `Pass`, which needs 3 or more analyzed posts, as **Tags** asks; with fewer the category screen is Can't check (**Creator vetting**, **2. Brand safety**), so n = 0 with that, a missing `categories` result (a call made before the checks ran), a Can't vet finding, or no finding at all (not screened) is `Brand Safety: Not Checked` |
 | `{Campaign} Vetting` | The Decision (step 3): `Approve`, `Maybe`, `Reject`, or empty |
 
 The header row is exactly
@@ -203,8 +203,9 @@ hand when Python is there: it checks every row, applies **File**'s quoting, form
 order mark and line ends, and splits the file into parts that each stay under Aspire's import
 limits of 5,000 rows and 2 MB. Name it `{Brand} {Campaign} Applicant Review.csv`, with the brand's
 and the campaign's names as the review saves them, any `/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, or
-`|` removed, and ` part {n}` before `.csv` when there is more than one part. When that name is
-taken, add ` 2`, ` 3` and so on. Save it where **File** says.
+`|` removed, and ` part {n}` before `.csv` when there is more than one part. When that name, or
+any part's, is taken, pick one base name free for every part by adding ` 2`, ` 3` and so on
+before ` part {n}` (`… Applicant Review 2 part 1.csv`). Save it where **File** says.
 
 **6. Hand-off.** Attach each file when the session can send files to the user, and give its full
 path and row count either way (several parts are imported one after another). Then the group in

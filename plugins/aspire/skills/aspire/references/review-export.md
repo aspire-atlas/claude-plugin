@@ -40,7 +40,8 @@ Then:
    exits 1 has written no rows: remove that file and fix the error first.
 4. `rm -rf "{folder}"`, after the last part and whenever the export stops early.
 
-With no Python, say so and write the file by hand per **Creator CSV**, **File**, splitting it
+With no Python, say so and write the file by hand in **Creator CSV**, **File**'s format, named
+as **A review's applicants**, step 5 says, splitting it
 yourself at 4,998 rows.
 
 ## The rows
@@ -56,8 +57,9 @@ whatever `vetting-column.txt` names the column.
 
 The snippet never trusts a value to be safe: it turns line breaks into spaces, trims each cell, and
 puts a `'` in front of a cell that starts with `=`, `+`, `-`, `@`, or a tab, so no spreadsheet runs
-it as a formula. The header row is the plugin's own text and is left as it is, so the
-`{Campaign} Vetting` header always matches the Aspire field named after it.
+it as a formula. The header row is left as it is, so the `{Campaign} Vetting` header always
+matches the Aspire field named after it; a `vetting-column.txt` that starts with one of those
+characters is an error instead: say so and stop, since no safe header could match that field.
 
 ## What it prints
 
@@ -67,7 +69,8 @@ cells that got a `'`, `no_email` counts rows with no email, `shared_email` lists
 than one row (Aspire makes those rows one member; a row with no email fails in Aspire's import).
 Errors
 name the file and line: a line that is not a JSON object, an unknown column, a value that is not
-text, a `Decision` outside the four, or a row over the size limit by itself.
+text, a `Decision` outside the four, or a row over the size limit by itself; and a
+`vetting-column.txt` that is empty, names another column, or starts with a formula character.
 
 `part {n}` prints that part's bytes: a UTF-8 byte order mark, the header row, and its rows, quoted
 per RFC 4180 with CRLF line ends. Every part has the header, and rows are never split between parts.
@@ -118,6 +121,8 @@ def decision_header():
         name = re.sub(r"\s+", " ", f.read()).strip()
     if not name:
         fail("vetting-column.txt is empty")
+    if name[0] in "=+-@\t":
+        fail(f"vetting-column.txt names {name!r}, which a spreadsheet would read as a formula")
     if name in COLUMNS[:-1]:
         fail(f"vetting-column.txt names {name!r}, which is already a column")
     return name
