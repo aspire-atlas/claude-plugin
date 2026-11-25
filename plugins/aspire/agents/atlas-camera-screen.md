@@ -69,7 +69,9 @@ Read these before starting:
    storyline" asks for, each with the size of its evidence (posts, creators, views). Return them in
    the result packet's `questions` as one picker, "Build (Recommended)", "Change", and "Widen", and
    build nothing in that pass. A relaunch that carries the approved storyline builds it; a repeat run
-   of the same page skips this step. An unattended run asks nothing and states the storyline at the
+   of the same page skips this step. If a freshness refresh approved with the storyline changes a
+   bullet (another top creator, another share gap, a creator crossing the minimum), return the
+   changed bullets for confirmation again and build nothing until they are approved. An unattended run asks nothing and states the storyline at the
    top of the page and in the delivery message.
 7. **Build and publish** through the page-standard build loop
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4): draft from the blocks, run the

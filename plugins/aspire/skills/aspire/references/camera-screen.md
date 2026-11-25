@@ -69,7 +69,9 @@ metrics to a row, never drop one.
    campaign is named; otherwise the defaults.
 2. The creators: the pasted handles, or, for a campaign, `search_insights` with `prefix` on
    `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}`, newest first, paged; the
-   newest record per `entityId` wins (**Creator discovery**, **State written to Atlas**).
+   newest record per `entityId` wins (**Creator discovery**, **State written to Atlas**). Then
+   keep only the creators whose newest record is an `action_item` (undecided): one accepted or
+   rejected since an older undecided record drops out.
    **Which handle.** A finding holds the network's account id, not the handle: take the handle
    from the profile URL in the finding's `detail.evidence`, else `search_creators` filtered on
    `externalId` = the finding's `entityId` with `fields: ["username"]`. With neither, return the
@@ -112,7 +114,9 @@ Classify each post. A label matches when, lowercased, it contains any word on it
 | Explainer | Any of the post's tones | informative, helpful, conversational, educational, explanatory, instructional | Nothing |
 
 A field that comes back as one string is one label; a list is several. A post with no label for a
-share counts as not matching it. Each share is the number of posts that match over the posts read,
+share counts as not matching it only when that field was read. When Atlas rejects one of the
+three projections, that share is unavailable (`null`, with the data gap named), never 0%, and the
+creator gets no score until all three shares can be read. Each share is the number of posts that match over the posts read,
 as a whole percentage (half rounds up). All three shares are exact: each counts every video
 read, and none is estimated. Good: "spoken voiceover" counts as speech. Bad: an audio label of
 "text overlay with music" counted as speech. A post can count toward more
@@ -148,8 +152,9 @@ the next read.
 
 Per handle: `{handle, network, score | null, speech, toCamera, explainer, analysedPosts,
 totalAnalysed, weights, minPosts, maxPosts, scoredAt}`. `scoredAt` is the UTC time of the read.
-A handle Atlas holds no analysed video for returns `analysedPosts` 0, every share and `score`
-`null`, and the note "No analysed videos in Atlas", never a 0%. Good: "@handle: no analysed
+A handle Atlas holds no analysed video for is under the minimum like any other: it returns
+`analysedPosts` 0, every share and `score` `null`, and shows "Not enough analysed posts" with the
+note "No analysed videos in Atlas", never a 0%. It stays on the slate. Good: "@handle: no analysed
 videos in Atlas (0 of 0)". Bad: "@handle: speech 0%, to camera 0%, 0/100".
 
 ## In a CAS campaign
@@ -200,14 +205,19 @@ Title "Talks to camera: {slate or campaign}". In the page standard's skeleton or
 4. **The slate**: one row per creator with talks to camera /100, the speech, to-camera and
    explainer shares, and "newest {n} of {total} analysed videos". A creator under the minimum
    shows "Not enough analysed posts" in place of the score, keeps the shares and the count, and
-   stays on the list. When the weights differ from 45 / 35 / 20, the table says "Weights for this
-   campaign: x / y / z" beside the score.
+   stays on the list; with no analysed video it also says "No analysed videos in Atlas". When the
+   weights differ from 45 / 35 / 20, the table says "Weights for this campaign: x / y / z" beside
+   the score. On the Shortlist template each creator's `verdict` groups the slate and decides
+   nothing (vetting makes the call): `yes` ("Talks to camera") at 60 or more, `maybe` at 40 to
+   59, `no` under 40, and `maybe` for a creator with no score, whose `settle` is how many more
+   analysed videos it needs, or the share Atlas could not read. A scored `maybe`'s `settle` is
+   "watch two of their newest videos for delivery to camera".
 5. **Next steps**, ranked: send the top creators on to vetting, and for each creator under the
    minimum, how many more analysed videos it needs to be scored.
 6. **How it was worked out**: each share is the share of the videos read whose labels match its
    word list, so all three are exact and a video can count toward more than one; the score's
    weights and the minimum.
-7. **What is missing**: handles Atlas does not hold, and handles with no analysed video.
+7. **What is missing**: handles Atlas does not hold, and any analysis field Atlas could not read.
 
 ## Saved answers
 
