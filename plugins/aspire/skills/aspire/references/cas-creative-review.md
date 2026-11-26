@@ -240,9 +240,10 @@ confirms them per **The storyline**.
 
 ## The page
 
-Both modes are a Plan kind of page (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, section 6), drafted by hand from
-the blocks rather than filled from the template's page data, which holds no tables or frame stills.
-The page grows with the cuts, the pairs and the fixes, in the page standard's skeleton order.
+Both modes are a Plan kind of page (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`,
+section 6), drafted by hand from the blocks rather than filled from the template's page data, which
+holds no tables or frame stills. The page grows with the cuts, the pairs and the fixes, in the page
+standard's skeleton order.
 Titles: "Creative baseline: {campaign}, wave {n}" and
 "Draft feedback: @{handle} V{v}, version {k}".
 
