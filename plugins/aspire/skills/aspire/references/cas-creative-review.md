@@ -149,8 +149,11 @@ Every claim about a cut rests on frames the agent has viewed itself, from the cu
   frames**, adding 0.5, 1, 1.5, 2, 2.5 and 3 seconds for the hook and frames 0.5 seconds either side
   of every finding to fix its second. A cut gets at most 30 frames in all, the hook and finding
   frames included, and a second taken twice counts once: the base sample stops at 20, leaving room
-  for the rest. View each frame scaled to 720 pixels
-  tall. Text placement is measured on the full-size frame (**CAS paid**, **Text placement and safe
+  for the rest. When the rest won't fit, the hook frames come first, then the finding frames by
+  severity (must-fix, then should-fix, then consider) and, within one severity, earliest first. A
+  finding left without its extra frames keeps the second of the frame it was seen on, and the page
+  marks that second "about" and names those findings under what is missing. View each frame scaled
+  to 720 pixels tall. Text placement is measured on the full-size frame (**CAS paid**, **Text placement and safe
   zones**): extract it at full size only at the seconds where scaled frames show text near the
   face, the product or a screen zone. Record each cut's duration, size and frame rate. With no
   extractor, every visual check is "Can't check (no frame extractor)" and the page says which tool
