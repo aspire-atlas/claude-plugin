@@ -295,7 +295,8 @@ a difference map, for each pair that will run side by side, of what really diffe
 test, and the one figure that will answer it (a hook swap is answered by ad hook rate, 15 seconds
 against 45 by hold rate and cost per result); the pairs that differ in nothing that matters, which
 split spend and teach nothing; the tests the brief intended that no variant covers; and the ad names.
-The diagnosis starts from this baseline, so it is kept on its page as tables that can be read back.
+The diagnosis starts from this baseline, so it is kept on its page as tables that can be read back,
+and as the campaign's `baseline` finding (**CAS campaign**, **Working state (findings)**).
 
 ## Text placement and safe zones
 

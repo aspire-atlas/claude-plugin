@@ -343,6 +343,7 @@ for a lens**); a page that cannot rank by it says in one line which metric it us
 | Camera screen | I13 | None | Per creator: the talks to camera score out of 100 beside its speech, to-camera and explainer shares and the number of analysed video posts; under the minimum analysed posts, "not enough analysed posts" and no score | `search_posts` per handle, filtered to `author.username`, `analysis.analyzedAt` present and `mediaKind` video, `limit` 0, with `terms` aggregations on `analysis.productionAnalysis.audioStyle`, `analysis.productionAnalysis.cameraTechniques` and `analysis.emotionalAnalysis.tone`; `totalHits` is the analysed post count |
 | Creative packet | P8 | None | None: a packet is a document for the client and the creators, not a readout | Nothing |
 | Campaign start | P9 | None | Set with the campaign intake and kickoff flow | Set with the campaign intake and kickoff flow |
+| Creative review before spend | P10, P11 | None | Per variant: hook, product and claim seconds, CTA, edit treatments; every fix with its timestamp; no paid result | `get_cas_campaign`; `search_creators` with `instagram.reelsHookRate` |
 <!-- /required-metrics -->
 
 Take field paths from `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md`, and call a

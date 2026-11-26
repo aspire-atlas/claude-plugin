@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder. CAS1 to CAS4 are the paid side of a creator ad campaign: the creative baseline, the weekly paid review, the wave diagnosis and the wave readout. Their approved pages are reference outputs from a live account with customer names removed, linked from local.json like every other. P7, P8 and I13 are client cases written before their agents exist, from reference outputs of a live creator ad campaign with customer names removed: the pitch deck, the creative packet and the camera screen. Each assertion names the ticket whose agent makes it pass.",
+  "source": "The five approved examples in the plugin update doc, section \"Examples to follow\" (2026-11-05), O2, the Creator Trends page its reviewer edited for ASP-5813, and P1, the creator ad cut-downs page its reviewer edited for ASP-5812, with question codes from the examples library. Brand names, organizations and page links are customer details: they live in scripts/eval/local.json, never here. CR1 and AR1 are client cases: questions whose first reviewed page drew a wrong conclusion, each with assertions that name the behaviour that was wrong and the ticket that fixes it (docs/STANDARD.md, \"Adding a client example\"). Their examples keep the figures and replace every brand, competitor and handle with a placeholder. CAS1 to CAS5 are the paid side of a creator ad campaign: the creative baseline, the weekly paid review, the wave diagnosis, the wave readout and draft feedback on one cut. Their approved pages are reference outputs from a live account with customer names removed, linked from local.json like every other. P7, P8 and I13 are client cases written before their agents exist, from reference outputs of a live creator ad campaign with customer names removed: the pitch deck, the creative packet and the camera screen. Each assertion names the ticket whose agent makes it pass.",
   "changes": {
     "3": {
       "name": "Pull the right metrics for each question",
@@ -357,7 +357,7 @@
     },
     {
       "code": "CAS1",
-      "question": null,
+      "question": "P10",
       "example": "CAS creative baseline",
       "kind": "Plan",
       "reader": "performance",
@@ -368,7 +368,9 @@
       ],
       "paths": [
         "plugins/aspire/skills/aspire/references/cas-paid.md",
-        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+        "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md",
+        "plugins/aspire/agents/atlas-cas-creative-review.md",
+        "plugins/aspire/skills/aspire/references/cas-creative-review.md"
       ]
     },
     {
@@ -417,6 +419,23 @@
       "paths": [
         "plugins/aspire/skills/aspire/references/cas-paid.md",
         "plugins/aspire/skills/aspire/references/cas-campaign-page-results.md"
+      ]
+    },
+    {
+      "code": "CAS5",
+      "question": "P11",
+      "example": "CAS draft feedback",
+      "kind": "Verdict",
+      "reader": "creative",
+      "readerInWords": "the editor, who makes the fixes on the next version",
+      "ask": "For {brand}: a draft cut came in for wave 2. Give the editor timestamped fixes against the brief and the concept before it goes to the client.",
+      "setsBarFor": [
+        3
+      ],
+      "paths": [
+        "plugins/aspire/skills/aspire/references/cas-paid.md",
+        "plugins/aspire/agents/atlas-cas-creative-review.md",
+        "plugins/aspire/skills/aspire/references/cas-creative-review.md"
       ]
     },
     {
@@ -764,5 +783,14 @@
         }
       ]
     }
-  ]
+  ],
+  "agents": {
+    "atlas-cas-creative-review": {
+      "codes": [
+        "P10",
+        "P11"
+      ],
+      "approved": null
+    }
+  }
 }

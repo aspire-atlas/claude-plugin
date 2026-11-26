@@ -28,7 +28,7 @@
       "needs": ["verdict"],
       "allows": ["verdict", "posts"],
       "length": {"default": {"screens": 2}},
-      "agents": ["content-review", "post-analysis", "quality-review"]
+      "agents": ["content-review", "post-analysis", "quality-review", "cas-creative-review"]
     },
     "profile": {
       "name": "Profile",
