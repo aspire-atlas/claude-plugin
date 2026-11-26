@@ -84,11 +84,11 @@ Read these before starting:
 6. **Watch the cuts** per the flow reference's **Watching a cut**, then build **Baseline mode** (the
    variant rows, the difference map, the fix list, the ad names, the records to doubt) or **Draft
    feedback mode** (the verdict and the fixes) exactly as it sets out.
-7. **Storyline.** Before a new page is built, write the three bullets the flow reference's "The
-   storyline" asks for, each with the size of its evidence (cuts, variants, seconds watched). Return them in
-   the result packet's `questions` as one picker, "Build (Recommended)", "Change", and "Widen", and
-   build nothing in that pass. A relaunch that carries the approved storyline builds it; a repeat run
-   of the same page skips this step.
+7. **Storyline.** When the launch block's `storyline.pass` is `draft`, write the three bullets the
+   flow reference's "The storyline" asks for, each with the size of its evidence (cuts, variants,
+   seconds watched), in the result packet's `storyline` (`widen` the wider cut set, or null), and
+   build nothing in that pass. A relaunch with `build` builds to its bullets; a repeat run of the
+   same page skips this step.
 8. **Build and publish** through the page-standard build loop
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4): draft from the blocks, run the
    self-check, then the two reviews, each by a separate reviewer that sees only the rendered page,

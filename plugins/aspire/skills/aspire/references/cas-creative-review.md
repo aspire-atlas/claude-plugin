@@ -180,9 +180,12 @@ campaign profile**, and build:
    These are checked on every cut: a hook that works with the sound off, text over the face or the
    product, text in the Reels and TikTok screen zones (positions as shares of the frame's height),
    a missing or wrong disclaimer, and a black or logo first frame.
-4. **Ad names.** For each variant, the ad name and ad set name **CAS paid**, **Tying an ad to its
-   variant**, **Names before launch** gives, from the campaign's `adNaming` whether its `source` is
-   `campaign` or `default`, with the marker. A tracker row whose `adName` doesn't map to one creator and one variant is listed with the name
+4. **Ad names.** A variant whose tracker row has an `adName` that maps one to one to it (for this
+   wave or no wave) keeps that name, since Atlas matches an exact tracker name first. Every other
+   variant gets the ad name and ad set name **CAS paid**, **Tying an ad to its variant**, **Names
+   before launch** gives, from the campaign's `adNaming` whether its `source` is `campaign` or
+   `default`. Either way the page names the marker the campaign or ad set name must hold. A tracker
+   row whose `adName` doesn't map to one creator and one variant is listed with the name
    proposed in its place. Names are proposed before launch only: never rename a live ad.
 5. **Records to doubt.** A creator listed twice, notes copied from another creator, a variant label
    that doesn't match its file, and one final file shared by several variants are asked about in
@@ -232,7 +235,8 @@ seconds of video watched):
 - **Draft feedback:** the verdict; the must-fix list in one line; the one change most likely to
   move the result.
 
-The agent returns them as one picker (Build, Change, Widen) before the first build.
+The agent returns them in the packet's `storyline` before the first build, and the main thread
+confirms them per **The storyline**.
 
 ## The page
 
@@ -273,9 +277,10 @@ it grows with the cuts, the pairs and the fixes. In the page standard's skeleton
   - `untested`: the tests the brief meant to run that no variant covers, one plain line each.
   - `fixes`: `[{cut, version, at, severity, text}]`, `at` seconds into the cut, `severity` must,
     should or consider.
-  - `names`: `[{cut, adName, adSetName, convention}]`, the proposed names (`adSetName` empty when
-    the convention has no ad set template), `convention` the `adNaming` `source` they were filled
-    from (`campaign` or `default`), or `none` when no convention was returned.
+  - `names`: `[{cut, adName, adSetName, convention}]`, the names (`adSetName` empty when the
+    convention has no ad set template), `convention` `tracker` for a tracker name kept as it is,
+    else the `adNaming` `source` they were filled from (`campaign` or `default`), or `none` when no
+    convention was returned.
 
   A repeat baseline for the same round writes a new finding with every field, and the newest
   wins. When the finding is too large to save, `tags` go first, then the longest `text` of each fix
