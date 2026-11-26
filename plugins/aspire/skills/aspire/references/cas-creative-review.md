@@ -61,8 +61,9 @@ in ad names all take that number. With no wave named, the round is the current o
 A cut "I'll attach" is a local file, a Google Drive link or another link the person shares. A
 linked cut the session can't open is asked for as a file. Because nothing on the page says what an
 attached cut is, the main thread asks once with `AskUserQuestion`, "Is this an edited cut of one of
-{campaign}'s variants?": "Yes, an edited cut of V{n} (Recommended)" with the variant picked, and "No,
-it's the creator's own draft". On the second answer the request goes to **Content review** with the
+{campaign}'s variants?": one option per round creator and variant still without a cut on Content
+Review ("Yes, @{handle} V{n}", the first recommended, at most 3), and "No, it's the creator's own
+draft". The answer gives the launch both the creator and the variant. On the second answer the request goes to **Content review** with the
 creator ad campaign brief as its source, and this flow stops.
 
 Then it launches `atlas-cas-creative-review` with: the tool prefix, the profile id and slug,
