@@ -1,7 +1,7 @@
 # Remembering answers (the "Remember" question and its writes)
 
 Loaded from **Remembering answers** in `SKILL.md`, when a run is due to ask "Remember"
-(**Orchestration contract**, **2**, Saved answers, says when). It holds where the question goes,
+(**The question** below says when). It holds where the question goes,
 its options, and the writes each answer makes. A bold section name with no file beside it is
 another part of this skill; `SKILL.md`'s **Sections** index names its file. Bold numbers are
 sections of the **Orchestration contract**; the records it writes are the two that Saved answers
