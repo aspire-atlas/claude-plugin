@@ -473,8 +473,7 @@ read. `sov.paid` stays empty. A flow that shows `sov.organic` labels it "no paid
 
 Read `marketsignal:routing` and the per-lens destinations in `marketsignal:lenses`. The page
 and chat summary always ship. Slack and email follow **Readouts**, **Delivery**. A lens with
-its own destination gets its own message: that lens's three bullets and the page link with
-the lens section's anchor (`#lens-product`). Interactive runs confirm the sends once;
+its own destination gets its own message: that lens's three bullets and the page link. Interactive runs confirm the sends once;
 unattended runs send on the M3 and M4 standing approval. Never send anywhere else.
 
 ## Scheduled (unattended) runs

@@ -373,7 +373,10 @@ there is a profile; the verdict keeps its semantic colors. Its argument fits the
 
 - `title`: "Is {work title} ready to send?". `answer`: the verdict (Ready, Ready with fixes, Not
   ready) and its one-sentence reason. `scope.reader` is the team (a review is for the team, never
-  the work's reader); `scope.range` is the coverage line (**4.0**).
+  the work's reader); `scope.range` is a short coverage label of up to 60 characters ("All 24
+  slides, notes not seen"), and the full coverage line (**4.0**) goes in the method's notes.
+  `scope.platforms` lists the networks the work cites; when it cites none, one platform at 0
+  posts with the note "The work cites no social posts", and `R2` in `scope.na`.
 - `sections.verdict`: `call` is the verdict; `status` `ok` for Ready, `warn` for Ready with fixes,
   `bad` for Not ready; `reason` is the one-sentence reason; `checks` is the scorecard: each brief
   requirement (**4.1**), then each check, as `bad` (FAIL), `ok` (PASS), or `flat` (N/A), each
@@ -384,7 +387,8 @@ there is a profile; the verdict keeps its semantic colors. Its argument fits the
   and the fix as `so`. Source `Our read`.
 - `actions`: every finding worst first, ranked: the fix as verb and object, its id, severity,
   check, and place in `effect`, the owner as the flow or person that made the work, and its cost.
-  The share steps from **4.11**, item 4, follow. `decisions`: anything only the requester can
+  The share steps from **4.11**, item 4, follow. With no finding and no share step, the one action
+  is sending the work as it is (owner: the requester). `decisions`: anything only the requester can
   decide (who may see a figure, whether to send with a High finding open).
 - `evidence`: three to six strengths, each with its quote; the consistency rows (**4.4**), the
   feasibility math (**4.5**), the data access rows (**4.11**), the facts to source or confirm

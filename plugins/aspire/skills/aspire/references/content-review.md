@@ -555,11 +555,13 @@ writes no HTML, and the template sets the layout. Its argument fits two screens:
 - `actions`: the required edits, numbered in priority order, each written as a note the team can
   forward to the creator: plain, specific, polite, one fix each (owner: the creator; job
   `creator-outreach` when the team sends it). If a brand red line blocks AI-generated copy,
-  describe what to change and never write replacement caption text. `decisions`: approving the
+  describe what to change and never write replacement caption text. An Approve with no edits
+  has one action: post it as reviewed (owner: the creator). `decisions`: approving the
   post once the edits are in, by the reviewer.
-- `sections.posts`: the post under review, published or the draft's cover, with its metrics or
-  the reason they are missing, and the caption as `quote`. For video, the frames viewed are
-  named by timestamp in its `why`.
+- `sections.posts`: a published post under review, with its metrics or the reason they are
+  missing, and the caption as `quote`. For video, the frames viewed are named by timestamp in its
+  `why`. A draft has no link or post time, so it is not a post entry: describe it (its file, the
+  caption, and the frames viewed by timestamp) in the first evidence line.
 - `evidence`: the brief's source and the must-include and avoid items, numbered as the checks
   refer to them; each saved lesson that changed a call, and any candidate lesson from repeated
   overturns; when the ad reuse check ran, its cut list rows with rights.
@@ -568,8 +570,8 @@ writes no HTML, and the template sets the layout. Its argument fits two screens:
 - `footer.notes`: that images are a snapshot. `footer.source`: the source line
   per **Artifact standard**.
 
-The post's image is the draft's local file or the published post, encoded per templates.md,
-section 7; a draft's frames come from the local files under **Media**. The verdict and the check
+A published post's image is encoded per templates.md, section 7; a draft's frames come from the
+local files under **Media** and are named, not embedded. The verdict and the check
 rows keep their semantic colors when a theme is saved.
 
 ## Atlas quirks that apply here

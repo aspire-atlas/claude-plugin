@@ -301,7 +301,8 @@ sections 2 and 7). The template sets the layout; this sets what goes in each fie
   accounts, or views behind it as `evidence` and the 28-day median as `comparison`. The first may
   chart yesterday against the median day as a stacked bar of likes, comments, shares, and saves.
 - `actions`: each red-line hit and escalation first (owner and timing from R5), then open action
-  items from earlier readouts that came due. `decisions`: anything that needs the reader's
+  items from earlier readouts that came due. With neither, the one action is reading the next
+  daily report (job `daily-insights-report`, cost none). `decisions`: anything that needs the reader's
   approval; none is the usual.
 - `sections.posts`: yesterday's posts, each with its metrics, its views against the account's
   usual, and its one-line takeaway as `why`.
@@ -458,8 +459,7 @@ Read `policy:readout-routing`. The page and chat summary always ship. Then:
   bullets, the page link. Plain text with Slack formatting, no images. If no Slack connection is
   present, say so in the chat summary and continue.
 - **Per-lens destinations:** a lens in R6 (or a pulse lens) with its own destination gets its own
-  message: the storyline's bullets, then that lens's three bullets and the page link with
-  the lens anchor. Same connection
+  message: the storyline's bullets, then that lens's three bullets and the page link. Same connection
   rules as below.
 - **Email:** if the routing names recipients and an email connection is available, send one
   message with subject "<Brand> {Daily|Weekly} Insights Report, {date}", the chat summary as the body,

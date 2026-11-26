@@ -190,11 +190,15 @@ fields hold, it fits the content in this way and never adds HTML to the printed 
 - **Tables become tiles or lines.** A short table of figures (share of voice per brand, rates per
   metric, verdict counts) becomes `sections.kpis` where the template allows them, or `figures`.
   A table of items (open action items, reviews, competitors, findings) becomes evidence lines,
-  one per row, each up to 200 characters with its link. Rows past ten are counted in one line.
+  one per row, each up to 200 characters with its link. Past ten rows, show nine and count the rest
+  in the tenth line.
 - **Lenses.** The page renders for the primary lens (`recipient-lens.md`): it picks the answer,
   the insights, and their order. Each other saved lens gets at most one evidence line on the page
   and its bullets in the chat summary and the delivery message. A lens that needs a page of its
   own gets one from its own run.
+- **At least one action.** `actions` is never empty. When nothing else is due, the one action is
+  the flow's standing next step (the next run, the next review, or publishing the approved work),
+  with its owner and date.
 - **Flags and red-line hits** that need someone to act are actions, ranked first. Ones that need
   approval are decisions. The rest are evidence lines.
 - **Posts and media.** A post the page cites goes in `sections.posts` where the template allows

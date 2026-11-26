@@ -149,7 +149,8 @@ out and named in `gaps` or the method's notes. The brand's question picks the or
   held, never absent), each brand red line (**Atlas tools**, Calibration kinds) that bears on
   the post, and reuse rights (likeness,
   marks on screen, the audio as original, licensed, or unconfirmed: a checklist for legal, not
-  legal advice). The categories rated low risk on every reading are counted in one row.
+  legal advice). The categories rated low risk on every reading are counted in one row, and so are the red lines
+  the post passes. Past twelve rows, the lowest-risk rows go to the method's notes.
 - `figures`: views against followers, interactions per view against the account's median, and
   the boost lift (total minus organic, as a share of likes) when Atlas holds both counts. Say who
   paid for the boost only when a record says so.
