@@ -63,7 +63,9 @@ linked cut the session can't open is asked for as a file. Because nothing on the
 attached cut is, the main thread asks once with `AskUserQuestion`, "Is this an edited cut of one of
 {campaign}'s variants?": one option per round creator and variant still without a cut on Content
 Review ("Yes, @{handle} V{n}", the first recommended, at most 3), and "No, it's the creator's own
-draft". The answer gives the launch both the creator and the variant. On the second answer the request goes to **Content review** with the
+draft". The question says its free text field takes any other "@{handle} V{n}", which is matched
+against the round's creators and their variants and asked again when it matches none. Either way
+the answer gives the launch both the creator and the variant. On the second answer the request goes to **Content review** with the
 creator ad campaign brief as its source, and this flow stops.
 
 Then it launches `atlas-cas-creative-review` with: the tool prefix, the profile id and slug,
