@@ -44,6 +44,7 @@ export const ROSTER: readonly RosterEntry[] = [
   { type: 'aspire:atlas-content-library', name: 'Content library', blurb: 'Creator content and the rights to use it', group: 'create' },
   { type: 'aspire:atlas-shops', name: 'Shops', blurb: 'An Instagram Shop and TikTok Shop setup plan', group: 'create' },
   { type: 'aspire:atlas-quality-review', name: 'Quality review', blurb: 'Checks a page or deck before you share it', group: 'create' },
+  { type: 'aspire:atlas-cas-creative-review', name: 'CAS creative review', blurb: 'A creative baseline and draft fixes before spend', group: 'create' },
 
   { type: 'aspire:atlas-creator-outreach', name: 'Creator outreach', blurb: 'First messages, follow-ups and replies', group: 'program' },
   { type: 'aspire:atlas-creator-negotiation', name: 'Creator negotiation', blurb: 'Offers, counters and renewals', group: 'program' },
