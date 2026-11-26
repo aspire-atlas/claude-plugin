@@ -87,7 +87,7 @@ for a in sorted(agents - jobs - waiting):
 # Agents that still draw their own page. The list only shrinks: an agent converted to its template
 # leaves it, and a listed agent that already renders through its template fails until removed.
 NOT_CONVERTED = {"creator-discovery", "creator-vetting", "ad-reuse", "creator-brief", "shops", "creator-outreach",
-                 "creator-negotiation", "program-dashboard", "program-ledger", "deliverable-tracker", "roster-manager",
+                 "creator-negotiation", "cas-creative-review", "program-dashboard", "program-ledger", "deliverable-tracker", "roster-manager",
                  "affiliate-manager", "campaign-orchestrator", "content-library", "content-sourcing",
                  "product-fulfillment"}
 for a, where in sorted(mapped.items()):
