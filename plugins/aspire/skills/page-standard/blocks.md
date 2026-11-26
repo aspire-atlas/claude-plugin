@@ -189,6 +189,20 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-post-body{display:grid;gap:6px;font-size:.9rem;min-width:0}
 .pb-post>.pb-post-body:first-child{grid-column:1/-1}
 .pb-post-body a{color:var(--brand-ink);overflow-wrap:anywhere}
+.pb-creator{display:grid;gap:10px;align-content:start}
+.pb-creator-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.pb-creator-head>p{margin:0;min-width:0;overflow-wrap:anywhere}
+.pb-creator-head>p:first-child{grid-column:1/3}
+.pb-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--bg)}
+.pb-ring{--v:0;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none;width:56px;height:56px;border-radius:50%;background:radial-gradient(closest-side,var(--surface) 78%,transparent 80%),conic-gradient(var(--brand-ink) calc(var(--v)*1%),var(--border) 0);line-height:1.05;text-align:center}
+.pb-ring b{font:600 1rem var(--font-mono)}
+.pb-ring span{display:block;font-size:.62rem;line-height:1.1;color:var(--muted)}
+.pb-details{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 10px;margin:0;font-size:.86rem}
+.pb-details dt{color:var(--muted)}
+.pb-details dd{margin:0;overflow-wrap:anywhere}
+.pb-thumbs{display:flex;gap:6px}
+.pb-thumbs a{flex:1 1 0;max-width:96px}
+.pb-thumbs img{display:block;width:100%;height:auto;aspect-ratio:9/16;object-fit:cover;border-radius:calc(var(--radius,10px) - 4px);background:var(--bg)}
 .pb-stats{display:flex;flex-wrap:wrap;gap:4px 12px;font:.84rem var(--font-mono);color:var(--muted)}
 .pb-stats b{color:var(--text);font-weight:600}
 .pb-board{display:grid;gap:10px}
@@ -458,9 +472,12 @@ change. Approvals never go here; they go in the decisions block.
 
 ### 3.7 Creator evidence
 
-**Holds:** one creator, with a thumbnail and the verdict. It is the creator card from
-`skills/aspire/references/creator-card.md`, unchanged, with its style block and (with a saved
-theme) the theme override. Never draw a second creator card.
+**Holds:** one creator, with a thumbnail and the verdict. A hand-written page uses the creator
+card from `skills/aspire/references/creator-card.md`, unchanged, with its style block and (with a
+saved theme) the theme override. A page filled from data (`templates.md`) gets the same parts from
+the fill script: the profile picture, the handle and group chip, the score ring, the verdict block
+below, the stats, the labelled details, and up to three post thumbnails. Never draw a second
+creator card.
 
 The verdict, its reason, and the slate fields go in the card's `{DETAILS}` slot with the markup
 below. A creator slate (`SKILL.md`, section 3) fills every field:

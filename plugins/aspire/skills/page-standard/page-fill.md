@@ -533,19 +533,35 @@ def creator(c):
     cls, word, _ = VERDICTS[c["verdict"]]
     stats = "".join('<span>%s <b>%s</b>%s</span>' % (e(s["label"]), e(s["value"]), (" (%s)" % e(s["source"])) if "source" in s else "")
                     for s in c.get("stats", []))
-    parts = ['<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span>%s</p>'
-             % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "",
-                (" " + chip(c["group"])) if "group" in c else "")]
+    head = []
+    if "image" in c:
+        head.append('<img class="pb-avatar" src="%s" alt="%s" width="56" height="56">' % (c["image"], e(c.get("alt", "Profile picture of " + name))))
+    head.append('<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span>%s</p>'
+                % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "",
+                   (" " + chip(c["group"])) if "group" in c else ""))
+    if "score" in c:
+        sc = c["score"]
+        head.append('<span class="pb-ring" style="--v:%d" role="img" aria-label="%s %d out of 100"><b>%d</b><span>%s</span></span>'
+                    % (sc["value"], e(sc["label"]), sc["value"], sc["value"], e(sc["label"])))
+    parts = ['<div class="pb-creator-head">%s</div>' % "".join(head)]
     parts.append('<div class="pb-verdict" data-block="creator" data-verdict="%s" data-account="%s"><p>%s %s</p>'
                  % (c["verdict"], e(c["account"]), chip(word, cls), e(c["reason"])))
     if "checks" in c:
         parts.append('<p class="pb-muted">Checks reached: %s</p>' % e(c["checks"]))
     if stats:
         parts.append('<p class="pb-stats">%s</p>' % stats)
+    if c.get("details"):
+        parts.append('<dl class="pb-details">%s</dl>' % "".join(
+            '<dt>%s</dt><dd>%s%s</dd>' % (e(x["label"]), e(x["value"]), (" " + source_chip(x["source"])) if "source" in x else "")
+            for x in c["details"]))
     if "settle" in c:
         parts.append("<p><b>To settle it:</b> %s</p>" % e(c["settle"]))
     parts.append("</div>")
-    return '<article class="pb-card">%s</article>' % "".join(parts)
+    if c.get("thumbs"):
+        parts.append('<div class="pb-thumbs">%s</div>' % "".join(
+            '<a href="%s"><img src="%s" alt="%s" width="80" height="142"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
+            for t in c["thumbs"]))
+    return '<article class="pb-card pb-creator">%s</article>' % "".join(parts)
 
 def post(p):
     name, network = handle(p["account"])

@@ -81,7 +81,7 @@ by its name without the `atlas-` prefix. The page shows it in plain words.
 | Section | What it holds | Block |
 | ------- | ------------- | ----- |
 | `kpis` | Up to twelve more KPI tiles, shape as `figures` | 3.24 |
-| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to three stats, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it | 3.7 |
+| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to twelve `stats`, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it. The creator card's own parts are optional: the profile picture (`image`, embedded per `creator-card.md`, **Images**), the `score` ring (a fit or match score out of 100), up to twelve labelled `details` (brand safety, notes, points per criterion, contact route, fee), and up to three post `thumbs` | 3.7 |
 | `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, and an optional quote | 3.8 |
 | `verdict` | The `call`, its `status`, the `reason`, and the `checks` behind it | 3.25 |
 | `steps` | Dated plan steps: `when`, `what`, and `who` | 3.17 |

@@ -206,11 +206,39 @@
         "verdict": {"enum": ["yes", "maybe", "no"]},
         "reason": {"$ref": "#/$defs/text280"},
         "checks": {"$ref": "#/$defs/text200"},
+        "image": {"type": "string", "maxLength": 120000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$",
+                  "description": "The profile picture, embedded per creator-card.md, Images."},
+        "alt": {"$ref": "#/$defs/text140"},
+        "score": {
+          "type": "object", "additionalProperties": false, "required": ["label", "value"],
+          "description": "The card's score ring: a fit or match score out of 100.",
+          "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"type": "integer", "minimum": 0, "maximum": 100}}
+        },
         "stats": {
-          "type": "array", "maxItems": 3,
+          "type": "array", "maxItems": 12,
           "items": {
             "type": "object", "additionalProperties": false, "required": ["label", "value"],
             "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"$ref": "#/$defs/text40"}, "source": {"$ref": "#/$defs/source"}}
+          }
+        },
+        "details": {
+          "type": "array", "maxItems": 12,
+          "description": "The card's details: brand safety, notes, the points per criterion, the contact route, a fee.",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "value"],
+            "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"$ref": "#/$defs/text280"}, "source": {"$ref": "#/$defs/source"}}
+          }
+        },
+        "thumbs": {
+          "type": "array", "maxItems": 3,
+          "description": "Up to three of the creator's posts as thumbnails, evidence posts first.",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["href", "image"],
+            "properties": {
+              "href": {"$ref": "#/$defs/link"},
+              "image": {"type": "string", "maxLength": 200000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"},
+              "alt": {"$ref": "#/$defs/text140"}
+            }
           }
         },
         "settle": {"$ref": "#/$defs/text200", "description": "The one question that would settle a Maybe."}
