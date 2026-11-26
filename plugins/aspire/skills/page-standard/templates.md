@@ -110,6 +110,7 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `shared-page`: a page whose source line says "Shared with" lists no gaps and no freshness notes. It still shows its confidence.
 - `banned-phrase`: no phrase on the banned-phrase list (`glossary.md`, section 2) in any field the reader sees.
 - `no-internal-names`: no Atlas tool name (the page check's list, alone or inside a prefixed name) or record id in any field the reader sees, `scope.tools` included.
+- `page-size`: the printed page is at most 10,000,000 characters, so its images stay inside the page budget.
 - `theme`: the theme holds token rules only: custom-property declarations in plain or `@media` rules, with no `<`, backslash, `url(` or `image-set(`.
 
 ## 4. The six templates

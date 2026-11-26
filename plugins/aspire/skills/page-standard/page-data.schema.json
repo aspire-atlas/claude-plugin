@@ -206,7 +206,7 @@
         "verdict": {"enum": ["yes", "maybe", "no"]},
         "reason": {"$ref": "#/$defs/text280"},
         "checks": {"$ref": "#/$defs/text200"},
-        "image": {"type": "string", "maxLength": 120000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$",
+        "image": {"type": "string", "maxLength": 44000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$",
                   "description": "The profile picture, embedded per creator-card.md, Images."},
         "alt": {"$ref": "#/$defs/text140"},
         "score": {
@@ -236,7 +236,7 @@
             "type": "object", "additionalProperties": false, "required": ["href", "image"],
             "properties": {
               "href": {"$ref": "#/$defs/link"},
-              "image": {"type": "string", "maxLength": 200000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"},
+              "image": {"type": "string", "maxLength": 164000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"},
               "alt": {"$ref": "#/$defs/text140"}
             }
           }

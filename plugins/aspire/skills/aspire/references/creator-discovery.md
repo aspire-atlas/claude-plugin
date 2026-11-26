@@ -367,8 +367,9 @@ mark and the footer (**Artifact standard**). What goes in each field:
   the `title` is the I1 question for this campaign, and the `answer`, written last, is where the
   pool stands and what to do with it ("50 in the pool, 12 new this run. Vet the top 20 next.").
   `scope.reader` comes from `recipient` (**Recipient lens**), `scope.question` is `I1`, and
-  `scope.platforms` gives the creators found on each platform.
-- **`figures`**: the pool counts against the target: undecided, accepted, and rejected.
+  `scope.platforms` gives the posts read on each platform.
+- **`figures`**: the pool counts against the target: undecided, accepted, and rejected. The
+  creators found per platform go in `method.notes`.
 - **`insights`**: what people are doing well with {product}, where they are having challenges,
   and what this means for picking creators, per **The findings behind the shortlist**. With more
   than 12 candidates the first insight's chart is the fit score by tier.

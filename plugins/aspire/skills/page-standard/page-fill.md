@@ -59,6 +59,8 @@ NOT_READER = frozenset(("version", "template", "length", "account", "accounts", 
 CHART_SERIES = 6
 # No figure reaches a quadrillion; the bound keeps every number a float can hold exactly.
 NUMBER_BOUND = 10 ** 15
+# A published page stays under 10MB (creator-card.md, Images), well inside the Artifact limit.
+PAGE_LIMIT = 10_000_000
 FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "glossary.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
@@ -166,6 +168,7 @@ def rules(data, templates, tools, phrases):
     cited += [("sections.kpis[%d]" % i, k) for i, k in enumerate(sec.get("kpis", []))]
     for i, c in enumerate(sec.get("creators", [])):
         cited += [("sections.creators[%d].stats[%d]" % (i, j), s) for j, s in enumerate(c.get("stats", []))]
+        cited += [("sections.creators[%d].details[%d]" % (i, j), x) for j, x in enumerate(c.get("details", []))]
     for path, item in cited:
         if "source" in item and item["source"] not in labels:
             errs.append(("source-label", path + ".source", "is not Atlas, Brand memory, Web, You, Our read, or a tool in scope.tools"))
@@ -559,7 +562,7 @@ def creator(c):
     parts.append("</div>")
     if c.get("thumbs"):
         parts.append('<div class="pb-thumbs">%s</div>' % "".join(
-            '<a href="%s"><img src="%s" alt="%s" width="80" height="142"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
+            '<a href="%s"><img src="%s" alt="%s" width="80" height="80"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
             for t in c["thumbs"]))
     return '<article class="pb-card pb-creator">%s</article>' % "".join(parts)
 
@@ -732,14 +735,18 @@ def main(argv):
         print(json.dumps({"rule": rule, "path": where.lstrip("$."), "message": message}))
     if errs:
         return 1
-    if "--check" in argv:
-        print(json.dumps({"ok": True, "template": data["template"]}))
-        return 0
     try:
-        print(page(data, path.parent))
+        html_page = page(data, path.parent)
     except (OSError, ValueError, AttributeError) as err:
         print(json.dumps({"rule": "read", "path": str(err), "message": "a file beside the page data lacks the part the page needs"}))
         return 2
+    if len(html_page) > PAGE_LIMIT:
+        print(json.dumps({"rule": "page-size", "path": "sections", "message": "the page is %d characters, over %d; cut thumbnails per card, then post images" % (len(html_page), PAGE_LIMIT)}))
+        return 1
+    if "--check" in argv:
+        print(json.dumps({"ok": True, "template": data["template"]}))
+        return 0
+    print(html_page)
     return 0
 
 sys.exit(main(sys.argv[1:]))

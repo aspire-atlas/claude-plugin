@@ -947,7 +947,8 @@ What goes in each field:
   up short, it says so ("11 of the 20 asked for"); the page never pads it. **`takeaway`**: the one
   thing that decided the most rejects, or the strongest finding behind the checks.
 - **`figures`**: the counts to contact, Maybe, and left out, each against the number asked for or
-  the list's size.
+  the list's size, and each `comparison` naming the top reasons behind that verdict ("14 outside
+  the US, 4 competitor deals").
 - **`insights`**, from **The findings behind the checks**:
   1. **What people are doing well with {product}**: the claim, and its chart, the median lift by
      what the post does, one bar per label ("{label} · {n} of {m}"). The "So:" line says which
@@ -962,7 +963,11 @@ What goes in each field:
   when the list came up short, where a second search should look (`job` `creator-discovery`).
   When `visual_check_refused` is set, an on-screen check as a follow-up vetting run on the same
   list, with the reason. When the criteria name a launch date, `sections.kpis` gets one tile for
-  the weeks left to it; no stage gets a date the actions did not set.
+  the weeks left to it, and `evidence` lists the launch clock: each dated milestone from offers
+  out to the first read of results, one line each. No stage gets a date the actions did not set.
+- **`sections.kpis`**, when the criteria name audiences: one tile per audience with the creators
+  to contact in it and their fees at target, against how many that audience needs when the
+  criteria set it, naming any open slot ("sixth slot waits on a maybe").
 - **`decisions`**: approving the creators to contact, with the date outreach should start; any
   brand rule the team must settle before a verdict holds (for example, a red line a creator sits
   on the edge of); each proposed change to the criteria with the finding behind it; and, after a
