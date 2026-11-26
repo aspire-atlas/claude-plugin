@@ -10,8 +10,8 @@ rubric in **CAS paid**; this file adds only what the two modes need on top of it
 Every page it publishes follows the **Artifact standard** and the `page-standard` skill
 (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`).
 
-The flow never sends anything to a creator or to the client. An Editor decides which fixes go to the
-editor, and which, if any, the client sees.
+The flow never sends anything to a creator or to the client. An Editor on the campaign page decides
+which fixes go to the video editor, and which, if any, the client sees.
 
 ## Contents
 
@@ -220,7 +220,7 @@ comment, its `timecode:` empty. Each
 comment logs one entry, kind `comment`, verb `commented`, tab `review`, in `agency/activity-claude`
 (**CAS campaign** **1e**, **The activity log**), in the same batch. Agency only comments are never
 moved where the client reads, so nothing reaches the client unless an Editor writes it there; the
-Editor sends what they choose to the editor with **Back to editor**.
+Editor sends what they choose to the video editor with **Back to editor**.
 
 A cut that isn't on Content Review gets its fixes on the page only, and the page says the comments
 can land once the cut is added there.
@@ -240,22 +240,27 @@ confirms them per **The storyline**.
 
 ## The page
 
-Both modes use the page standard's Plan template, the fixes being its steps, each with its owner:
-it grows with the cuts, the pairs and the fixes. In the page standard's skeleton order. Titles: "Creative baseline: {campaign}, wave {n}" and
+Both modes are a Plan kind of page (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, section 6), drafted by hand from
+the blocks rather than filled from the template's page data, which holds no tables or frame stills.
+The page grows with the cuts, the pairs and the fixes, in the page standard's skeleton order.
+Titles: "Creative baseline: {campaign}, wave {n}" and
 "Draft feedback: @{handle} V{v}, version {k}".
 
 1. **Who it is for and what it covers:** the reader, the campaign, the round and wave, the cuts and
    versions watched, and the date.
-2. **The answer:** baseline: "{r} of {t} variants are ready to run; {m} need a must-fix before
-   spend; {d} pairs are near duplicates." Draft: the verdict and the first fix.
+2. **The answer**, led as **The reader** says for the reader. Baseline, for paid social: "{r} of
+   {t} variants are ready to run; {m} need a must-fix before spend; {d} pairs are near
+   duplicates." For the campaign manager it adds who fixes what by when; for the editors it leads
+   with the must-fix count and the first fix. Draft: the verdict and the first fix.
 3. **Up to three insights:** the strongest and weakest planned tests, a pattern across cuts (the
    same late product reveal in four cuts), and the most important gap.
 4. **Next steps, ranked:** the must-fixes first, each with the cut, the second and the owner (the
    editor), then the near-duplicate decision, then the ad names to set before launch.
 5. **Decisions:** what an Editor approves: the fixes to send, which near duplicate to drop, the ad
    names. Kept apart from the findings.
-6. **Evidence:** baseline: the difference map, then the variant table, then the fix list, each as a
-   table that can be read back. Draft: the fix list, then the cut's row. A frame still beside each
+6. **Evidence,** in the reader's order (**The reader**): baseline for paid social, the difference
+   map, the variant table, then the fix list; for the campaign manager and the editors, the fix list
+   first. Each is a table that can be read back. Draft: the fix list, then the cut's row. A frame still beside each
    must-fix, at the second it names.
 7. **How it was worked out:** the brief, concept docs and tracker rows read, the frames taken and the
    tool that took them, and where any spoken check came from.
