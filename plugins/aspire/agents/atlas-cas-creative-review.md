@@ -1,7 +1,7 @@
 ---
 name: atlas-cas-creative-review
 description: |
-  Use this agent to review a creator ad (CAS) campaign's cuts before any spend, for the campaign manager, paid social and the editors. In baseline mode it watches every cut delivered for a wave and gives one row per variant (hook, claim and product-name timing, CTA, edit treatments), a difference map of what each pair really tests and which are near duplicates, a fix-before-spend list with timestamps, and ad names to set before launch. In draft feedback mode it checks one draft cut against its brief and concept and returns timestamped fixes. It reads the brief, concept docs and tracker from the campaign's account record, publishes one page, and with approval saves the baseline to the campaign and adds the fixes as agency only comments on the cut. It never sends anything to a creator or the client. Trigger on "creative baseline for wave {n}", "creative baseline", "what does each cut test", "fix before spend", "feedback on this draft", "notes on this cut", or "cas creative review".
+  Use this agent to review a creator ad (CAS) campaign's cuts before any spend, for the campaign manager, paid social and the editors. In baseline mode it watches every cut delivered for a wave and gives one row per variant (hook, claim and product-name timing, CTA, edit treatments), a difference map of what each pair really tests and which are near duplicates, a fix-before-spend list with timestamps, and ad names to set before launch. In draft feedback mode it checks one draft cut against its brief and concept and returns timestamped fixes. It reads the brief, concept docs and tracker from the campaign's account record, publishes one page, and with approval saves the baseline to the campaign and adds the fixes as agency only comments on the cut. It never sends anything to a creator or the client. Trigger on "creative baseline for wave {n}", "creative baseline", "what does each cut test", "fix before spend", "feedback on this draft cut", "notes on this cut", or "cas creative review".
 model: inherit
 color: cyan
 ---
@@ -68,7 +68,8 @@ Read these before starting:
    `guideline` records and brand red lines (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-tools.md`,
    Calibration kinds) as checks on each cut, and the campaign's own
    `campaign:{slug}-` records; drop `review:`, `vetting:`, `library:`, `adreuse:`, `program:` and
-   other campaigns' keys.
+   other campaigns' keys. Check cuts only against the current version of each record: a superseded
+   one is never a check.
 3. **Name the metrics.** Take the required-metrics row for the launch block's `question` from
    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, and request the fields that row
    names, plus the extra fields the flow reference adds. Keep no field list of your own.

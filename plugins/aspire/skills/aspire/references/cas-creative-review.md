@@ -37,7 +37,7 @@ which fixes go to the video editor, and which, if any, the client sees.
 | P11 | Fixes, to the second, on a draft cut. |
 
 P10 runs baseline mode and P11 draft feedback mode. A close ask maps to the nearest: "creative
-baseline", "what is each variant testing" and "fix before spend" are P10; "feedback on this draft",
+baseline", "what is each variant testing" and "fix before spend" are P10; "feedback on this draft cut",
 "notes on V2" and "what should the editor change" are P11. The line is the edited cut: a variant
 cut for a CAS campaign, on its Content Review or shared as that cut, comes here, so "check this
 draft against the brief" on such a cut is P11. A creator's own draft or post stays with the
@@ -146,8 +146,10 @@ Every claim about a cut rests on frames the agent has viewed itself, from the cu
   frame in the run's own working folder, named for the cut and version.
 - **Frames.** Extract with the tools and in the order **Content review**, **Media: what the agent
   can and cannot see** gives (`ffmpeg`, then AVFoundation, then OpenCV), and sample per its **Which
-  frames** (at most 30 a cut), adding 0.5, 1, 1.5, 2, 2.5 and 3 seconds for the hook and frames 0.5
-  seconds either side of every finding to fix its second. View each frame scaled to 720 pixels
+  frames**, adding 0.5, 1, 1.5, 2, 2.5 and 3 seconds for the hook and frames 0.5 seconds either side
+  of every finding to fix its second. A cut gets at most 30 frames in all, the hook and finding
+  frames included, and a second taken twice counts once: the base sample stops at 20, leaving room
+  for the rest. View each frame scaled to 720 pixels
   tall. Text placement is measured on the full-size frame (**CAS paid**, **Text placement and safe
   zones**): extract it at full size only at the seconds where scaled frames show text near the
   face, the product or a screen zone. Record each cut's duration, size and frame rate. With no
@@ -160,8 +162,10 @@ Every claim about a cut rests on frames the agent has viewed itself, from the cu
 - **What can't be checked without sound.** A spoken hook, a spoken claim, a spoken product name, a
   spoken CTA and script fidelity need words. Use, best first: a transcript the person pasted; the
   variant's live post's `analysis.transcript` in Atlas, labelled "from the live post, which may be
-  a different cut"; on-screen captions read from the frames, labelled as captions. With none, those
-  checks are "Can't check (no transcript)" and the page names them. Never infer speech from
+  a different cut"; on-screen captions read from the frames, labelled as captions. A result resting
+  on the live post or on captions is marked "unverified for this cut" and is never a must-fix,
+  unless the person confirms the words match the cut. With none, those checks are "Can't check (no
+  transcript)" and the page names them. Never infer speech from
   pictures.
 - **Seconds.** Every timestamp is the cut's own time, written `0:04.5`, and matches a frame the
   agent viewed. A finding with no viewed frame behind it is left out.

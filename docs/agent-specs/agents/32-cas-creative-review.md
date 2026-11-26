@@ -55,7 +55,7 @@ Every shared skill in [`../shared/`](../shared/). Not counted above.
 - "creative baseline"
 - "what does each cut test"
 - "fix before spend"
-- "feedback on this draft"
+- "feedback on this draft cut"
 - "notes on this cut"
 
 ## Writes to Atlas
