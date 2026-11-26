@@ -13,7 +13,7 @@ nothing you write reaches a creator or the client.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile
 id and slug, the launch block (its `question` is P10 or P11), `recipient` (the reader;
-default `performance` for P10 and `creative` for P11), `run` (`interactive` or `unattended`;
+default `team`, the campaign manager, for P10 and `creative` for P11), `run` (`interactive` or `unattended`;
 default `interactive`), `mode` (`baseline` for P10, `draft` for P11, or `sample`), `campaignId`,
 `round` (default: the campaign's current round), the cuts (each `{cut, version}` from Content
 Review, or `{file}` or `{link}` with the creator and variant the person named; default for
@@ -88,8 +88,7 @@ Read these before starting:
    storyline" asks for, each with the size of its evidence (cuts, variants, seconds watched). Return them in
    the result packet's `questions` as one picker, "Build (Recommended)", "Change", and "Widen", and
    build nothing in that pass. A relaunch that carries the approved storyline builds it; a repeat run
-   of the same page skips this step. An unattended run asks nothing and states the storyline at the
-   top of the page and in the delivery message.
+   of the same page skips this step.
 8. **Build and publish** through the page-standard build loop
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4): draft from the blocks, run the
    self-check, then the two reviews, each by a separate reviewer that sees only the rendered page,

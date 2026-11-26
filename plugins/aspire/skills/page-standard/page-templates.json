@@ -28,7 +28,7 @@
       "needs": ["verdict"],
       "allows": ["verdict", "posts"],
       "length": {"default": {"screens": 2}},
-      "agents": ["content-review", "post-analysis", "quality-review", "cas-creative-review"]
+      "agents": ["content-review", "post-analysis", "quality-review"]
     },
     "profile": {
       "name": "Profile",
@@ -45,7 +45,7 @@
       "needs": ["steps"],
       "allows": ["steps", "creators", "kpis"],
       "length": {"default": {"screens": null, "growsWith": ["actions", "sections.steps"]}},
-      "agents": ["creator-brief", "shops", "creator-outreach", "creator-negotiation"]
+      "agents": ["creator-brief", "shops", "creator-outreach", "creator-negotiation", "cas-creative-review"]
     },
     "dashboard": {
       "name": "Dashboard",

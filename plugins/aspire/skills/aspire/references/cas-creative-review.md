@@ -38,9 +38,11 @@ editor, and which, if any, the client sees.
 
 P10 runs baseline mode and P11 draft feedback mode. A close ask maps to the nearest: "creative
 baseline", "what is each variant testing" and "fix before spend" are P10; "feedback on this draft",
-"notes on V2" and "what should the editor change" are P11. A published post checked against a brief
-stays with the **Content review** flow (`atlas-content-review`), and live ads with results go to
-the weekly paid review or the wave diagnosis, never here.
+"notes on V2" and "what should the editor change" are P11. The line is the CAS campaign: a cut made
+for a CAS campaign's variant comes here, draft or not, so "check this draft against the brief" on a
+CAS cut is P11. A creator's draft or post outside a CAS campaign stays with the **Content review**
+flow (`atlas-content-review`), and live ads with results go to the weekly paid review or the wave
+diagnosis, never here.
 
 The main thread first resolves the campaign: `get_cas_campaign` with no `campaignId` lists the
 campaigns, and when more than one is active it asks which with `AskUserQuestion`. Then it asks
@@ -49,7 +51,7 @@ these, each as one `AskUserQuestion` picker, skipping any the person already ans
 | Id | Question | Options (recommended first) |
 | -- | -------- | --------------------------- |
 | CR1 | Which cuts should I review? | P10: "Every cut in round {n} on Content Review (Recommended)", "Only the approved cuts", "Cuts I'll attach". P11: one option per cut in the current round whose newest version has no call yet, newest first (at most 3), and "A cut I'll attach or link" |
-| CR2 | Who reads this? | P10: "Paid social, who hands the fixes to creative (Recommended)", "The editors". P11: "The editors (Recommended)", "Paid social" |
+| CR2 | Who reads this? | P10: "The campaign manager and the editors (Recommended)", "Paid social", "Only the editors". P11: "The editors (Recommended)", "The campaign manager" |
 | CR3 | Is there a transcript or a script read for these cuts? | "No, check what the frames show (Recommended)", "Yes, I'll paste it". Asked only when no cut in the set has a live post with an Atlas transcript |
 
 A cut "I'll attach" is a local file, a Google Drive link or another link the person shares. A
@@ -66,14 +68,17 @@ person chose.
 
 ## The reader
 
-The default reader is `performance` for P10, the paid social lead who decides what gets spend and
-hands the fixes to creative, then `creative`; and `creative` for P11, the editor who makes the
-fixes. Both are agency readers: the page is never written for the client and never sent to one.
+The default reader is `team` for P10, the campaign manager who owns the wave and passes the fixes
+to the editors, then `creative`; and `creative` for P11, the editor who makes the fixes. Every
+reader is on the agency side: the page is never written for the client and never sent to one.
 
-- **Performance first:** the answer leads with how many variants are ready to run, how many need a
-  must-fix, and the pairs that split spend and teach nothing. The difference map comes before the
-  rows.
-- **Creative first:** the answer leads with the must-fix count and the first fix. The fix list comes
+- **Campaign manager first (`team`):** the answer leads with how many variants are ready to run and
+  how many need a must-fix, then who fixes what by when. The fix list comes before the difference
+  map.
+- **Paid social first (`performance`):** the answer leads with how many variants are ready to run,
+  how many need a must-fix, and the pairs that split spend and teach nothing. The difference map
+  comes before the rows.
+- **Editors first (`creative`):** the answer leads with the must-fix count and the first fix. The fix list comes
   before the difference map, ordered by cut and then by second, so an editor can work down it.
 
 ## Required metrics
@@ -172,8 +177,11 @@ campaign profile**, and build:
    These are checked on every cut: a hook that works with the sound off, text over the face or the
    product, text in the Reels and TikTok screen zones (positions as shares of the frame's height),
    a missing or wrong disclaimer, and a black or logo first frame.
-4. **Ad names.** For each variant, its ad name from the campaign's `adNaming` when one is saved,
-   else the shape in **CAS paid**, **Tying an ad to its variant**, **Names before launch**. A
+4. **Ad names.** For each variant, its ad name filled from the campaign's `adNaming` template, the
+   convention Atlas matches ads to variants by, whether its `source` is `campaign` or `default`,
+   and the marker its campaign or ad set name must hold. Only when `get_cas_campaign` returns no
+   `adNaming` does the page take the shape in **CAS paid**, **Tying an ad to its variant**, **Names
+   before launch**, and say that ads named that way can't be matched until a convention is saved. A
    tracker row whose `adName` doesn't map to one creator and one variant is listed with the name
    proposed in its place. Names are proposed before launch only: never rename a live ad.
 5. **Records to doubt.** A creator listed twice, notes copied from another creator, a variant label
@@ -190,7 +198,7 @@ revision), the concept doc and the version's `plan-v{k}`:
   0:08 to 0:12, it holds on a still product shot with no voiceover"; "move the product name from
   0:09 into the first 3 seconds, the brief asks for it by 0:03"). Prefer fixes from footage already
   shot.
-- The verdict comes first: ready for Aspire QA, ready once the must-fixes are made, or needs a
+- The verdict comes first: ready to send to {brand}, ready once the must-fixes are made, or needs a
   reshoot, with the one change most likely to move the result.
 - Script fidelity: lines dropped, reordered or improvised against the concept, each with its
   second, when a transcript is available.
@@ -203,8 +211,9 @@ campaign** **1e**, **What the page keeps** sets out for an agency only comment:
 `agency/comments/items/{comment}`, `{comment}` a new random id, with `on:` `cut-{cut}-v{k}`,
 `timecode:` (seconds, to three decimals), `frame:` when `fps:` is known, `text` (the severity, then
 the fix: "Must fix before launch: the disclaimer is missing under the 0:06 claim. Add it on screen
-from 0:06 to 0:09."), `createdAt:`, and `author` `claude` and `byName` "Claude", as on Claude's
-activity entries. A fix about the cut as a whole is one general comment with no `timecode:`. Each
+from 0:06 to 0:09.") and `createdAt:`, the same fields a person's agency only comment has, written
+as the CM as all of Claude's page data writes are. A fix about the cut as a whole is one general
+comment, its `timecode:` empty. Each
 comment logs one entry, kind `comment`, verb `commented`, tab `review`, in `agency/activity-claude`
 (**CAS campaign** **1e**, **The activity log**), in the same batch. Agency only comments are never
 moved where the client reads, so nothing reaches the client unless an Editor writes it there; the
@@ -227,7 +236,8 @@ The agent returns them as one picker (Build, Change, Widen) before the first bui
 
 ## The page
 
-In the page standard's skeleton order. Titles: "Creative baseline: {campaign}, wave {n}" and
+Both modes use the page standard's Plan template, the fixes being its steps, each with its owner:
+it grows with the cuts, the pairs and the fixes. In the page standard's skeleton order. Titles: "Creative baseline: {campaign}, wave {n}" and
 "Draft feedback: @{handle} V{v}, version {k}".
 
 1. **Who it is for and what it covers:** the reader, the campaign, the round and wave, the cuts and
@@ -263,10 +273,15 @@ In the page standard's skeleton order. Titles: "Creative baseline: {campaign}, w
   - `untested`: the tests the brief meant to run that no variant covers, one plain line each.
   - `fixes`: `[{cut, version, at, severity, text}]`, `at` seconds into the cut, `severity` must,
     should or consider.
-  - `names`: `[{cut, adName, from}]`, the proposed ad names, `from` campaign or default.
+  - `names`: `[{cut, adName, convention}]`, the proposed ad names, `convention` the `adNaming`
+    `source` they were filled from (`campaign` or `default`), or `none` when no convention was
+    returned.
 
   A repeat baseline for the same round writes a new finding with every field, and the newest
-  wins.
+  wins. When the finding is too large to save, `tags` go first, then the longest `text` of each fix
+  is cut to its first sentence, and `truncated` lists what was cut, so a reader shows "Shortened, the
+  full tables are on the Creative baseline page" and reads them from `page`. The rows, pairs, fixes'
+  seconds and names are never dropped.
 - **The comments** (`approve-comments`): the agency only comments above, on the campaign page.
 - Nothing else. The flow keeps no setup record of its own and never writes a `cut`, `roster` or
   `brief` finding, a cut call, a brief check tick or an ad.

@@ -155,9 +155,9 @@ Readout's Leadership lens, the competitive brief), still fits its argument on th
 | -------- | ------ |
 | Readout | daily-insights-report, weekly-insights-report, market-signal, quarterly-signal, profile-analyst |
 | Shortlist | creator-discovery, creator-vetting, ad-reuse |
-| Verdict | content-review, post-analysis, quality-review, cas-creative-review |
+| Verdict | content-review, post-analysis, quality-review |
 | Profile | creator-profile |
-| Plan | creator-brief, shops, creator-outreach, creator-negotiation |
+| Plan | creator-brief, shops, creator-outreach, creator-negotiation, cas-creative-review |
 | Dashboard | program-dashboard, program-ledger, deliverable-tracker, roster-manager, affiliate-manager, campaign-orchestrator, content-library, content-sourcing, product-fulfillment |
 
 The PPA pitch uses no template: its page is a deck with a fixed set of eleven slides

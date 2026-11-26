@@ -278,7 +278,7 @@ code.
 | P7 | Pitch a creator ad campaign for {brand} from one prompt. | `leadership` (the client's budget owner) | None | Waiting on the creator ad pitch deck |
 | P8 | Build the creative packet for {brand}'s campaign. | `campaign` | None | Waiting on the creative packet |
 | P9 | Start a creator ad campaign for {brand}. | `team` | None | Waiting on the campaign intake and kickoff |
-| P10 | What does each cut test, and what needs fixing before spend? | `performance` | `atlas-cas-creative-review` | Ready |
+| P10 | What does each cut test, and what needs fixing before spend? | `team` | `atlas-cas-creative-review` | Ready |
 | P11 | Fixes, to the second, on a draft cut. | `creative` | `atlas-cas-creative-review` | Ready |
 | O1 | Why did last week's Reels do so well? | `team` | `atlas-profile-analyst` | Ready |
 | O2 | What are creators saying about us compared with our biggest competitors? | `team` | `atlas-market-signal` | Ready |
