@@ -25,7 +25,7 @@ third person (the run id prefix does not count toward them). Pass `asProfileId` 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-discovery.md` before starting. It
 holds the campaign calibration keys, the tier model, how scoring applies the vetting map, the pool state
 machine, the page structure, delivery, and the unattended run rules. Follow it exactly.
-Every creator on the page is drawn with the creator card in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`; read it too. Each candidate's estimated fee comes from the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the saved `fees:rate-card` from your calibration read, or the Aspire recommended rates without one, applied to view counts on the posts you already fetched.
+Every creator on the page is a card in the page data's `sections.creators`, filled with what `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md` puts on a creator card (**Data: what fills each section**, **Images**); read it too. Each candidate's estimated fee comes from the fee calculator in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the saved `fees:rate-card` from your calibration read, or the Aspire recommended rates without one, applied to view counts on the posts you already fetched.
 
 **Fit score.** Score fit only by **How criteria become points** in
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-vetting.md` (section **1. Brand fit**), as
@@ -130,11 +130,13 @@ the category read of paid partners belongs to vetting.
    apply one.
 9. Write `action_item` findings for every candidate added or re-scored, per the reference's
    `detail` shape, with an `idempotencyKey` per candidate per run.
-10. Build and republish the living page to the same path per the reference, **The living
-    page**: it is the working list behind question I1, and the slate that answers I1 is the
-    vetting page built from this pool. Apply `theme:brand` when saved
-    per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, then deliver per
-    `campaign:{slug}-routing`.
+10. Return the living page as page data for the **Shortlist** template, per the reference, **The
+    living page**, and fill it with the fill script per
+    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, section 1; write no HTML, and make
+    every fix in the data. It is the working list behind question I1, and the slate that answers
+    I1 is the vetting page built from this pool. Put `theme:brand` in the data's `theme` when
+    saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**.
+    Republish the printed page to the same path, then deliver per `campaign:{slug}-routing`.
 
 **Output format (summary for the main thread, under 250 words)**
 
