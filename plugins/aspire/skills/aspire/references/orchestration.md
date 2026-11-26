@@ -242,13 +242,10 @@ it" confirms them. A saved "save to Atlas" never skips Save: it is asked with "S
 gets the Save question in the next call, and the run writes only on its answer. A flow question a
 saved record answers takes that answer as its (Recommended) option, with its source.
 
-**Remembering an answer.** Ask "Remember" once per request, only when the person changed a
-pre-filled answer (a saved one or a default), when the Scope or Save question was asked because
-no saved record supplied it, or when the person picked a persona in Heard while their own record
-has no role. A run whose answers all came from saved records and stayed as they were is never
-asked, and an unattended run never asks and writes neither record. Read **Remembering answers**
-before the setup reply when it will ask Scope or Save, and otherwise as soon as its answers show a
-changed pre-filled answer or a persona picked in Heard: it holds the options and the writes.
+**Remembering an answer.** Read **Remembering answers** before the setup reply when it will ask
+Scope or Save, and otherwise as soon as its answers show a changed pre-filled answer or a persona
+picked in Heard: it holds when "Remember" is asked, its options and the writes. An unattended run
+never asks and writes neither record.
 
 ### A repeat run (what changed, not setup)
 
@@ -281,6 +278,8 @@ code.
 | P7 | Pitch a creator ad campaign for {brand} from one prompt. | `leadership` (the client's budget owner) | None | Waiting on the creator ad pitch deck |
 | P8 | Build the creative packet for {brand}'s campaign. | `campaign` | None | Waiting on the creative packet |
 | P9 | Start a creator ad campaign for {brand}. | `team` | None | Waiting on the campaign intake and kickoff |
+| P10 | What does each cut test, and what needs fixing before spend? | `team` | `atlas-cas-creative-review` | Ready |
+| P11 | Fixes, to the second, on a draft cut. | `creative` | `atlas-cas-creative-review` | Ready |
 | O1 | Why did last week's Reels do so well? | `team` | `atlas-profile-analyst` | Ready |
 | O2 | What are creators saying about us compared with our biggest competitors? | `team` | `atlas-market-signal` | Ready |
 | O3 | Leadership wants to know where we stand against competitors, and what to do. | `leadership` | `atlas-market-signal` | Ready |
@@ -417,6 +416,7 @@ below, never from what an agent's prompt says it may do.
 | `atlas-ad-reuse` | write | Saves the ranked candidates |
 | `atlas-affiliate-manager` | send | Creates discount codes in a connected store |
 | `atlas-campaign-orchestrator` | read | Ranks next actions; writes nothing |
+| `atlas-cas-creative-review` | write | Saves the baseline; comments on cuts |
 | `atlas-content-library` | write | Saves the library's records |
 | `atlas-content-review` | write | Saves findings and review lessons |
 | `atlas-content-sourcing` | write | Saves rights requests and asset requests as drafts |
