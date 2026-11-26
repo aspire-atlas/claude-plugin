@@ -133,6 +133,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Readouts** (its Schedule is the scheduling steps other flows follow) | `references/readout.md` |
 | **Market signal** | `references/market-signal.md` |
 | **Quarterly signal** | `references/quarterly-signal.md` |
+| **CAS creative review** | `references/cas-creative-review.md` |
 | **Theme** (Setup, Applying) | `references/theme.md` |
 | **Fee calculator** (Setup, Applying) | `references/fees.md` |
 | **Theme**, Offers; **Fee calculator**, Offers; **Quality review**, The offer; **Decision audit**, The offer | `references/offers.md` (when: **Offers** below) |
@@ -147,7 +148,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 
 ## Model tiers (which model each agent runs on)
 
-Basic work (reading what Atlas holds, publishing a page, drafting a message) runs on a smaller model. Work that decides money, rights, brand safety, or a creator's fate, judges video frames, or synthesizes many saved records runs on the session's model (`inherit`: pass no `model`). Each agent file's frontmatter carries the same `model:` (`scripts/check-agent-roster.sh`). No agent runs on Haiku, whose smaller context cannot hold their reads; a person may still say "use Haiku".
+Basic work (reading what Atlas holds, publishing a page, drafting a message) runs on a smaller model. Work that decides money, rights, brand safety, or a creator's fate, judges video frames, or synthesizes many saved records runs on the session's model (`inherit`: pass no `model`). No agent runs on Haiku, whose smaller context cannot hold their reads; a person may still say "use Haiku".
 
 | Agent | Model | Why |
 | --- | --- | --- |
@@ -177,6 +178,7 @@ Basic work (reading what Atlas holds, publishing a page, drafting a message) run
 | `atlas-program-ledger` | sonnet | Records and matches rows exactly, leaves doubtful ones unmatched, never pays |
 | `atlas-program-dashboard` | sonnet | Shows saved numbers against goals; acts on nothing |
 | `atlas-shops` | sonnet | A plan from held data; platform rules hedged and never stated without a source |
+| `atlas-cas-creative-review` | inherit | Judges cuts from video frames |
 
 Record the model in the decision log's launch line (**Decision audit**) as one clause ("on
 sonnet", "on the session model", "on opus by request").
