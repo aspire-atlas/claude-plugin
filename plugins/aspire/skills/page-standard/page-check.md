@@ -129,7 +129,8 @@ drove drive drives beat beats grew grow grows rose rise rises fell falls led lea
 made make makes got get gets went go goes ran run runs hit hits held hold holds kept keep keeps saw see sees
 took take takes gave give gives brought bring brings came come comes sold sell sells spent spend spends
 cut cuts doubled tripled halved need needs works worked beat outperformed lags lagged boost boosts hurt hurts
-lift lifts drop drops climb climbs slip slips jump jumps
+lift lifts drop drops climb climbs slip slips jump jumps may might top tops lead dominate dominates carry carries
+outpace outpaces trail trails dip dips surge surges
 """.split())
 # Small words a period phrase leaves behind ("Results for Q3", "Summary of week 12").
 TRAILING = frozenset("for of in on at from during this last next the".split())
