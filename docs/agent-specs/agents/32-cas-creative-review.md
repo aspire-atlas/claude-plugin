@@ -21,7 +21,7 @@ fixes to the second, so the next version comes back right.
 
 | Code | Question | Primary reader | Eval reader | Kind of page | Approved example | Eval question |
 | ---- | -------- | -------------- | ----------- | ------------ | ---------------- | ------------- |
-| P10 | What does each cut test, and what needs fixing before spend? | Self | performance | Plan | None yet | CAS1 |
+| P10 | What does each cut test, and what needs fixing before spend? | Self | performance | Plan | Reference page (ASP-6102) | CAS1 |
 | P11 | Fixes, to the second, on a draft cut. | Self | creative | Plan | None yet | CAS5 |
 
 ## Skills carried (5)

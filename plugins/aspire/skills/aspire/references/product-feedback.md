@@ -42,6 +42,7 @@ from here:
 | Feedback on a page or deck, with its link ("the headline is wrong on {link}", `feedback {link}`) | Pick the brand profile, then **Quality review**, Run step 7 (Feedback later). A link that only illustrates a point about Atlas ("export to a sheet like {link}") stays here |
 | A call on a creator ("never show us @handle again") | **Creator vetting**, its feedback section. When they also ask to tell the team, run this flow for that sentence afterwards |
 | A lesson for the next content review ("we never allow alcohol in frame") | **Content review**, its feedback section |
+| Fixes on a CAS campaign's draft cut ("feedback on this draft", "notes on this cut", with or without the cut's link) | **CAS creative review**, P11 |
 
 When one message holds both ("the vetting page got @handle wrong, and I wish it exported to a
 sheet"), hand the brand part to its flow first, then run this flow for the part about Atlas.

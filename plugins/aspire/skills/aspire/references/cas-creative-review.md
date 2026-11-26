@@ -50,7 +50,7 @@ these, each as one `AskUserQuestion` picker, skipping any the person already ans
 
 | Id | Question | Options (recommended first) |
 | -- | -------- | --------------------------- |
-| CR1 | Which cuts should I review? | P10: "Every cut in round {n} on Content Review (Recommended)", "Only the approved cuts", "Cuts I'll attach". P11: one option per cut in the current round whose newest version has no call yet, newest first (at most 3), and "A cut I'll attach or link" |
+| CR1 | Which cuts should I review? | P10: "Every cut in round {n} on Content Review (Recommended)", "Only the approved cuts", "Cuts I'll attach". P11: one option per cut in the current round whose newest version has no call yet, newest first (at most 3); with none, the round's newest cut, marked "already called"; and "A cut I'll attach or link" |
 | CR2 | Who reads this? | P10: "The campaign manager and the editors (Recommended)", "Paid social", "Only the editors". P11: "The editors (Recommended)", "The campaign manager" |
 | CR3 | Is there a transcript or a script read for these cuts? | "No, check what the frames show (Recommended)", "Yes, I'll paste it". Asked only when no cut in the set has a live post with an Atlas transcript |
 
@@ -69,7 +69,7 @@ person chose.
 ## The reader
 
 The default reader is `team` for P10, the campaign manager who owns the wave and passes the fixes
-to the editors, then `creative`; and `creative` for P11, the editor who makes the fixes. Every
+to the editors, who read it next; and `creative` for P11, the editor who makes the fixes. Every
 reader is on the agency side: the page is never written for the client and never sent to one.
 
 - **Campaign manager first (`team`):** the answer leads with how many variants are ready to run and
@@ -167,12 +167,9 @@ Every claim about a cut rests on frames the agent has viewed itself, from the cu
 For every cut in the set, follow **CAS paid**, **Reviewing a cut before spend**, from **The
 campaign profile**, and build:
 
-1. **The variant rows.** One row per variant, as **CAS paid**, **Tying an ad to its variant**, **The
-   variant row** sets out: the creator, lane, persona, product, variant and length; the hook id (or
-   `improvised`) and its text; the second the product is first seen and first named; each claim
-   with its second and whether its disclaimer is right; the CTA id and its second; the edit
-   treatments, in their codes; the guideline checks; and the date its usage ends. Tag each cut with
-   **Element tags**.
+1. **The variant rows.** One row per variant with every field **CAS paid**, **Tying an ad to its
+   variant**, **The variant row** names, plus the cut, the version, the lane and the cut's **Element
+   tags**.
 2. **The difference map.** For each pair that will run side by side (the same creator first, then
    the same lane), what really differs, what it will test, and the one figure that will answer it.
    Name the pairs that differ in nothing that matters as near duplicates: they split spend and teach
