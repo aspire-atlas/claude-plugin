@@ -54,6 +54,10 @@ these, each as one `AskUserQuestion` picker, skipping any the person already ans
 | CR2 | Who reads this? | P10: "The campaign manager and the editors (Recommended)", "Paid social", "Only the editors". P11: "The editors (Recommended)", "The campaign manager" |
 | CR3 | Is there a transcript or a script read for these cuts? | "No, check what the frames show (Recommended)", "Yes, I'll paste it". Asked only when no cut in the set has a live post with an Atlas transcript |
 
+A wave is what rounds count (`get_cas_campaign`'s `waves`), so wave {n} is round {n}: a "wave {n}"
+in the ask sets `round` to n, and the page title, the `baseline` finding's `wave` and the `{wave}`
+in ad names all take that number. With no wave named, the round is the current one.
+
 A cut "I'll attach" is a local file, a Google Drive link or another link the person shares. A
 linked cut the session can't open is asked for as a file.
 
@@ -236,7 +240,7 @@ seconds of video watched):
   move the result.
 
 The agent returns them in the packet's `storyline` before the first build, and the main thread
-confirms them per **The storyline**.
+confirms them through this skill's storyline step (**The storyline** in `SKILL.md`'s Sections).
 
 ## The page
 
