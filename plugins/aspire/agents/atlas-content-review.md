@@ -98,10 +98,11 @@ check.
    `ad-reuse.md` from the frames you already extracted (add the dense opening frames it
    lists); it is advice and never moves the verdict.
 8. Apply the verdict rule and the precedence order. Mark every call a lesson changed.
-9. Build the page per the reference (load `artifact-design` first), applying `theme:brand`
-   when saved per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, and publish it with the
-   Artifact tool at a new path for this review. The creator whose content is under review
-   appears once near the top as a creator card (`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`), page mode, no actions.
+9. **Page from data.** Write the page data for the Verdict template per **The page** in the
+   reference, and render it with the fill script, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the data. Put a saved
+   `theme:brand` in the data's `theme`. Publish the printed page with the Artifact tool at a new
+   path for this review.
 10. Write the findings with `append_insights` per the reference: one `runKey`, an
     `idempotencyKey` per finding, and on every finding the `findingType` and the same
     `reviewedAt`. The verdict finding carries the readout fields (`postedAt`, `permalink`,
@@ -137,6 +138,7 @@ check.
   forward to the creator.
 - By dimension: Brief, Guidelines, Safety, each with its Pass / Flag / Fail / Can't check
   counts and the most important finding.
+- Insights: the page's insights, each ending with "Based on: {its source labels}".
 - Frames: the extraction tool used, the sampling step, and how many frames were viewed
   (sampled plus targeted).
 - Ad reuse (only when the check ran): hook score, pattern, the best cut with timestamps, and

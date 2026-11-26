@@ -18,17 +18,17 @@ tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person 
 
 Read these before starting:
 
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-profile.md`: the page, every section's data
-  rule and leave-out rule, the style block, and the template.
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`: the card at the top of the page and
-  the **Images** snippet.
-- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the Recommended fees section.
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-profile.md`: the page data, every part's data
+  rule and leave-out rule.
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-card.md`: the number format, the card's rules,
+  and the **Images** snippet.
+- `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/fees.md`: the recommended fees.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`: **Resolve** and **Peer set**.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**, only when a
   `theme:brand` record exists.
 - `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`: render for the primary lens.
-  The sections and their data rules never change; the lens sets the headline, the "Prepared for"
-  chip, and which sections lead: `growth` leads with fees and engagement against peers,
+  The parts and their data rules never change; the lens sets the answer, the reader, and which
+  insights and figures lead: `growth` leads with fees and engagement against peers,
   `campaign` with fit to the campaign and availability of a contact route, `brand` with brand
   safety and partnerships, `performance` with the top posts' openings.
 
@@ -59,7 +59,7 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
 6. **Read the creator.** The creator record with its demographics (project the network container
    without excluding the demographics blobs), and up to 100 recent posts with the fields
    `creator-profile.md` lists. Project the `media` container, not its leaf paths.
-7. **Analyze** for each section in `creator-profile.md`, following its data rules and leave-out rules
+7. **Analyze** for each part in `creator-profile.md`, following its data rules and leave-out rules
    exactly: the summary, facts, audience, KPIs, top and lowest posts, the engagement series, the
    insights, sentiment, brand safety, and partnerships.
 8. **Peers.** Build the peer set per **Peer set** in `account-resolution.md`, starting from the
@@ -67,23 +67,25 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
 9. **Price** per `fees.md`: the saved `fees:rate-card`, or the Aspire recommended rates without one,
    applied to this creator's views, including **Estimated views from engagement** where it applies.
    No price where the calculator gives none.
-10. **Next steps.** Two or three ranked recommendations for the brand, each with a priority (High,
-    Medium, Monitor), a lead sentence, and one line of reason. They are recommendations on the page,
-    not saved action items.
-11. **Build and publish.** Load `artifact-design` and `dataviz`. Embed every image with the **Images**
-    snippet, page profile, using the kinds in `creator-profile.md`, **Images**, and writing the
-    snippet's output to a scratch file rather than reading data URIs back. Build the page per `creator-profile.md`, apply `theme:brand` when saved, and
-    publish with the Artifact tool, title "{Name or @handle} Creator Profile", republishing to the same
+10. **Next steps.** Two or three ranked recommendations for the brand, each with its owner, date,
+    expected effect, the /aspire job that does it, and its cost. They are recommendations on the
+    page, not saved action items.
+11. **Page from data.** Write the page data for the Profile template per **The page** and **Data
+    behind each part** in `creator-profile.md`, and render it with the fill script, per
+    `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the data. Encode
+    post images per that section 7, writing the snippet's output to a scratch file rather than
+    reading data URIs back. Put a saved `theme:brand` in the data's `theme`, and
+    publish the printed page with the Artifact tool, title "{Name or @handle} Creator Profile", republishing to the same
     file path for the same handle. No Artifact tool: save the page as a file and return its path, per
     `skills/page-standard/page-file.md`.
-12. Never invent data. A section with nothing behind it is left out and named under Data gaps.
+12. Never invent data. A part with nothing behind it is left out and named in the method's notes.
 
 **Output format (under 200 words):**
 
 - The page link, on its own line.
 - Headline: one sentence on whether this creator fits the brand, and why.
 - 3 to 5 bullets, each with a number: reach and engagement against the peers, what their best posts
-  share, audience, brand safety, partnerships.
+  share, audience, brand safety, partnerships. Each ends with "Based on: {its source labels}".
 - Fees: open, target, and max with the rate label, the bundled views behind them, and "est. from
   engagement" where it applies. Or "No price" and the missing input.
 - Data gaps: lead with the freshness line (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9.2), and whether it was refreshed in this run.

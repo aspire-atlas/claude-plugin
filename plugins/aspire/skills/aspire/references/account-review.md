@@ -37,7 +37,7 @@ against competitors goes to **Market signal**.
    skips this check: the agent owns resolution and the freshness check.
 4. Launch the `atlas-profile-analyst` subagent with: `profile_id`, `profile_slug`, the tool prefix,
    `target_mode`, the handles and networks for that mode, `recipient` (**Reading the ask**;
-   `team` during onboarding), `onboarding: true` when this is the first run at the end of onboarding, `run: unattended` for a scheduled run, and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
+   `team` during onboarding), `onboarding: true` when this is the first run at the end of onboarding, `page: true` only when the user asked for the review as a page, `run: unattended` for a scheduled run, and a digest of the Phase 5 calibrations. In mode `handle`, state that the user approved the fetch so the agent does not
    ask again. State that the calibrations are for classification and relevance only: a named
    account is never benchmarked against the brand's own account or the brand's competitors.
    It is compared against its **own** peers — accounts the user named, or "like" accounts in the
@@ -61,8 +61,9 @@ against competitors goes to **Market signal**.
    `creator-cards` block and `visual-data` block for later. When the user asks to see them: "show me the card" draws the
    account's card per **Creator card**, **Cards in chat** (the host draws it from
    `lookup_creators` on the reviewed handle, which Atlas holds after this review); "show the
-   posts" does the same with `lookup_posts` on the top and bottom posts; "chart it" builds a
-   page with the engagement pattern the headline rests on. When the reviewed account is a
+   posts" does the same with `lookup_posts` on the top and bottom posts; "chart it" relaunches
+   `atlas-profile-analyst` on the same target with `page: true`, and it publishes the review as
+   a page through its template. When the reviewed account is a
    creator, offer its full profile in one line after the summary (**Creator profile**).
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode, never start a
    lookup, and write nothing to Atlas; the agent returns the findings and pushes only.

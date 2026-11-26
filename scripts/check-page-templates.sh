@@ -9,6 +9,9 @@
 #   - every agent has one template or a reason it has none, the mapping table in templates.md says
 #     the same, and every agent is a job an action can name. A scaffold from new-agent.sh still holding
 #     TODO(new-agent) lines is reported as waiting until it is filled in
+#   - every agent with a template renders through it: its file names its template ("the Readout
+#     template") and templates.md, and no longer loads artifact-design or dataviz to draw the page.
+#     The agents not converted yet are listed in NOT_CONVERTED below, which only shrinks
 #
 #   scripts/check-page-templates.sh
 set -euo pipefail
@@ -81,6 +84,29 @@ for a, where in sorted(mapped.items()):
 jobs = set(schema["$defs"]["action"]["properties"]["job"]["enum"])
 for a in sorted(agents - jobs - waiting):
     problems.append("agent %s is not a job in page-data.schema.json" % a)
+# Agents that still draw their own page. The list only shrinks: an agent converted to its template
+# leaves it, and a listed agent that already renders through its template fails until removed.
+NOT_CONVERTED = {"creator-discovery", "creator-vetting", "ad-reuse", "creator-brief", "shops", "creator-outreach",
+                 "creator-negotiation", "program-dashboard", "program-ledger", "deliverable-tracker", "roster-manager",
+                 "affiliate-manager", "campaign-orchestrator", "content-library", "content-sourcing",
+                 "product-fulfillment"}
+for a, where in sorted(mapped.items()):
+    if where == ["none"] or a not in agents or a in waiting:
+        continue
+    body = (agents_dir / ("atlas-%s.md" % a)).read_text()
+    name = tpl["templates"][where[0]]["name"]
+    renders = ("the %s template" % name) in body and "page-standard/templates.md" in body
+    if a in NOT_CONVERTED:
+        if renders:
+            problems.append("agent %s renders through the %s template: remove it from NOT_CONVERTED" % (a, name))
+        continue
+    if not renders:
+        problems.append("agent %s does not render through its template: name \"the %s template\" and templates.md" % (a, name))
+    for skill in ("artifact-design", "dataviz"):
+        if ("`%s`" % skill) in body:
+            problems.append("agent %s renders through its template but still loads %s to draw the page" % (a, skill))
+for a in sorted(NOT_CONVERTED - set(mapped)):
+    problems.append("NOT_CONVERTED names %s, which has no template" % a)
 doc = (ps / "templates.md").read_text()
 table = re.search(r"^## 6\. .*?\n\| Template \| Agents \|\n\|[- |]+\|\n(.*?)\n\n", doc, re.S | re.M)
 if not table:

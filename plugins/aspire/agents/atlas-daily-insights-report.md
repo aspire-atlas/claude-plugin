@@ -80,14 +80,13 @@ run rules. Follow it exactly.
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/meta-ads-tools.md`. Load `list_ad_accounts`
    under the Atlas prefix; only accounts linked to this Profile with `is_ads_mcp_enabled` true are
    in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
-   block out, name the reason under "What is missing", and finish the report. Never call a Meta
+   block out, name the reason in the page's gaps, and finish the report. Never call a Meta
    write tool.
-5. Build the page per **Daily readout** in the reference (the answer block with the storyline's
-   bullets, KPI strip, 28-day sparkline, post cards with embedded media, flags block, then a
-   launch pulse section per open campaign). Load `artifact-design` and `dataviz` first. Apply
-   `theme:brand` when saved, per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`,
-   **Applying the theme**. Publish with the Artifact tool, title "<Brand> Daily Insights Report",
-   republishing to the same path.
+5. **Page from data.** Write the page data for the Readout template, `length: daily`, per
+   **Daily readout**, **Page data** in the reference, and render it with the fill script, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the data. Put a saved
+   `theme:brand` in the data's `theme`. Publish the printed page with the Artifact tool, title
+   "<Brand> Daily Insights Report", republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available. Report any
    destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
@@ -100,8 +99,8 @@ run rules. Follow it exactly.
 
 - Headline: the primary lens's result with its comparison (reference, **Data pull**, **Ranking**;
   for `team`, the lead metric vs 28-day median with percent delta).
-- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
-  it; the Slack message and the email carry the same ones (reference, **Scheduled
+- Storyline: the page's insights, each with the posts, accounts, or views behind it and ending
+  with "Based on: {its source labels}"; the Slack message and the email carry the same ones (reference, **Scheduled
   (unattended) runs**, Storyline).
 - Yesterday: posts, engagement, best post with its number and link.
 - Flags: anomalies and red-line hits with links, or "none".

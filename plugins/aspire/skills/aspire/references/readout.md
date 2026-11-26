@@ -95,7 +95,7 @@ Before asking anything, call `search_calibrations` (no filter, limit 100 per pag
 | R3 | What counts as worth flagging? | 1) 25% above or below the 28-day median (Recommended); 2) 50% swing only; 3) I'll set thresholds (type them) | `guideline` | `guideline:readout-thresholds` | `{concern: "preference", appliesTo: ["readout"], body: "<threshold rule>"}` |
 | R4 | Which metric should lead every readout? | 1) Engagement per post; 2) Reach and views; 3) Saves and shares; 4) Follower growth | `guideline` | `guideline:readout-focus` | `{concern: "preference", appliesTo: ["readout"], body: "<metric>"}` |
 | R5 | What should interrupt you between scheduled readouts? | 1) Red-line hits only (Recommended); 2) Red-line hits and a 50%+ drop in the lead metric; 3) Nothing, wait for the schedule | `policy` | `policy:readout-escalation` | `{area: "escalation", body: "<rule>"}` |
-| R6 | Who reads the weekly readout? The first one picked leads; each other gets its own section. (multiSelect) | 1) Our social team (tactical) (Recommended); 2) Leadership (outcome first); 3) Product and product marketing (parity and messaging); 4) Growth (creator and channel efficiency). A reader may carry its own destination in the free text field, for example "product > slack:#product-feedback" | `guideline` | `guideline:readout-audience` | `{concern: "preference", appliesTo: ["readout-weekly"], body: "primary: <lens>; lenses: <lens>[><destination>], ..."}` |
+| R6 | Who reads the weekly readout? The first one picked leads the page; each other gets a line on it and its own bullets in the summary. (multiSelect) | 1) Our social team (tactical) (Recommended); 2) Leadership (outcome first); 3) Product and product marketing (parity and messaging); 4) Growth (creator and channel efficiency). A reader may carry its own destination in the free text field, for example "product > slack:#product-feedback" | `guideline` | `guideline:readout-audience` | `{concern: "preference", appliesTo: ["readout-weekly"], body: "primary: <lens>; lenses: <lens>[><destination>], ..."}` |
 
 Rules:
 
@@ -209,25 +209,26 @@ lens**, **Rendering for a lens**, Headline and rank by the reader's result. What
 reports:
 
 - **`team` primary lens.** Posts rank by the lead metric (R4). Follower growth is an account
-  figure and no post carries it, so when R4 is follower growth it leads the headline and the KPI
-  strip, the posts rank by engagement per 1,000 views, and one line says so.
+  figure and no post carries it, so when R4 is follower growth it leads the headline and the
+  figures, the posts rank by engagement per 1,000 views, and one line says so.
 - **Every other primary lens** (leadership, growth, product, and pmm on the weekly; `campaign` or
   product on a launch pulse). These reports read no sales, sign-ups, spend, or campaign target for
   a post, and a capability or a message is not a figure a post carries. The posts rank by
   engagement per 1,000 views, with the fallback line naming the metric and the reason and no
-  connection. The lead metric stays in the KPI strip and the chart and does not set the order.
+  connection. The lead metric stays in the figures and does not set the order.
   The growth section keeps its own stand-in, estimated fee per 1,000 engagements (**Lenses**).
 - **The headline's comparison** is the one its figure has. A figure from this data pull compares
   with the 28-day median (daily) or the prior week and the 8-week median (weekly). A leadership
-  headline may cite a figure from the **Meta Ads** block when the run has one, labelled "Meta
-  Ads", with the comparison that block gives or none. A launch pulse saves no goal or target, so
+  headline may cite a Meta Ads figure when the run has one (**Meta Ads enrichment**), labelled
+  "Meta Ads", with the comparison Meta gives or none. A launch pulse saves no goal or target, so
   a `campaign` headline is the campaign creators' engagement per post against their own medians
   (**Daily launch pulse**, step 1).
 
 ## Meta Ads enrichment (optional, both agents)
 
-When the Meta Ads connector is live, the daily and weekly reports add one **Meta Ads** block from
-Meta's read tools. The report never depends on it. Follow **Meta Ads** (**Detection**,
+When the Meta Ads connector is live, the daily and weekly reports add Meta's read tools' figures
+to the page data, each with the source label "Meta Ads" and "Meta Ads" in `scope.tools`: a figure
+that makes the top three is an insight, the rest are KPI tiles or evidence lines. The report never depends on it. Follow **Meta Ads** (**Detection**,
 **Brand scope**, **Privacy**, **Reports**); in short:
 
 1. After the Atlas data pull, detect the connector with one `ToolSearch` (`+Meta_Ads
@@ -245,11 +246,11 @@ Meta's read tools. The report never depends on it. Follow **Meta Ads** (**Detect
    **Privacy**, always in an unattended run. Each figure is labelled "Meta Ads", kept apart from
    Atlas's figures and from organic, and turned into an insight with a next step (a swing to
    check, a delivery error to fix, a recommendation to try).
-4. Whenever the block is left out (connector missing, sign in expired, no linked or enabled
-   account, a call failed), add "Meta Ads data not included: {reason}" to the page's "What is
-   missing" and finish the report as normal. Never fail, stop, or retry more than once.
+4. Whenever Meta's figures are left out (connector missing, sign in expired, no linked or enabled
+   account, a call failed), add "Meta Ads data not included: {reason}" to the page's `gaps`
+   (or the method's notes when three gaps rank above it) and finish the report as normal. Never fail, stop, or retry more than once.
 
-Never a Meta write tool, in any run mode. Findings drawn from the block may join the run's
+Never a Meta write tool, in any run mode. Findings drawn from Meta's figures may join the run's
 `append_insights` under the same limits, with `detail.source: "meta_ads"`.
 
 ## Resolving "today" (both readouts)
@@ -286,15 +287,28 @@ Chat summary, under 150 words:
 - Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - One closing line: findings saved, page link.
 
-Page: one compact card. Header (brand, date, network, a "Prepared for" chip, and the animated mark
-at the top right). The answer block with the storyline's bullets (three, or fewer per
-**Orchestration contract** **2**, **Fewer bullets**: an empty window or a bullet the person
-dropped). KPI strip (posts, engagement, engagement rate, followers with delta). One 28-day sparkline
-of the lead metric with yesterday marked. Cards for yesterday's posts (media, metric row, one-line
-takeaway). Flags block. A content reviews block when any review ran yesterday: one row per review
-with verdict chip, creator, deliverable, open edits, and the review page link. Footer with the CDN
-expiry note, then the artifact-standard footnote (**Artifact standard**). Republish to the same path
-each day.
+**Page data** (the Readout template, `length: daily`; `skills/page-standard/templates.md`,
+sections 2 and 7). The template sets the layout; this sets what goes in each field:
+
+- `title`: "How did {brand}'s posts do on {day}?". `answer`: the headline, a finding with the
+  lead metric against the 28-day median and its percent delta. An empty day says so in the
+  wording above.
+- `figures`: posts published, the lead metric, and followers with the delta since the last
+  readout, each against its 28-day median or the last readout. `sections.kpis`: engagement,
+  engagement rate, and the other R4 metrics, each with its comparison.
+- `insights`: the storyline's bullets (three, or fewer per **Orchestration contract** **2**,
+  **Fewer bullets**: an empty window or a bullet the person dropped), each with the posts,
+  accounts, or views behind it as `evidence` and the 28-day median as `comparison`. The first may
+  chart yesterday against the median day as a stacked bar of likes, comments, shares, and saves.
+- `actions`: each red-line hit and escalation first (owner and timing from R5), then open action
+  items from earlier readouts that came due. `decisions`: anything that needs the reader's
+  approval; none is the usual.
+- `sections.posts`: yesterday's posts, each with its metrics, its views against the account's
+  usual, and its one-line takeaway as `why`.
+- `evidence`: the anomalies that are not insights, each with its permalink; one line per content
+  review run yesterday ("{verdict}: @{creator}, {deliverable}, {n} open edits", linked to the
+  review page); and, per open launch pulse, its lines (**Daily launch pulse**).
+- `footer.notes`: the repeat-window line when step 2b set it, and that images are a snapshot.
 
 Insights written (`append_insights`): `runKey` `readout-daily-{profile}-{YYYY-MM-DD}`,
 role `account_review`, `schema` = network, `entityKind` account or post, `entityId` the
@@ -326,16 +340,19 @@ target date. A caller may also pass a campaign slug for an on-demand pulse. For 
    friction creators state. For the `product` lens, group the friction by issue.
 4. **Drafts and verdicts.** The campaign creators' content reviews on the target date (step 6b).
 
-The pulse is a page section after the flags block, "How the launch is landing: {campaign}, day {n} of {N}",
-and three bullets in the chat summary. A pulse lens with its own destination gets its own Slack
+On the page, the pulse's strongest finding is an insight when it outranks the day's others;
+the rest are evidence lines, the first starting "How the launch is landing: {campaign}, day {n}
+of {N}", with the verbatims as linked lines and the campaign creators' posts in
+`sections.posts`. In the chat summary it is three bullets. A pulse lens with its own destination gets its own Slack
 or email message with the pulse bullets and the page link. Up to three extra findings per
 campaign (`detail.campaign`, `detail.recipient`), outside the daily cap of five. A pulse reads
 only what Atlas holds: no lookups, no marketplace. In the freshness line (**Page standard**,
 section 9), the campaign's accepted creators are subject accounts with their own entries and no
-refresh; mention posts and verbatims share the one mentions entry, marked `data-mention`.
+refresh; each creator whose post is in `sections.posts` gets its own entry (the template's `freshness`
+rule), and verbatims cite no account.
 Because a readout carries mention evidence, its page is checked for the paid label wording
-(**Page standard**, section 8, **Paid label or none**): a block that gives the brand's own organic
-figures carries `data-own`, and another account's post is never called organic or unpaid.
+(**Page standard**, section 8, **Paid label or none**): another account's post is never called
+organic or unpaid.
 
 ## Weekly readout
 
@@ -365,9 +382,9 @@ bullets per other saved lens:
 - Freshness: the freshness line (**Page standard**, section 9.2), with any refresh offer.
 - Data gaps and one closing line: findings saved, page link.
 
-**Lenses.** The analysis runs once; each saved R6 lens is a section of the same page, the
-primary first after the KPI strip, each with an anchor (`#lens-{lens}`). The `team` lens is the
-section list below. The others:
+**Lenses.** The analysis runs once. The primary R6 lens shapes the page (**Page data** below);
+each other saved lens is an evidence line there and two bullets in the chat summary. The `team`
+lens is the post-level detail above. The others:
 
 - **Leadership:** the outcome in one sentence, the trend, and two or three headline insights.
   One screen.
@@ -386,23 +403,28 @@ section list below. The others:
   creator that beat both medians gets a `went_well` finding with `detail.creator`,
   `detail.lens: "growth"`, and `detail.seedEligible: true`, which feeds discovery's lookalike tier.
 
-Page, sections in order:
+**Page data** (the Readout template, `length: weekly`; `skills/page-standard/templates.md`,
+sections 2 and 7). The page renders for the primary R6 lens; each other lens is one evidence line
+here and its bullets in the chat summary and the delivery message (templates.md, section 7,
+**Lenses**). The leadership lens keeps its argument to one screen.
 
-1. Header: brand, network, week label, prepared date, a "Prepared for" chip per lens, and the animated mark at the top right.
-2. The answer block: the headline and the storyline's bullets (three, or fewer per **Orchestration
-   contract** **2**, **Fewer bullets**: an empty window or a bullet the person dropped) with their
-   evidence (**Scheduled (unattended) runs**, Storyline). Then the KPI strip with week-over-week
-   deltas and the benchmark row from `target:weekly-health` when present.
-3. Lead-metric line chart, 9 weeks, last week highlighted.
-4. Top 3 and bottom 2 post cards with media, metric row, takeaway.
-5. Format and theme mix: one small-multiple bar pair (this week vs prior).
-6. Open action items table: item, source run (readout, creator brief, account review, or content review), age,
-   owner if known.
-6b. Content reviews: verdict counts as a small bar, the three most failed checks, and a row
-   per review with creator, verdict chip, open edits, and the review page link.
-7. Next steps, ranked.
-7b. One section per non-`team` lens, per **Lenses** above, in R6 order.
-8. Footer: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote (**Artifact standard**).
+- `title`: "How did {brand}'s week of {week label} go?". `answer`: the headline, the lead metric
+  against the prior week and the 8-week median.
+- `figures`: the three R4 metrics the primary lens ranks by, each against the prior week, with
+  the 8-week median or `target:weekly-health` in `comparison` when present. `sections.kpis`: the
+  rest of the numbers bullet (posts, engagement, engagement rate, reach or views, followers with
+  delta) and the format split against the prior week.
+- `insights`: the storyline's bullets (three, or fewer per **Orchestration contract** **2**,
+  **Fewer bullets**), drawn from what worked, what did not, the mix, and the primary lens's
+  block, each with its evidence. The first may chart the format or theme mix, this week against
+  the prior week, as stacked bars. The 9-week trend is the first insight's evidence in words.
+- `actions`: the 3 ranked next steps, each tied to a number above, with its cost.
+  `decisions`: anything a next step needs approved.
+- `sections.posts`: the top 3 and bottom 2 posts, each with its metrics, its usual, and the
+  pattern or the likely reason as `why`.
+- `evidence`: open action items (one line each: the item, its source run, its age in weeks, the
+  owner when known), the content reviews line (verdict counts, the most failed check, creators
+  reviewed more than once), and one line per non-primary lens linking its findings.
 
 Insights written: `runKey` `readout-weekly-{profile}-{ISO week, e.g. 2026-W38}`, role
 `account_review`. Kinds: `went_well` per top post pattern, `needs_improvement` per bottom
@@ -414,18 +436,11 @@ findings carry `detail.lens`. Growth creator findings are outside the 3 next-ste
 
 ## Page mechanics
 
-Embed every image as a data URI with the snippet in **Creator card**, **Images**, page
-profile, which also sets how the `<img>` is sized: `post@{card media width}` for post cards
-(the CSS width of the card's media, 360 by default), `detail@{W}x{H}` for a larger media panel
-(for example `detail@480x1000` for a tall carousel panel), `+text` on posts that are mostly text
-or graphics, and `avatar` for profile pictures. Pass `media.mediaUrl` first and
-`media.thumbnailUrl` after it, so each post comes from the full-size image or poster. Keep the
-images under 8MB and the page under 10MB, cutting images before quality per **Images**. Load the
-`artifact-design` and `dataviz` skills before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. Flags, deltas, and verdict
-chips keep their semantic colors. Publish with the Artifact tool,
-title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and republish to the same path
-each run so the link in Slack or email stays stable. Note once in the footer that images are
-a snapshot.
+Both readouts render through the fill script (`skills/page-standard/templates.md`, section 1)
+and write no HTML. Post images, the saved brand theme, and the footer follow templates.md,
+section 7; flags, deltas, and verdicts keep their semantic colors. Publish with the Artifact tool,
+title "<Brand> Daily Insights Report" or "<Brand> Weekly Insights Report", and republish to the
+same path each run so the link in Slack or email stays stable.
 
 **The `page` finding.** On a readout page's first publish, the run's `append_insights` call adds one
 `page` finding, shaped as a program page's (**Influencer program**, **Working state**): `runKey`
@@ -477,7 +492,7 @@ README). Rules for the agents:
   **Data pull**, step 2b, which starts no discovery.
 - If Atlas returns an unauthorized error, publish the "setup needed" card with "Aspire Atlas
   needs a fresh sign in" and stop.
-- Meta Ads is optional: a missing connector or an expired Meta sign in leaves its block out
+- Meta Ads is optional: a missing connector or an expired Meta sign in leaves its figures out
   (**Meta Ads enrichment**) and the run carries on. Never call a Meta write tool.
 - If a search returns nothing for the window, report it as **Page standard**, section 9.3 sets
   it ("Atlas has no data for {window}" unless Atlas fetched the account after the window ended)
@@ -486,7 +501,7 @@ README). Rules for the agents:
 **Storyline.** A scheduled readout, or a rerun of one already published, never stops to confirm its
 storyline: it is a `state` pass (**Orchestration contract**, **2**, **The storyline**): the agent
 drafts three bullets from the window's posts, each with the posts, accounts, or views behind it,
-and the page opens with them in the answer block, under the headline. The chat summary, the Slack
+and they are the page's insights, under the answer. The chat summary, the Slack
 message, and the email carry the same bullets, in the same order and wording. A window under
 the row's minimum (10 posts for what landed and why) still publishes, and the bullet it weakens says
 how few posts it rests on. A window with no posts, on a first run's `draft` pass too, gives "No

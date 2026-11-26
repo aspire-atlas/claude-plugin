@@ -130,98 +130,54 @@ Keep every downloaded file and frame in the run's own working folder.
 
 ## The page
 
-Sections in this order. Each section with no data behind it is left out, and its absence is
-listed under **Data gaps**. Sections marked (custom) are the ones a generic report would not
-have; never drop them when the data exists.
+Title: "Post Analysis: {short name}". The page is the Verdict template, filled from data and
+rendered with the fill script (`skills/page-standard/templates.md`, sections 1, 2 and 7); it writes
+no HTML, and the template sets the layout. Its argument fits two screens, so the analysis below is
+ranked into the fields, never drawn as extra sections. Anything with no data behind it is left
+out and named in `gaps` or the method's notes. The brand's question picks the order:
 
-1. **Header.** Eyebrow: "Post analysis · {network} {format} · Indexed by Atlas {date}". Title: a
-   short name for the post. One paragraph: who is in it, what happens, when it was posted (day
-   of week checked against the calendar, in the account's time zone when known). A "Prepared for"
-   chip names the reader from the lens (**Recipient lens**), and the animated mark sits at the top right.
-2. **Post card.** The cover or a frame, the author with avatar, followers and posts, format
-   and topic chips (including a sponsor lockup chip when one is on screen), the caption, the
-   published time, the people on screen, the language, and a link to the post.
-3. **KPI strip.** Views (and % of followers), likes (organic beside total), comments (organic
-   beside total), reposts or shares, interactions per view.
-4. **Executive summary.** A lead sentence that answers the brand's question, then four or five
-   numbered findings, each with a number and why it matters.
-5. **Organic vs. boosted engagement.** A stacked bar per metric from the organic and total
-   counts: the boost lift is total minus organic. Say who paid for the boost only when a record
-   says so; Atlas does not.
-6. **Content breakdown.** Structure by time range (hook, body, turn, close), the Atlas content
-   scores table (production, energy, authenticity, promotional intent) with a one-line read
-   each, and the primary emotion and tone.
-7. **Brands in the video (custom).** Every brand or mark seen or heard, grouped: paid sponsor,
-   wardrobe, show and founder brands, league and team marks, background or unidentified.
-   - A timeline chart: one lane per brand across the clip's length, bars for each on-screen
-     stretch, hover or focus for the range.
-   - One card per brand: a frame still at a stated time, the group pill, total seconds on
-     screen and the number of stretches, the ranges, and a one-line read (where it sits, how
-     legible it is, whether it is paid or disclosed).
-   - Seconds on screen and seconds legible are different: say so when a mark is on screen but
-     too small to read.
-   - A "not counted" line for marks seen but not identifiable, and for items deliberately left
-     out.
-   - Cross-check against `featuredBrands`. A brand Atlas lists that no frame shows, or one the
-     frames show that Atlas missed, is named.
-8. **Brand safety (custom breakouts).**
-   - Overall read: a verdict in a few words (Suitable / Suitable with conditions / Not
-     suitable as posted), the 12-category rollup bar, and one sentence on why.
-   - Stat tiles: spoken expletives, on-screen expletives, in the caption, first occurrence.
-   - The 12-category table: Atlas's risk level per category with the evidence from the
-     transcript, the on-screen text, and the frames. Where the agent's own read differs from
-     Atlas's, show both.
-   - **Where the profanity sits:** a timeline over the clip with each instance marked, the
-     sponsor lockup's span drawn under it when there is one, and the cleanest trim (the last
-     clean line and its time, and what the trim loses).
-   - **Instance log:** number, the line as censored, speaker, on screen or not, time. Say how
-     speakers were identified (caption colour, framing, the transcript), and count an
-     asterisked or bleeped word as profanity. A cut-off word that is neither bleeped nor
-     spoken in full is listed but not counted.
-   - What lowers the risk and what raises it, as two short lists.
-   - **Fit by advertiser risk tolerance:** three tiers (conservative, standard, permissive),
-     each with the verticals it suits and whether to use the post as posted or trimmed. Label
-     it "Aspire read based on the scores and evidence above. Not an Atlas score."
-   - Apply the brand red lines (**Atlas tools**, Calibration kinds) as their own rows when they bear on the post.
-9. **Sponsor disclosure.** Whether the sponsor is named in the caption, hashtags, or
-   mentions; whether a disclosure word (#ad, "sponsored", "paid partnership") appears; how
-   often the account names sponsors in its other held posts. Instagram's "Paid partnership"
-   label is not held in Atlas: list it as a gap, never as absent.
-10. **Comment sentiment.** When `analysis.commentSentiment*` is filled: the label, the
-    positive / neutral / negative split, the themes, and the summary. When it is empty, say
-    so under gaps.
-11. **People and reuse rights.** Everyone on screen with their role and total seconds, from
-    the frames and the shot list, plus names that appear only as graphics. Then what any reuse
-    cut would need: likeness, trademarks on screen, league or team marks, and the audio
-    (`mediaAudioType` original or licensed, or "unconfirmed"). This is a checklist for the
-    brand's legal team, not legal advice.
-12. **Account baseline.** With Q2 not "Skip": a scatter of the account's held posts (views
-    against interaction rate), this post marked, its rank on views, interaction rate, and
-    comments per 1,000 likes, and the account medians. Warn when the held posts are far from
-    the post's own date.
-13. **Performance read.** A rates table, each rate with the counts it is computed from:
-    views per follower, like rate, comment rate, repost or share rate, interaction rate on
-    views and on followers, boost share of likes and comments.
-14. **What this means for {brand}.** Three to five takeaways for the requesting brand, from
-    its brand memory: what to copy, what to avoid, how it bears on a saved campaign. End with
-    "Not a benchmark for {brand}" when the account is a different size or category; compare it
-    only with its own peers.
-15. **Data gaps.** Everything the page could not show, and why.
-16. **Footer.** The snapshot time, which fields came from Atlas, how rates were computed, how
-    brand and profanity timestamps were derived (frames, transcript, audio), and that images
-    are a snapshot. The artifact-standard footnote follows them. The mark and the footnote follow
-    **Artifact standard**.
-
-Order for a lens: `brand` keeps the order above. `performance` and `creative` move sections 6,
-11, and 13 up after the executive summary and add the ad reuse check from **Ad reuse**,
-**Ad reuse check (content review)**: the hook score, the hook pattern, and the cut list. It is
-advice only and never changes the safety verdict.
-
-Load `artifact-design`, and `dataviz` for the charts, before building. Embed every image with
-the snippet in **Creator card**, **Images**, page profile; frames the agent extracted are
-encoded the same way from the local files. Apply `theme:brand` per **Theme**. Keep the page
-under 10MB: cut frame stills for background marks before lowering quality. Title:
-"Post Analysis: {short name}".
+- `title`: the brand's question about the post ("Is @{account}'s {format} safe to sponsor?").
+  `answer`: the verdict for that question in one sentence, with the number it rests on.
+  `scope.range` is the post's date, checked against the calendar in the account's time zone when
+  known.
+- `sections.verdict`: `call` is the brand-safety read in a few words (Suitable, Suitable with
+  conditions, Not suitable as posted); `reason` is the one sentence on why; `checks` holds, in
+  order: each of the 12 brand-safety categories rated above low risk (Atlas's level, with the
+  agent's own read beside it where they differ), profanity (spoken, on screen, in the caption,
+  first occurrence, and the cleanest trim with its time), sponsor disclosure (named in the
+  caption, hashtags, or mentions; a disclosure word; Instagram's "Paid partnership" label as not
+  held, never absent), each brand red line (**Atlas tools**, Calibration kinds) that bears on
+  the post, and reuse rights (likeness,
+  marks on screen, the audio as original, licensed, or unconfirmed: a checklist for legal, not
+  legal advice). The categories rated low risk on every reading are counted in one row.
+- `figures`: views against followers, interactions per view against the account's median, and
+  the boost lift (total minus organic, as a share of likes) when Atlas holds both counts. Say who
+  paid for the boost only when a record says so.
+- `insights`: the three strongest of the executive summary's findings for the brand's question,
+  each with its number and the account's own baseline as the comparison. The first may chart
+  organic against total per metric as stacked bars.
+- `actions`: what the brand should do: sponsor, partner, reuse as posted or trimmed, or pass, each
+  with its owner and cost; for the `performance` or `creative` lens, the ad reuse check from **Ad
+  reuse** (the hook score, the pattern, and the cut list as the action's `effect`), advice that
+  never changes the safety verdict. `decisions`: the call the brand must make, with the fit by
+  advertiser risk tolerance (conservative, standard, permissive: the verticals each suits and
+  whether to use it as posted or trimmed), labelled "Aspire read based on the scores and evidence
+  above. Not an Atlas score."
+- `sections.posts`: the post itself, with its metrics, the caption as `quote`, and the people on
+  screen and its format in `why`.
+- `evidence`: the brands in the video, one line per brand or group (paid sponsor, wardrobe, show
+  and founder brands, league and team marks, background) with its seconds on screen, its ranges,
+  and whether it is legible, paid, or disclosed; the marks not counted; disagreements with
+  Atlas's `featuredBrands`; comment sentiment when filled; the content scores (production,
+  energy, authenticity, promotional intent) and the primary emotion and tone; and the account
+  baseline (this post's rank on views, interaction rate, and comments per 1,000 likes, against
+  the account medians, with a warning when the held posts are far from its date). Ten lines at
+  most; the rest go in the method's notes.
+- `method`: how brand and profanity timestamps were derived (frames, transcript, audio), how
+  speakers were identified, and how rates were computed, each rate with the counts it uses. End
+  with "Not a benchmark for {brand}" when the account is a different size or category.
+- `footer.notes`: the snapshot time and that images are a snapshot. `footer.source`: the source
+  line per **Artifact standard**.
 
 ## State written to Atlas
 
