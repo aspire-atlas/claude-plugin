@@ -38,11 +38,11 @@ which fixes go to the video editor, and which, if any, the client sees.
 
 P10 runs baseline mode and P11 draft feedback mode. A close ask maps to the nearest: "creative
 baseline", "what is each variant testing" and "fix before spend" are P10; "feedback on this draft",
-"notes on V2" and "what should the editor change" are P11. The line is the CAS campaign: a cut made
-for a CAS campaign's variant comes here, draft or not, so "check this draft against the brief" on a
-CAS cut is P11. A creator's draft or post outside a CAS campaign stays with the **Content review**
-flow (`atlas-content-review`), and live ads with results go to the weekly paid review or the wave
-diagnosis, never here.
+"notes on V2" and "what should the editor change" are P11. The line is the edited cut: a variant
+cut for a CAS campaign, on its Content Review or shared as that cut, comes here, so "check this
+draft against the brief" on such a cut is P11. A creator's own draft or post stays with the
+**Content review** flow (`atlas-content-review`), a CAS creator's included, and live ads with
+results go to the weekly paid review or the wave diagnosis, never here.
 
 The main thread first resolves the campaign: `get_cas_campaign` with no `campaignId` lists the
 campaigns, and when more than one is active it asks which with `AskUserQuestion`. Then it asks
@@ -50,7 +50,7 @@ these, each as one `AskUserQuestion` picker, skipping any the person already ans
 
 | Id | Question | Options (recommended first) |
 | -- | -------- | --------------------------- |
-| CR1 | Which cuts should I review? | P10: "Every cut in round {n} on Content Review (Recommended)", "Only the approved cuts", "Cuts I'll attach". P11: one option per cut in the current round whose newest version has no call yet, newest first (at most 3); with none, the round's newest cut, marked "already called"; and "A cut I'll attach or link" |
+| CR1 | Which cuts should I review? | P10: "Every cut in round {n} on Content Review (Recommended)", "Only the approved cuts", "Cuts I'll attach". P11: one option per cut in the current round whose newest version has no call yet, newest first (at most 3), the first marked "(Recommended)"; with none, the round's newest cut, marked "already called"; and "A cut I'll attach or link" |
 | CR2 | Who reads this? | P10: "The campaign manager and the editors (Recommended)", "Paid social", "Only the editors". P11: "The editors (Recommended)", "The campaign manager" |
 | CR3 | Is there a transcript or a script read for these cuts? | "No, check what the frames show (Recommended)", "Yes, I'll paste it". Asked only when no cut in the set has a live post with an Atlas transcript |
 

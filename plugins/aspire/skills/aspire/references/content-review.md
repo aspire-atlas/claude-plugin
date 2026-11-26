@@ -26,7 +26,8 @@ in it (**Readouts**, **Guardrails**, Phase 5) is found through `SKILL.md`'s **Se
 ## Content review (one post against its brief)
 
 Trigger when the user asks to review a post or a creator's draft, check content against a brief,
-check whether a post is on brief, run a brand safety check on a post, or approve a draft. Requires
+check whether a post is on brief, run a brand safety check on a post, or approve a draft. An
+edited cut of a CAS campaign's variant goes to **CAS creative review** (P11) instead. Requires
 a brand profile. Interactive only: never schedule it and never run it unattended; without
 `AskUserQuestion`, say content review needs a person to supply the post, and stop. Saved reviews
 still reach the readouts. Before anything, read this file (**Setup**,
