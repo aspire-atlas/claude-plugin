@@ -15,8 +15,8 @@ default `team`), `run` (`interactive` or `unattended`; default `interactive`), a
 
 - `job`: `cas-screen` only when row 4 of a CAS campaign launches you; default `screen`.
 - `handles`: each with its network; default Instagram.
-- `campaign_slug` and `lane`: with both, read the campaign's pool; with `campaign_slug` alone,
-  read a discovery campaign's shortlist. Either way, `handles` may be absent.
+- `campaign_slug` and `lane`: with both, read that lane's pool only; with `campaign_slug` alone,
+  read a discovery campaign's shortlist, undecided and accepted. Either way, `handles` may be absent.
 - `save`: true only when row 4's Run picker approved the saves; default false.
 
 Only `job` `cas-screen` takes the CAS path; a campaign's pool asked for on its own is read, shown
@@ -58,9 +58,10 @@ Read these before starting:
    lists, one post at a time. Before you score, check that each share's matching and non-matching
    posts add up to `analysedPosts`. Score per "Score and settings".
    **With `job` `cas-screen`**, follow "In a CAS campaign" instead of steps 5 to 7: read only the
-   lane's undecided creators with no read yet, re-score stored reads the current settings change,
-   save each read as a new version of its discovery finding when `approved` and `save` both carry
-   the saves (otherwise return them as `proposals`), publish nothing, and return the reads in the result packet.
+   lane's undecided creators with no read yet, read again a stored read with a `null` score or a
+   raised `maxPosts`, re-score stored reads the current settings change, and save each read as a
+   new version of the newest discovery finding, read again just before the save, when `approved`
+   and `save` both carry the saves (otherwise return them as `proposals`), publish nothing, and return the reads in the result packet.
 5. **Check freshness** per page-standard's Data freshness rule
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 9): read the freshness of every
    account the page cites, and propose a refresh for any account behind its pace under gate

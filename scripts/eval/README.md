@@ -226,7 +226,7 @@ example", says how a new example joins a case.
 | AR1 | An affiliate report | A question with no code of its own | A1 to A5 |
 | P7 | A creator ad pitch deck, written before its agents exist | Its own code | A1 to A11 |
 | P8 | A creative packet (package doc, master brief, a concept doc per creator), written before its agents exist | Its own code | A1 to A12 |
-| I13 | A camera screen of a creator slate, written before its agent exists | Its own code | A1 to A4 |
+| I13 | A camera screen of a creator slate (`atlas-camera-screen`) | Its own code | A1 to A4 |
 
 P7, P8 and I13 come from reference outputs of a live creator ad campaign rather than from a reviewed page: they set what a good result looks like for agents that are still to be built, so each agent is held to them from the pull request that builds it. Their assertions carry no `fix`, since they come from a project plan and not from the plugin update doc. Their `paths` are empty until each agent's pull request names its own files, since no flow answers them yet; I13's name the camera screen's agent and flow. P9 (starting a creator ad campaign) has a question code but no entry here yet; its assertions are written with its flow.
 

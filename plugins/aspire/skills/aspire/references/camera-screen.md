@@ -39,12 +39,13 @@ Asked on its own, the main thread asks these before launching `atlas-camera-scre
 | Id | Question | Options |
 | -- | -------- | ------- |
 | CS1 | Which creators should I read? Type the handles in the free text field, or pick a campaign. | "Type the handles in the box below (Recommended)" / "A creator ad campaign's pool" (then CS3 and CS4) / "A discovery campaign's shortlist" (then CS3) |
-| CS2 | Which network are the handles on? Asked only when pasted handles name none. | "Instagram (Recommended)" / "TikTok" / "YouTube" / "Pinterest" |
+| CS2 | Which network are the handles on? Asked only when pasted handles name none. | "Instagram (Recommended)" / "TikTok" / "YouTube" |
 | CS3 | Which campaign? | The saved campaigns of the kind CS1 named, newest first, up to four, the newest "(Recommended)" |
 | CS4 | Which concept? | The campaign's saved lanes by name, up to four, the one with the most undecided creators "(Recommended)" |
 
-A campaign's pool reads the newest undecided candidates of that campaign's discovery findings
-(**Which handle** below), shows them on the page and writes nothing. Inside a CAS campaign the main thread asks nothing of its own: row 4's Run picker covers
+A creator ad campaign's pool reads the newest undecided candidates of the concept picked in CS4;
+a discovery campaign's shortlist reads its undecided and accepted candidates (**The data read**).
+Either is shown on the page and nothing is written. Inside a CAS campaign the main thread asks nothing of its own: row 4's Run picker covers
 the read and its saves (**In a CAS campaign**).
 
 ## The reader
@@ -68,10 +69,14 @@ metrics to a row, never drop one.
 1. The settings (**Score and settings**): `get_brand_context` for `campaign:{slug}-cas` when a
    campaign is named; otherwise the defaults.
 2. The creators: the pasted handles, or, for a campaign, `search_insights` with `prefix` on
-   `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}`, newest first, paged; the
-   newest record per `entityId` wins (**Creator discovery**, **State written to Atlas**). Then
-   keep only the creators whose newest record is an `action_item` (undecided): one accepted or
-   rejected since an older undecided record drops out.
+   `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}`, newest first, paged.
+   Keep only records whose `runKey` is exactly that, since the prefix also matches a longer slug
+   (`spring` matches `spring-teachers`). The newest record per `entityId` wins (**Creator
+   discovery**, **State written to Atlas**). Then keep the creators whose newest record is an
+   `action_item` (undecided); for a discovery campaign's shortlist, also keep `went_well`
+   (accepted), since those are the creators the team kept. With a lane (CS4, or `lane` from row
+   4), keep only findings whose `detail.lane` is that lane. One rejected since an older undecided
+   record drops out.
    **Which handle.** A finding holds the network's account id, not the handle: take the handle
    from the profile URL in the finding's `detail.evidence`, else `search_creators` filtered on
    `externalId` = the finding's `entityId` with `fields: ["username"]`. With neither, return the
@@ -122,8 +127,8 @@ read, and none is estimated. Good: "spoken voiceover" counts as speech. Bad: an 
 "text overlay with music" counted as speech. A post can count toward more
 than one share.
 
-Instagram, TikTok, YouTube and Pinterest are all read. In a campaign the network is the
-finding's `schema` (Instagram for a CAS campaign).
+Instagram, TikTok and YouTube are read. In a campaign the network is the finding's `schema`
+(Instagram for a CAS campaign).
 
 ## Score and settings
 
@@ -145,8 +150,8 @@ Good: "@handle: not enough analysed posts (newest 12 of 12 analysed videos), spe
 With a campaign named, the settings come from `match.talksToCamera {weights, minPosts, maxPosts}`
 on `campaign:{slug}-cas`; a missing or out-of-range setting uses its default, and the result says
 which defaults it used. With none, the defaults. Changing the weights or the minimum re-scores
-from the stored shares and `analysedPosts` with no new read; changing `maxPosts` takes effect at
-the next read.
+from the stored shares and `analysedPosts` with no new read. A raised `maxPosts` reads again
+every creator it would change at the next read (**In a CAS campaign**, **Who is read**).
 
 ## The output
 
@@ -164,12 +169,20 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
 - **Who is read.** Every undecided candidate in the lane's pool (the newest finding per
   `entityId` is an `action_item` with `detail.lane` the lane) whose finding has no
   `detail.adFigures.talksToCamera` yet. A creator added by a refill (row 3) is read the next time
-  row 4 runs. A creator whose stored read gives another score under the current weights or
-  minimum is re-scored from it, with no new read. When the newest version has no read but an
-  older version of the same `entityId` has one, that read is carried forward (re-scored when the
-  settings changed) instead of reading again.
-- **What is saved.** For each read, a new version of that discovery finding: `append_insights`
-  under the finding's own `runKey`, with its role, kind, priority, `schema`, `entityKind`,
+  row 4 runs. Two stored reads are read again, since Atlas may hold more now: one with a `null`
+  score (under the minimum when saved), and one whose `analysedPosts` is under the current
+  `maxPosts` while its `totalAnalysed` is higher (`maxPosts` was raised). Any other creator whose
+  stored read gives another score under the current weights or minimum is re-scored from it,
+  with no new read. When the newest version has no read but an older version of the same
+  `entityId` has one, that read is carried forward (re-scored, or read again, by the same rules)
+  instead of reading again.
+- **What is saved.** For each read, a new version of that discovery finding. Just before
+  `append_insights`, read the newest version of each `entityId` again (the same `search_insights`
+  read) and copy from that version, since discovery or the CM may have written a newer one during
+  the run. Skip any creator whose newest version is no longer an `action_item`, and name it in
+  the result: a save never undoes an accept or a reject. Good: "@handle was accepted during the
+  run, so the read was not saved." Bad: the creator put back to undecided by the save. The save
+  goes under the finding's own `runKey`, with its role, kind, priority, `schema`, `entityKind`,
   `entityId` and summary, and its `detail` unchanged except
   `detail.adFigures.talksToCamera = {score, speech, toCamera, explainer, analysedPosts,
   totalAnalysed, weights, scoredAt}`. `idempotencyKey`

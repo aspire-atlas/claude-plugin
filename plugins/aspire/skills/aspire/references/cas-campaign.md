@@ -342,10 +342,9 @@ it leaves out, the defaults there stand. `basis` is optional: what the last tuni
 saved from the page learned from, `{decisions, agreement, at}`, the number of client decisions and
 the agreement on Aspire's score before and after, so the page's **About this data** and
 discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It is written
-by **Match score tuning** (**Pulling decisions**) or the CM in the chat. Discovery and vetting read
-it in creator-ads mode, so they score with the same weights. `talksToCamera` is optional and
-agency only: the camera screen's weights, `minPosts` and `maxPosts` (**Camera screen**); without it, the
-defaults above stand. Controls to change it come later.
+by **Match score tuning** (offered in its own picker by **Pulling decisions**, through the
+supersede rule) or the CM in the chat, and belongs to this campaign only, never to the brand. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
+`talksToCamera` (optional, agency only): the camera screen's settings (**Camera screen**).
 
 `variantPlanToClient` is optional and agency only, never inside `match`: whether the client sees
 the variant plan read only. Anything but `false` reads as on. "Change setup" asks "Show the variant
@@ -1069,7 +1068,7 @@ Performance**, **Reading the results**).
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
-- **Vetting** (row 4): first `atlas-camera-screen` (**Camera screen**, In a CAS campaign); then `atlas-creator-vetting` with the lane's pool as the list (the lane's
+- **Vetting** (row 4): first `atlas-camera-screen` (**Camera screen**); then `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
   (`campaign`, then `brand`). The Run picker confirms both agents' saves: "Screen the {concept} creators and save the results to Atlas?" Without
   `vetting:thresholds`, you may offer V2 from **Creator vetting** first, with its own

@@ -45,7 +45,7 @@ PAGE_STD_MAX=7300
 # References over REF_MAX, each with its own ceiling. Shrink-only: lower a ceiling when its file
 # shrinks, remove a line once its file is under REF_MAX, and never add one (split the file by
 # section instead). One per line: <file, from the skills/ folder>|<most words>
-BIG='aspire/references/cas-campaign.md|26444
+BIG='aspire/references/cas-campaign.md|26443
 aspire/references/cas-campaign-data.md|19166
 aspire/references/cas-campaign-page.md|21724
 aspire/references/cas-campaign-page-brief.md|25587

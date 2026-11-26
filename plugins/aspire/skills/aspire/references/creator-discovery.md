@@ -600,7 +600,7 @@ Everything above applies, with these changes:
   ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
   `reach`, `engagedAccounts`, `category` and `contactRoute` (the route in words, never the
   address). One more key, `talksToCamera` (`{score, speech, toCamera, explainer, analysedPosts,
-  weights, scoredAt}`), is the camera screen's read: discovery never writes it, and when
+  totalAnalysed, weights, scoredAt}`), is the camera screen's read: discovery never writes it, and when
   discovery writes a new version of a finding that holds one, it copies `talksToCamera` from the
   newest version unchanged. `get_cas_selection` reads them for the selection widget; it also accepts the
   Instagram field names cited below (`reelsHookRate`, `pastBrandPartnershipPartners`,
