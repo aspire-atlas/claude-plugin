@@ -5,11 +5,11 @@ data against `page-data.schema.json` and the rules in `templates.md`, section 3,
 whole page as one HTML document. It reads only the files beside the data file, writes nothing, and
 starts no other program. Extract it with the command below; never retype it.
 
-Copy the data file and the six files the script reads into a new temporary folder, extract the
+Copy the data file and the seven files the script reads into a new temporary folder, extract the
 script there, and run it. The shell saves what it prints as the page:
 
 ```bash
-d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && cp "$P/skills/page-standard/page-data.schema.json" "$P/skills/page-standard/page-templates.json" "$P/skills/page-standard/blocks.md" "$P/skills/page-standard/page-check.md" "$P/skills/aspire/references/artifact-standard.md" "$P/assets/aspire-animated.svg.md" "$d/" && awk '/^<!-- page-fill -->$/{f=1;next} /^<!-- \/page-fill -->$/{f=0} f' "$P/skills/page-standard/page-fill.md" | sed '1d;$d' > "$d/page_fill.py" && python3 -I "$d/page_fill.py" "$d/page.json" > "$d/{page name}.html"
+d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && cp "$P/skills/page-standard/page-data.schema.json" "$P/skills/page-standard/page-templates.json" "$P/skills/page-standard/blocks.md" "$P/skills/page-standard/page-check.md" "$P/skills/page-standard/glossary.md" "$P/skills/aspire/references/artifact-standard.md" "$P/assets/aspire-animated.svg.md" "$d/" && awk '/^<!-- page-fill -->$/{f=1;next} /^<!-- \/page-fill -->$/{f=0} f' "$P/skills/page-standard/page-fill.md" | sed '1d;$d' > "$d/page_fill.py" && python3 -I "$d/page_fill.py" "$d/page.json" > "$d/{page name}.html"
 ```
 
 - It exits 0 and prints the page when the data passes. Add `--check` to check the data and print
@@ -17,8 +17,8 @@ d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && 
 - It exits 1 when the data breaks a rule, and prints one JSON line per problem, with its `rule`,
   the field's `path`, and a `message`. Fix the data and run it again.
 - It exits 2 when it could not read the data file or a file beside it.
-- It takes the Atlas tool names it refuses in reader text from `page-check.md`, so the fill and the
-  page check refuse the same names.
+- It takes the Atlas tool names it refuses in reader text from `page-check.md`, and the banned
+  phrases from `glossary.md`, so the fill and the page check refuse the same words.
 - The page takes its style from `blocks.md` (the block style), its print rules from
   `artifact-standard.md` (section 6), and the mark from `aspire-animated.svg.md`, so a change to
   any of them reaches every page with no change here.
@@ -59,7 +59,7 @@ NOT_READER = frozenset(("version", "template", "length", "account", "accounts", 
 CHART_SERIES = 6
 # No figure reaches a quadrillion; the bound keeps every number a float can hold exactly.
 NUMBER_BOUND = 10 ** 15
-FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "blocks.md", "artifact-standard.md",
+FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "glossary.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
 def e(value):
@@ -136,7 +136,7 @@ def real_date(value):
 def shared(data):
     return "Shared with" in data["footer"]["source"]
 
-def rules(data, templates, tools):
+def rules(data, templates, tools, phrases):
     errs, sec = [], data.get("sections", {})
     tpl = templates["templates"][data["template"]]
     for need in tpl.get("needs", []):
@@ -225,12 +225,27 @@ def rules(data, templates, tools):
         errs.append(("shared-page", "gaps", "a page shared outside the team lists no gaps; return them to the main thread"))
     if not theme_ok(data.get("theme", {}).get("css", "")):
         errs.append(("theme", "theme.css", "holds custom-property declarations only, in plain or @media rules, loading nothing"))
+    for i, tool in enumerate(data["scope"].get("tools", [])):
+        if ";" in tool:
+            errs.append(("source-label", "scope.tools[%d]" % i, "holds no \";\", which separates the tools on the page"))
     # scope.tools entries are the labels the reader sees on source chips, so they are read too.
     named = reader_text(data) + [("scope.tools[%d]" % i, t) for i, t in enumerate(data["scope"].get("tools", []))]
     for path, value in named:
         if any(pattern.search(value) for pattern in INTERNAL) or any(names_tool(w, tools) for w in WORD.findall(value)):
             errs.append(("no-internal-names", path, "names a tool or an id"))
+    # Quoted words and names are someone else's and never change: a post's quote, a creator's name,
+    # and the brand's own name.
+    brand = data["scope"]["brand"].strip()
+    for path, value in reader_text(data):
+        if path == "scope.brand" or QUOTED.search(path):
+            continue
+        value = re.sub(r"(?<![\w-])%s(?![\w-])" % re.escape(brand), " ", value) if brand else value
+        for pattern, form, instead in phrases:
+            if pattern.search(value):
+                errs.append(("banned-phrase", path, "uses \"%s\": %s (glossary.md)" % (form, instead)))
     return errs
+
+QUOTED = re.compile(r"(?:\.quote|^sections\.creators\[\d+\]\.name)$")
 
 def names_tool(word, tools):
     """A tool name alone or inside a prefixed name such as mcp__atlas__search_posts."""
@@ -308,6 +323,22 @@ def reader_text(data, path=""):
                 for t in reader_text(v, "%s.%s" % (path, k) if path else k)]
     return []
 
+# The glossary fences its list; the fence is built so this script holds none of its own.
+FENCE = "`" * 3
+
+def banned_phrases(glossary):
+    """The banned-phrase list in glossary.md, read the way the page check reads it: whole words, any case."""
+    block = re.search(r"^<!-- banned-phrases -->\n%stext\n(.*?)\n%s\n<!-- /banned-phrases -->$" % (FENCE, FENCE), glossary, re.S | re.M)
+    if not block:
+        raise ValueError("glossary.md has no banned-phrases block")
+    found = []
+    for line in block.group(1).splitlines():
+        forms, _, instead = line.partition("|")
+        for form in (f.strip() for f in forms.split(",") if f.strip()):
+            words = r"\s+".join(re.escape(w).replace("'", "['\u2019]") for w in form.split())
+            found.append((re.compile(r"(?i)(?<![\w-])%s(?![\w-])" % words), form, instead.strip()))
+    return found
+
 def tool_names(page_check):
     m = re.search(r'^TOOLS = frozenset\("""\n(.*?)\n"""\.split\(\)\)', page_check, re.S | re.M)
     if not m:
@@ -374,6 +405,8 @@ def scope(data):
     attrs += ['data-reader="%s"' % e(s["reader"]), 'data-brand="%s"' % e(s["brand"]), 'data-range="%s"' % e(s["range"])]
     if s.get("na"):
         attrs.append('data-na="%s"' % " ".join(s["na"]))
+    if s.get("tools"):
+        attrs.append('data-tools="%s"' % e("; ".join(s["tools"])))
     by = '<span class="pb-muted">Prepared by %s</span>' % e(s["preparedBy"]) if "preparedBy" in s else ""
     return ('<div %s><p class="pb-scope-line"><span>For <b>%s</b></span><span><b>%s</b></span><span>%s</span>%s</p>%s</div>'
             % (" ".join(attrs), e(s["reader"]), e(s["brand"]), e(s["range"]), by, coverage(data, True)))
@@ -381,9 +414,10 @@ def scope(data):
 def kpi(item):
     status = item.get("status", "flat")
     src = '<p class="pb-kpi-src">%s</p>' % source_chip(item["source"]) if "source" in item else ""
-    return ('<article class="pb-card pb-kpi" data-block="kpi" data-status="%s"><p class="pb-label">%s</p>'
-            '<p class="pb-kpi-value pb-num">%s</p><p class="pb-kpi-vs"><span class="pb-kpi-dot pb-%s"></span>%s</p>%s</article>'
-            % (status, e(item["label"]), e(num(item["value"])), status, e(item["comparison"]), src))
+    said = ' data-source="%s"' % e(item["source"]) if "source" in item else ""
+    return ('<article class="pb-card pb-kpi" data-block="kpi" data-status="%s"%s><p class="pb-label">%s</p>'
+            '<p class="pb-kpi-value pb-num">%s</p><p class="pb-kpi-vs" data-vs><span class="pb-kpi-dot pb-%s"></span>%s</p>%s</article>'
+            % (status, said, e(item["label"]), e(num(item["value"])), status, e(item["comparison"]), src))
 
 def verdict_badge(v):
     checks = ""
@@ -443,10 +477,10 @@ def insights(data):
         return '<section class="pf-part"><h2 class="pb-h">What we found</h2><p>No insights on this page.</p></section>'
     cards = []
     for i, it in enumerate(data["insights"], 1):
-        cards.append('<article class="pb-card pb-insight" data-block="insight"><p class="pb-label">Insight %d %s</p>'
-                     '<p class="pb-claim">%s</p><dl><dt>Evidence</dt><dd>%s</dd><dt>Compared with</dt><dd>%s</dd></dl>%s'
+        cards.append('<article class="pb-card pb-insight" data-block="insight" data-source="%s"><p class="pb-label">Insight %d %s</p>'
+                     '<p class="pb-claim">%s</p><dl><dt>Evidence</dt><dd>%s</dd><dt>Compared with</dt><dd data-vs>%s</dd></dl>%s'
                      '<p class="pb-so"><b>So:</b> %s</p></article>'
-                     % (i, source_chip(it["source"]), e(it["text"]), e(it["evidence"]), e(it["comparison"]),
+                     % (e(it["source"]), i, source_chip(it["source"]), e(it["text"]), e(it["evidence"]), e(it["comparison"]),
                         chart(it["chart"]) if "chart" in it else "", e(it["so"])))
     return '<section class="pf-part"><h2 class="pb-h">What we found</h2><div class="pb-grid">%s</div></section>' % "".join(cards)
 
@@ -464,11 +498,11 @@ def actions(data, year):
     rows = []
     for a in data["actions"]:
         first = " data-first-task" if a.get("first") else ""
-        rows.append('<tr data-recommend%s%s><td data-label="Rank" class="pb-rank">%d</td>'
+        rows.append('<tr data-recommend%s%s data-owner="%s" data-source="%s"><td data-label="Rank" class="pb-rank">%d</td>'
                     '<td data-label="What">%s %s %s</td><td data-label="Who">%s</td><td data-label="By when">%s</td>'
                     '<td data-label="What it should change">%s</td><td data-label="Atlas can do it">%s</td>'
                     '<td data-label="Cost" data-cost-line>%s</td></tr>'
-                    % (cost_attrs(a["cost"]), first, a["rank"], e(a["verb"]), e(a["object"]), source_chip(a["source"]),
+                    % (cost_attrs(a["cost"]), first, e(a["owner"]), e(a["source"]), a["rank"], e(a["verb"]), e(a["object"]), source_chip(a["source"]),
                        e(a["owner"]), day(a["due"], year), e(a["effect"]), e(job_words(a["job"])), e(a["cost"]["line"])))
     table = ('<table class="pb-table"><thead><tr><th>#</th><th>What</th><th>Who</th><th>By when</th>'
              '<th>What it should change</th><th>Atlas can do it</th><th>Cost</th></tr></thead><tbody>%s</tbody></table>' % "".join(rows))
@@ -550,7 +584,7 @@ def evidence(data):
     if sec.get("posts"):
         out.append('<div class="pb-grid">%s</div>' % "".join(post(p) for p in sec["posts"]))
     if data.get("evidence"):
-        items = "".join("<li>%s %s</li>" % (('<a href="%s">%s</a>' % (e(v["href"]), e(v["text"]))) if "href" in v else e(v["text"]), source_chip(v["source"]))
+        items = "".join('<li data-source="%s">%s %s</li>' % (e(v["source"]), ('<a href="%s">%s</a>' % (e(v["href"]), e(v["text"]))) if "href" in v else e(v["text"]), source_chip(v["source"]))
                         for v in data["evidence"])
         out.append('<ul class="pf-evidence">%s</ul>' % items)
     if not out:
@@ -668,7 +702,8 @@ def main(argv):
         data = json.loads(path.read_text(encoding="utf-8"))
         schema, templates = (json.loads((path.parent / n).read_text(encoding="utf-8")) for n in FILES[:2])
         tools = tool_names((path.parent / FILES[2]).read_text(encoding="utf-8"))
-        for n in FILES[3:]:
+        phrases = banned_phrases((path.parent / FILES[3]).read_text(encoding="utf-8"))
+        for n in FILES[4:]:
             (path.parent / n).stat()
     except (OSError, ValueError) as err:
         print(json.dumps({"rule": "read", "path": str(err), "message": "could not read the page data or a file beside it"}))
@@ -676,7 +711,7 @@ def main(argv):
     errs = []
     shape(data, schema, "$", schema, errs)
     if not errs:
-        errs = rules(data, templates, tools)
+        errs = rules(data, templates, tools, phrases)
     for rule, where, message in errs:
         print(json.dumps({"rule": rule, "path": where.lstrip("$."), "message": message}))
     if errs:

@@ -63,10 +63,14 @@ is in **Quality review**, **3**.
   requester, never onto the page. R9 is N/A ("gaps go to the requester"). R2 passes when the page
   lists the platforms it covers with their post counts and claims no others; a page that names a
   platform Atlas could not collect fails **4.11**, item 5, not R2.
-- **R10** is judged on a 1280×800 first screen: the answer, the decisions, and the next steps all
-  start above y=800 in the rendered order. With a text-only read, judge by source order and say so
-  in the coverage line. "Prepared by" applies only to a page for a VP or budget owner; on any other
-  page its absence is not a FAIL.
+- **R10** is judged on a 1280×800 first screen. On a page or section for a VP or budget owner, or
+  in a flow whose reference sets one screen, the answer, the decisions, and the next steps all
+  start above y=800 in the rendered order. On any other page, the answer starts above y=800. With a text-only
+  read, judge by source order and say so in the coverage line. "Prepared by" applies only to a page for a VP or budget owner; on any other
+  page its absence is not a FAIL. A page built from a template also fails R10 when it runs past
+  its template's length budget (**Page standard**, `templates.md`, section 5), which the page
+  check measures. Staying within the budget never passes R10 on its own: the first screen is still
+  judged as above.
 - **R11** always fails on these words anywhere a reader sees them (body text, chart labels, image
   alt text, button labels), outside quoted text (a creator's caption or name, someone's own words):
   an agent name (`atlas-...`), an Atlas tool name in any form (`search_posts`,
@@ -80,6 +84,9 @@ is in **Quality review**, **3**.
   or counts ("Atlas reads public posts", "3 picks and 2 passes") pass, and the English read judges
   them. Say what the thing is: "the creators we recommend", "this week's results", "Atlas compared",
   "this review", "the spot for reach", "the people who do the work". Handles, hashtags, emails, and links are not checked. Other jargon is a judgment.
+- **R11, banned phrases.** It also fails on a phrase on the banned-phrase list (**Page standard**,
+  `glossary.md`, section 2), outside quoted words: filler, sales talk and vague verbs such as
+  "leverage", "deep dive" or "going forward". The list gives what to say instead.
 - **R11, paid label or none.** A post by someone other than the brand has a "paid label" or "no
   paid label", never "organic" or "unpaid". The rule, the pages and places the script reads, and
   what is left to judgment are in **Page standard**, section 8 (`post-kinds.md`).

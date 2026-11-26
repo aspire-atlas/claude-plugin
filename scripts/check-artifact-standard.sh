@@ -39,6 +39,7 @@ for p in $(plugin_names); do
   if [ "$src" != "$P" ]; then
     # The block and the standard name these paths under the plugin's own root.
     for f in skills/aspire/references/artifact-standard.md skills/page-standard/SKILL.md skills/page-standard/page-check.md \
+      skills/page-standard/glossary.md skills/page-standard/rubric.md \
       skills/aspire/references/reader-standard.md assets/aspire-animated.svg.md assets/aspire-animated-small.svg.md; do
       [ -e "$src/$f" ] || { err "$p: $src/$f is missing; link it to $P/$f"; continue; }
       { [ -L "$src/$f" ] && [ "$src/$f" -ef "$P/$f" ]; } || err "$p: $src/$f must be a symbolic link to $P/$f, not a copy"
@@ -160,9 +161,12 @@ else
     trap 'rm -rf "$tmp"' EXIT
     awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PC" | sed '1d;$d' > "$tmp/page_check.py"
     [ -s "$tmp/page_check.py" ] || err "$PC has no <!-- page-check --> script"
+    # The page check reads the banned phrases from glossary.md beside it, as the skill's command copies it.
+    cp "$P/skills/page-standard/glossary.md" "$tmp/" 2>/dev/null || err "$P/skills/page-standard/glossary.md is missing"
     grep -qF 'skills/page-standard/page-check.md' "$PS" || err "$PS does not link skills/page-standard/page-check.md"
     # Each fixture prints one result per scripted check (as many as pass.html prints) and no error:
-    # a pass*.html page fails nothing, and a fail-rN*.html page fails RN and nothing else. Exit 2
+    # a pass*.html page fails nothing (a pass-r3 page passes R3), a fail-rN*.html page fails RN and
+    # nothing else, and an unmarked-rN*.html page leaves RN unmarked and fails nothing. Exit 2
     # means the script could not read the page.
     n=$(python3 -I "$tmp/page_check.py" "$FX/pass.html" 2>/dev/null | grep -c '"check": "R' || true)
     [ "$n" -gt 0 ] || err "page check printed no result for $FX/pass.html"
@@ -174,11 +178,19 @@ else
         { err "page check did not run cleanly on $f (exit $code): $out"; continue; }
       failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
       case $name in
+        pass-r3*)
+          [ -z "$failed" ] && grep -q '"check": "R3", "name": "[^"]*", "result": "pass"' <<< "$out" ||
+            err "page check does not pass R3 with nothing failing on $f: $out" ;;
         pass*) [ -z "$failed" ] || err "page check fails $failed on $f, which should pass: $out" ;;
+        unmarked-r[0-9]*)
+          # A check that names something for the self-check to judge: RN unmarked, nothing failing.
+          want=$(sed -E 's/^unmarked-r([0-9]+).*/R\1/' <<< "$name")
+          [ -z "$failed" ] && grep -q "\"check\": \"$want\", \"name\": \"[^\"]*\", \"result\": \"unmarked\"" <<< "$out" ||
+            err "page check should leave $want unmarked with nothing failing on $f: $out" ;;
         fail-r[0-9]*)
           want=$(sed -E 's/^fail-r([0-9]+).*/R\1/' <<< "$name")
           [ "$failed" = "$want " ] || err "page check fails '${failed:-nothing}' on $f, which should fail only $want: $out" ;;
-        *) err "$f is named neither pass*.html nor fail-rN*.html" ;;
+        *) err "$f is named neither pass*.html, fail-rN*.html nor unmarked-rN*.html" ;;
       esac
     done
     ran="page check gives every fixture its result"
@@ -268,7 +280,9 @@ print("ok" if a and a == b and ca == cb else "table %s; script %s" % (
         echo '<p>Internal use only. Not for public publishing.</p></footer></body></html>'
       } > "$tmp/blocks.html"
       out=$(python3 -I "$tmp/page_check.py" "$tmp/blocks.html" 2>&1) && code=0 || code=$?
-      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$n" ] ||
+      # R10's length budget is measured on a page built from a template only, so it is unmarked here.
+      [ "$code" -eq 0 ] && [ "$(grep -c '"result": "pass"' <<< "$out")" -eq "$((n - 1))" ] &&
+        grep -q '"check": "R10", "name": "Fits the reader", "result": "unmarked"' <<< "$out" ||
         err "a page built from every block in $BL does not pass the page check (exit $code): $out"
       ran="$ran, and a page built from every block passes it"
     fi

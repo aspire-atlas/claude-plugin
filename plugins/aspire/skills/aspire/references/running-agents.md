@@ -73,8 +73,8 @@ agent only through this skill or a shortcut.
      that entry set to `{"error": "{what came back}"}`; the builder then reports `not-run` as a
      failing check (in a scheduled run also in `gaps` and the delivery message), named in the
      close-out.
-   - **A page held by the UX review** (`"uxReview": {"status": "blocked"}`): follow **Quality
-     review**, A page held by the UX review.
+   - **A held page** (`uxReview` `blocked`, or `page-check` `held`): follow **Quality review**,
+     A page held by the UX review, or by the page check.
    - A page you build yourself (**Visual output**, a deck you export) gets the same read and review
      before you publish it, and you apply their Musts yourself.
    - Act on the `result-packet` block: relay the summary, the page link ("Saved as a file: {path}"

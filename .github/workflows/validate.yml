@@ -83,6 +83,12 @@ jobs:
           echo "Rendering with $CHROME_PATH"
           CHROME_PATH="$CHROME_PATH" bun scripts/render-page.ts
 
+      - name: The page check's length estimate matches each template page as Chromium draws it (scripts/check-page-length.ts)
+        run: |
+          CHROME_PATH=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$CHROME_PATH" ]; then echo "::error::No Chrome on the runner for the length check"; exit 1; fi
+          CHROME_PATH="$CHROME_PATH" bun scripts/check-page-length.ts
+
       - name: Every agent carries the orchestration contract and has a permission level
         run: bash scripts/check-orchestration.sh
 

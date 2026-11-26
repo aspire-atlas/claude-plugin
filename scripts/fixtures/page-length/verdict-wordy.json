@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "template": "verdict",
+  "example": true,
+  "title": "Can @makerjune's holiday post go live?",
+  "answer": "Fix the paid label first; the post meets the brief and is safe for the brand. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period.",
+  "scope": {
+    "reader": "the brand's approval team",
+    "brand": "Brightside Toys",
+    "range": "Nov 20, 2026",
+    "accounts": [
+      "instagram:makerjune"
+    ],
+    "platforms": [
+      {
+        "network": "instagram",
+        "posts": 1
+      }
+    ],
+    "na": [
+      "R2"
+    ]
+  },
+  "figures": [
+    {
+      "label": "Brief points met",
+      "value": "5 of 6",
+      "comparison": "the paid label is the one missing. The figures held steady across both platforms over the period. The figures held stead",
+      "status": "warn",
+      "source": "Our read"
+    },
+    {
+      "label": "Brand safety flags",
+      "value": 0,
+      "comparison": "across the 12 categories",
+      "status": "ok",
+      "source": "Atlas"
+    }
+  ],
+  "insights": [
+    {
+      "text": "The opening shows the playset in the first 2 seconds, as the brief asks. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period.",
+      "evidence": "The box opens at 0:01 and the logo turns to camera at 0:02. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period.",
+      "comparison": "the brief asks for the product by 0:03. The figures held steady across both platforms over the period. The figures held steady across both p",
+      "so": "Keep the opening as it is. The figures held steady across both platforms over the period. The figures held steady across both platforms over the period.",
+      "source": "Brand memory"
+    }
+  ],
+  "actions": [
+    {
+      "rank": 1,
+      "verb": "Ask",
+      "object": "@makerjune to add the paid partnership label. The figures held steady across both platforms over the period. The figures held steady across",
+      "owner": "Influencer manager",
+      "due": "2026-11-24",
+      "effect": "The post can go live on Nov 25 as planned",
+      "job": "content-review",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Our read"
+    },
+    {
+      "rank": 2,
+      "verb": "Ask",
+      "object": "@makerjune to add the paid partnership label. The figures held steady across both platforms over the period. The figures held steady across",
+      "owner": "Influencer manager",
+      "due": "2026-11-24",
+      "effect": "The post can go live on Nov 25 as planned",
+      "job": "content-review",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Our read"
+    },
+    {
+      "rank": 3,
+      "verb": "Ask",
+      "object": "@makerjune to add the paid partnership label. The figures held steady across both platforms over the period. The figures held steady across",
+      "owner": "Influencer manager",
+      "due": "2026-11-24",
+      "effect": "The post can go live on Nov 25 as planned",
+      "job": "content-review",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Our read"
+    }
+  ],
+  "decisions": [
+    {
+      "text": "Approve the post once the paid label is on",
+      "approver": "the brand's approval team",
+      "by": "2026-11-25",
+      "then": "The post goes live the same day.",
+      "cost": {
+        "kind": "none",
+        "line": "Cost: no spend. The fee is already agreed."
+      }
+    },
+    {
+      "text": "Approve the post once the paid label is on. The figures held steady across both platforms over the period. The figures held steady across bo",
+      "approver": "the brand's approval team",
+      "by": "2026-11-25",
+      "then": "The post goes live the same day.",
+      "cost": {
+        "kind": "none",
+        "line": "Cost: no spend. The fee is already agreed."
+      }
+    },
+    {
+      "text": "Approve the post once the paid label is on. The figures held steady across both platforms over the period.",
+      "approver": "the brand's approval team",
+      "by": "2026-11-25",
+      "then": "The post goes live the same day.",
+      "cost": {
+        "kind": "none",
+        "line": "Cost: no spend. The fee is already agreed."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "text": "The draft post @makerjune shared on Nov 20",
+      "href": "https://www.instagram.com/reel/EXAMPLE4/",
+      "source": "You"
+    },
+    {
+      "text": "The content brief for the holiday playset, saved Nov 2",
+      "source": "Brand memory"
+    }
+  ],
+  "gaps": [],
+  "confidence": {
+    "level": "high",
+    "why": "Every frame of the 38-second video was read, with its caption."
+  },
+  "sources": [
+    "The draft post @makerjune shared on Nov 20, 2026",
+    "The brand's saved content brief and guidelines"
+  ],
+  "sections": {
+    "verdict": {
+      "call": "Fix first",
+      "status": "warn",
+      "reason": "The post follows the brief and is brand safe, but the paid label is missing.",
+      "checks": [
+        {
+          "label": "Brief",
+          "status": "ok",
+          "note": "Shows the playset by 0:02 and names the holiday offer."
+        },
+        {
+          "label": "Guidelines",
+          "status": "ok",
+          "note": "Uses the brand's name and colors as saved."
+        },
+        {
+          "label": "Brand safety",
+          "status": "ok",
+          "note": "No flags in the 12 categories."
+        },
+        {
+          "label": "Paid label",
+          "status": "warn",
+          "note": "Add the paid partnership label before it goes live."
+        }
+      ]
+    }
+  },
+  "footer": {
+    "updated": "2026-11-23T14:05Z",
+    "freshness": [
+      {
+        "account": "instagram:makerjune",
+        "newest": "2026-11-18",
+        "fetched": "2026-11-22"
+      }
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas. Not for any decision. Internal use only. Not for public publishing."
+  }
+}
