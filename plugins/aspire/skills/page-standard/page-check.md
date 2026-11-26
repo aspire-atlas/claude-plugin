@@ -111,24 +111,28 @@ REQUIRED = {code: tuple(metrics.split()) for line in REQUIRED_ROWS.strip().split
             for codes, metrics in [line.split(":")] for code in codes.split()}
 # The page standard's structure rules (rubric.md). A page built from a template (data-template,
 # page-fill.md) carries every mark below; a hand-written page carries them where its blocks do.
-# A headline states the finding. The script fails only the clear label: one that ends in a topic noun
-# ("Creator performance overview", "Q3 results"), or opens with one and a colon ("Recap: October
-# campaign"), and holds no verb and no number once its periods are taken out. A single word is a
-# label too. Anything else ("Unboxing videos drove results", "Post daily", "Holiday campaign") is
-# left to the English read, so a finding is never held as a label.
+# A headline states the finding. A script cannot tell a verb from a noun, so it never fails a headline
+# as a label. It names the likely label for the self-check to judge (R3 unmarked): one whose last
+# phrase, or whose part before a colon, ends in a topic noun ("Creator performance overview",
+# "Results for Q3", "Weekly recap: October campaign"), with no number and no common verb once its
+# periods are taken out. It fails only what it can count: no headline, a single word, a question.
 HEADLINE_WORDS = 2
 TOPIC_NOUNS = frozenset("""
 overview summary report recap roundup digest dashboard readout snapshot highlights breakdown update review
-analysis status results performance insights findings metrics
+analysis status results performance insights findings metrics plan
 """.split())
-# A verb makes a headline a finding: a word ending in -ed or -ing, or one of these.
+# A common verb makes a headline a finding. The list is short on purpose: a verb it misses only
+# leaves a hint for the self-check, never a fail.
 VERBS = frozenset("""
 is are was were be been being has have had do does did can could will would should must
 drove drive drives beat beats grew grow grows rose rise rises fell falls led leads won win wins lost lose loses
 made make makes got get gets went go goes ran run runs hit hits held hold holds kept keep keeps saw see sees
-took take takes gave give gives brought bring brings came come comes sold sell sells spent spend spends paid
-pays cut cuts doubled tripled halved need needs works worked beat outperformed lags lagged
+took take takes gave give gives brought bring brings came come comes sold sell sells spent spend spends
+cut cuts doubled tripled halved need needs works worked beat outperformed lags lagged boost boosts hurt hurts
+lift lifts drop drops climb climbs slip slips jump jumps
 """.split())
+# Small words a period phrase leaves behind ("Results for Q3", "Summary of week 12").
+TRAILING = frozenset("for of in on at from during this last next the".split())
 # A quarter, a half, a year, a week number, a month or a date names a period, not a figure, so it
 # is taken out before looking for a number. "May" counts only with a day, since it is also a verb.
 MONTH = r"(?:january|february|march|april|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)"
@@ -338,18 +342,23 @@ def r2(nodes, regions, out):
     return problems
 
 def headline_words(headline):
-    # The words of a headline, quotes and possessives taken off: "Week's" and "Creators'" are one word.
+    # The words of a headline in any script, quotes and possessives taken off: "Week's", "Creators'"
+    # and "Lancôme" are one word each.
     plain = re.sub(r"[\u2018\u2019\u201b`]", "'", headline).replace("\u201c", '"').replace("\u201d", '"')
-    return [re.sub(r"'(?:s)?$", "", w.strip("'")) for w in re.findall(r"[A-Za-z0-9']+", plain) if w.strip("'")]
+    return [re.sub(r"'(?:s)?$", "", w.strip("'")) for w in re.findall(r"[^\W_]+(?:'[^\W_]*)*'?", plain) if w.strip("'")]
 
 def is_label(headline):
-    words = [w.lower() for w in headline_words(PERIOD.sub(" ", re.sub(r"[\u2018\u2019]", "'", headline)))]
+    # True when the headline reads like a label: see the note above HEADLINE_WORDS.
+    plain = PERIOD.sub(" ", re.sub(r"[\u2018\u2019]", "'", headline))
+    words = [w.lower() for w in headline_words(plain)]
     if not words:
         return True
-    if any(re.search(r"\d", w) or w in VERBS or (len(w) > 4 and re.search(r"(?:ed|ing)$", w)) for w in words):
+    if any(re.search(r"\d", w) or w in VERBS for w in words):
         return False
-    opens = re.match(r"\s*[\W_]*([A-Za-z]+)\s*:", headline)
-    return words[-1] in TOPIC_NOUNS or bool(opens and opens.group(1).lower() in TOPIC_NOUNS)
+    before = [w.lower() for w in headline_words(plain.split(":", 1)[0])] if ":" in plain else []
+    while len(words) > 1 and words[-1] in TRAILING:
+        words.pop()
+    return words[-1] in TOPIC_NOUNS or bool(before and before[-1] in TOPIC_NOUNS)
 
 def strip_name(value, name):
     # A name taken out as whole words only, and in the case it is written, so the brand "Go" leaves
@@ -385,12 +394,15 @@ def r3(nodes, regions, out):
     if len(heads) != 1:
         return ["the page needs exactly one h1, the headline that answers its question (found %d)" % len(heads)]
     shown, problems = text(heads[0], gap=" "), []
-    if len(headline_words(shown)) < HEADLINE_WORDS or is_label(shown):
-        problems.append("the headline \"%s\" is a label, not a finding; write the answer as one sentence" % shown)
+    if len(headline_words(shown)) < HEADLINE_WORDS:
+        problems.append("the headline \"%s\" is a single word, not a finding; write the answer as one sentence" % shown)
     if shown.endswith("?"):
         problems.append("the headline \"%s\" asks a question; the question is the title, the headline answers it" % shown[:60])
     if template_of(nodes) is not None and not any(a.attrs.get("data-block") == "answer" for a in ancestors(heads[0])):
         problems.append("the headline sits outside the answer block, so it is not the first thing read")
+    if not problems and is_label(shown):
+        return ("unmarked", ["the headline \"%s\" reads like a label (it ends in a topic word, with no number or common verb); "
+                             "judge it, and if it names a topic, write the finding as one sentence" % shown[:80]])
     return problems
 
 def r4(nodes, regions, out):
@@ -1501,7 +1513,10 @@ def check(path):
             results.append((code, name, "unmarked", ["the page has no data-page markup; judge this check by reading"]))
         else:
             problems = run(nodes, regions, out)
-            if problems is None:
+            if isinstance(problems, tuple):
+                # A check that names something for the self-check to judge: ("unmarked", [why]).
+                results.append((code, name) + problems)
+            elif problems is None:
                 results.append((code, name, NO_RESULT[code][0], [NO_RESULT[code][1]]))
             else:
                 results.append((code, name, "fail" if problems else "pass", problems))
