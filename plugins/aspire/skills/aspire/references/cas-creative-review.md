@@ -33,8 +33,8 @@ editor, and which, if any, the client sees.
 
 | Code | Question |
 | ---- | -------- |
-| P10 | Before we spend on wave {n}, what does each cut test, and what do we fix first? |
-| P11 | Give the editor timestamped fixes on this draft cut. |
+| P10 | What does each cut test, and what needs fixing before spend? |
+| P11 | Fixes, to the second, on a draft cut. |
 
 P10 runs baseline mode and P11 draft feedback mode. A close ask maps to the nearest: "creative
 baseline", "what is each variant testing" and "fix before spend" are P10; "feedback on this draft",
@@ -141,12 +141,18 @@ Every claim about a cut rests on frames the agent has viewed itself, from the cu
   as a file, and the cut is named under the page's data gaps until it arrives. Keep every file and
   frame in the run's own working folder, named for the cut and version.
 - **Frames.** Extract with the tools and in the order **Content review**, **Media: what the agent
-  can and cannot see** gives (`ffmpeg`, then AVFoundation, then OpenCV), at full size, since text
-  placement is measured on full-size frames (**CAS paid**, **Text placement and safe zones**). Take
-  0.5, 1, 1.5, 2, 2.5 and 3 seconds for the hook; one every second from there to the end; and 0.2
-  seconds before the end. Add frames at 0.5 seconds either side of every finding to fix its second.
-  Record each cut's duration, size and frame rate. With no extractor, every visual check is "Can't
-  check (no frame extractor)" and the page says which tool would fix it.
+  can and cannot see** gives (`ffmpeg`, then AVFoundation, then OpenCV), and sample per its **Which
+  frames** (at most 30 a cut), adding 0.5, 1, 1.5, 2, 2.5 and 3 seconds for the hook and frames 0.5
+  seconds either side of every finding to fix its second. View each frame scaled to 720 pixels
+  tall. Text placement is measured on the full-size frame (**CAS paid**, **Text placement and safe
+  zones**): extract it at full size only at the seconds where scaled frames show text near the
+  face, the product or a screen zone. Record each cut's duration, size and frame rate. With no
+  extractor, every visual check is "Can't check (no frame extractor)" and the page says which tool
+  would fix it.
+- **A large set.** A baseline watches at most 8 cuts in one pass. With more, the agent reviews the
+  first 8 by creator, returns the rest under `questions` as "Review the next {n} cuts", and the
+  main thread relaunches with them and the earlier pass's rows; the page and the `baseline` finding
+  hold the whole set once every pass is done.
 - **What can't be checked without sound.** A spoken hook, a spoken claim, a spoken product name, a
   spoken CTA and script fidelity need words. Use, best first: a transcript the person pasted; the
   variant's live post's `analysis.transcript` in Atlas, labelled "from the live post, which may be
@@ -177,12 +183,9 @@ campaign profile**, and build:
    These are checked on every cut: a hook that works with the sound off, text over the face or the
    product, text in the Reels and TikTok screen zones (positions as shares of the frame's height),
    a missing or wrong disclaimer, and a black or logo first frame.
-4. **Ad names.** For each variant, its ad name filled from the campaign's `adNaming` template, the
-   convention Atlas matches ads to variants by, whether its `source` is `campaign` or `default`,
-   and the marker its campaign or ad set name must hold. Only when `get_cas_campaign` returns no
-   `adNaming` does the page take the shape in **CAS paid**, **Tying an ad to its variant**, **Names
-   before launch**, and say that ads named that way can't be matched until a convention is saved. A
-   tracker row whose `adName` doesn't map to one creator and one variant is listed with the name
+4. **Ad names.** For each variant, the ad name and ad set name **CAS paid**, **Tying an ad to its
+   variant**, **Names before launch** gives, from the campaign's `adNaming` whether its `source` is
+   `campaign` or `default`, with the marker. A tracker row whose `adName` doesn't map to one creator and one variant is listed with the name
    proposed in its place. Names are proposed before launch only: never rename a live ad.
 5. **Records to doubt.** A creator listed twice, notes copied from another creator, a variant label
    that doesn't match its file, and one final file shared by several variants are asked about in
@@ -273,9 +276,9 @@ it grows with the cuts, the pairs and the fixes. In the page standard's skeleton
   - `untested`: the tests the brief meant to run that no variant covers, one plain line each.
   - `fixes`: `[{cut, version, at, severity, text}]`, `at` seconds into the cut, `severity` must,
     should or consider.
-  - `names`: `[{cut, adName, convention}]`, the proposed ad names, `convention` the `adNaming`
-    `source` they were filled from (`campaign` or `default`), or `none` when no convention was
-    returned.
+  - `names`: `[{cut, adName, adSetName, convention}]`, the proposed names (`adSetName` empty when
+    the convention has no ad set template), `convention` the `adNaming` `source` they were filled
+    from (`campaign` or `default`), or `none` when no convention was returned.
 
   A repeat baseline for the same round writes a new finding with every field, and the newest
   wins. When the finding is too large to save, `tags` go first, then the longest `text` of each fix
