@@ -26,6 +26,11 @@
     "method": {"$ref": "#/$defs/method"},
     "drafts": {"type": "array", "maxItems": 5, "items": {"$ref": "#/$defs/draft"}},
     "sections": {"$ref": "#/$defs/sections"},
+    "groups": {
+      "type": "object", "additionalProperties": false, "minProperties": 1,
+      "description": "A Shortlist's own names for its verdict groups, used in the group headings and the tally under the answer. Without it: To contact, Maybes, Left out.",
+      "properties": {"yes": {"$ref": "#/$defs/text40"}, "maybe": {"$ref": "#/$defs/text40"}, "no": {"$ref": "#/$defs/text40"}}
+    },
     "theme": {"$ref": "#/$defs/theme"},
     "footer": {"$ref": "#/$defs/footer"}
   },
@@ -38,6 +43,7 @@
     "text140": {"type": "string", "minLength": 1, "maxLength": 140},
     "text200": {"type": "string", "minLength": 1, "maxLength": 200},
     "text280": {"type": "string", "minLength": 1, "maxLength": 280},
+    "text600": {"type": "string", "minLength": 1, "maxLength": 600},
     "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
     "network": {"enum": ["instagram", "tiktok", "youtube"]},
     "account": {"type": "string", "pattern": "^(instagram|tiktok|youtube):[A-Za-z0-9_.]{1,64}$", "description": "{network}:{handle}, with no @."},
@@ -62,7 +68,7 @@
         "range": {"$ref": "#/$defs/text60"},
         "question": {"type": "string", "pattern": "^[A-Z][0-9]{1,2}$", "description": "The question code (page standard, section 8). Leave it out on a page that answers no code."},
         "preparedBy": {"$ref": "#/$defs/text80"},
-        "accounts": {"type": "array", "maxItems": 40, "items": {"$ref": "#/$defs/account"}},
+        "accounts": {"type": "array", "maxItems": 120, "items": {"$ref": "#/$defs/account"}},
         "platforms": {
           "type": "array", "minItems": 1, "maxItems": 3,
           "items": {
@@ -179,7 +185,7 @@
             "properties": {"label": {"$ref": "#/$defs/text120"}, "percent": {"type": "integer", "minimum": 1, "maximum": 100}}
           }
         },
-        "notes": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/text280"}}
+        "notes": {"type": "array", "maxItems": 6, "items": {"$ref": "#/$defs/text600"}}
       }
     },
     "draft": {
@@ -206,11 +212,39 @@
         "verdict": {"enum": ["yes", "maybe", "no"]},
         "reason": {"$ref": "#/$defs/text280"},
         "checks": {"$ref": "#/$defs/text200"},
+        "image": {"type": "string", "maxLength": 44000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$",
+                  "description": "The profile picture, embedded per creator-card.md, Images."},
+        "alt": {"$ref": "#/$defs/text140"},
+        "score": {
+          "type": "object", "additionalProperties": false, "required": ["label", "value"],
+          "description": "The card's score ring: a fit or match score out of 100.",
+          "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"type": "integer", "minimum": 0, "maximum": 100}}
+        },
         "stats": {
-          "type": "array", "maxItems": 3,
+          "type": "array", "maxItems": 12,
           "items": {
             "type": "object", "additionalProperties": false, "required": ["label", "value"],
             "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"$ref": "#/$defs/text40"}, "source": {"$ref": "#/$defs/source"}}
+          }
+        },
+        "details": {
+          "type": "array", "maxItems": 12,
+          "description": "The card's details: brand safety, notes, the points per criterion, the contact route, a fee.",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["label", "value"],
+            "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"$ref": "#/$defs/text280"}, "source": {"$ref": "#/$defs/source"}}
+          }
+        },
+        "thumbs": {
+          "type": "array", "maxItems": 3,
+          "description": "Up to three of the creator's posts as thumbnails, evidence posts first.",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["href", "image"],
+            "properties": {
+              "href": {"$ref": "#/$defs/link"},
+              "image": {"type": "string", "maxLength": 164000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"},
+              "alt": {"$ref": "#/$defs/text140"}
+            }
           }
         },
         "settle": {"$ref": "#/$defs/text200", "description": "The one question that would settle a Maybe."}
@@ -268,7 +302,7 @@
       "description": "The typed sections a template may add. page-templates.json says which each template needs and allows.",
       "properties": {
         "kpis": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"$ref": "#/$defs/kpi"}},
-        "creators": {"type": "array", "minItems": 1, "maxItems": 60, "items": {"$ref": "#/$defs/creator"}},
+        "creators": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"$ref": "#/$defs/creator"}},
         "posts": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/post"}},
         "verdict": {"$ref": "#/$defs/verdict"},
         "steps": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/step"}}
@@ -296,7 +330,7 @@
       "type": "object", "additionalProperties": false, "required": ["updated", "freshness", "source"],
       "properties": {
         "updated": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2})?Z$"},
-        "freshness": {"type": "array", "maxItems": 40, "items": {"$ref": "#/$defs/freshness"}},
+        "freshness": {"type": "array", "maxItems": 120, "items": {"$ref": "#/$defs/freshness"}},
         "notes": {"type": "array", "maxItems": 4, "items": {"$ref": "#/$defs/text200"}},
         "source": {"type": "string", "minLength": 1, "maxLength": 600, "description": "The source line, word for word as artifact-standard.md, section 2 or 3, sets it for this page."}
       }

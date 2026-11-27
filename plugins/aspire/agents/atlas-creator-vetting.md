@@ -186,8 +186,10 @@ carry (the reference's step 6, **Never asks**).
    the recommended rates apply; no price when the data is missing.
 9. When the launch block's `question` is I1, list the evidence the approved I1 example sets,
    per the page standard's build loop (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`).
-   Build the page per the reference (load `artifact-design`, and `dataviz` for a chart; apply
-   `theme:brand` when saved per `theme.md`, **Applying the theme**) and publish it with the
+   Return the page as page data for the **Shortlist** template, per the reference, **The page**,
+   and fill it with the fill script per `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`,
+   section 1; write no HTML, and make every fix in the data. Put `theme:brand` in the data's
+   `theme` when saved, per `theme.md`, **Applying the theme**. Publish the printed page with the
    Artifact tool.
 10. When R4 was "Save", write the recommendation findings and the run summary with
     `append_insights` per **State written to Atlas**: one `runKey`, an `idempotencyKey` per
