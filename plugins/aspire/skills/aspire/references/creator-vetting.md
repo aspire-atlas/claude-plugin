@@ -1076,9 +1076,8 @@ visual check runs.
 
 **Fit score for a creator-ads lane** is the campaign's match score, out of 100: the one procedure
 in **CAS campaign**, **Creator Selection**, **The match score**, with the lane's concept,
-the round's casting keywords and target cities, and the weights saved in `match` in
-`campaign:{slug}-cas` (the defaults there without it). Vetting runs it so its page and the
-campaign page show the same number for the same inputs. When `match` has a `basis`, the page says
+the round's casting keywords and target cities, and the weights and settings saved in `match`
+in `campaign:{slug}-cas` (the defaults there without it). When `match` has a `basis`, the page says
 "Weights tuned {date} from {n} client decisions" in its About this data, else "Default weights". The two paid screens are two of its
 factors:
 
@@ -1086,28 +1085,28 @@ factors:
   `casting` in the lane record, which the campaign page's edits are pulled into. Only when it
   holds none, derive them from the lane's persona and casting
   filter, and say on the page that they are derived, not saved. Judge each keyword
-  against the bio, recent post topics and who appears on camera and in what setting, and cite the
-  bio or the post for every match.
+  against the captions of the last 90 days' posts only, and cite the post for every match.
 - **Paid track record is Paid history**, with the partners part read by category:
   `instagram.pastBrandPartnershipPartners` and partnership marked posts give 1 for two or more
   partners in the brand's category, 0.6 for one in it or two or more near it, 0.3 for paid
-  partners outside it, and 0 for none. The campaign page uses this read in place of the plain
-  count for every creator vetting screened, so the two never disagree.
+  partners outside it, and 0 for none. The campaign page uses this read for every creator
+  vetting screened.
 - The category comes from `brand:summary` and `brand:business-context`, as in the creator
   brief's **Fit rubric**. "Near" means a category the same buyer shops in.
+- **Talks to camera** reads `detail.adFigures.talksToCamera` from the discovery finding; with no
+  read, or under the minimum, it is left out and named.
 - Performance, Budget vs target and Content reach are worked out exactly as that section says,
   Budget vs target from **Rates and terms**, **Expected cost** (before step 3, the calculator's
   target plus the uplift, unless a roster finding holds an offer, counter or agreed fee) and
   **Target rate**, which reads `-cas` and `-terms`.
-- **The recommendation uses the score without Budget vs target**, the client's score in that
-  section, against `vetting:thresholds`, so price never decides Approve, Maybe or Reject, and no
-  reason ever cites price, cost or the target rate. The thresholds decide the recommendation and
-  the bands (75, 60, 45) only label the score; the two are separate.
-- An input Atlas holds no data for is left out and named, as that section says, never scored as
-  zero. On TikTok that is hook rate, engaged accounts, past paid partners and badges; say so on the
+- **The recommendation uses the score without Budget vs target**, the client's score, against
+  `vetting:thresholds`, so price never decides it or appears in a reason. The thresholds decide the recommendation and
+  the bands (70, 55, 42, or `bands` in `match`) only label the score; the two are separate.
+- An input with no data is left out and named, never scored as zero. On TikTok that is hook rate, engaged accounts, past paid partners and badges; say so on the
   card ("Scored without hook rate, which TikTok doesn't report").
-- A bio that names a saved competitor halves the score, as that section says. It is also a hard
-  stop below when it is a saved competitor's own handle.
+- Competitor work never changes the score. With `competitors` `"exclude"`, a creator whose bio
+  or paid partners name a saved competitor is recommended Reject with "Works with {competitor}";
+  with `"flag"` the card shows that Badge. A saved competitor's own handle is still a hard stop.
 - Partnership readiness isn't scored. It stays one of the figures on every row.
 - For the paid track record, read the discovery finding's `detail.recommendationTypes` when
   present. It is supporting evidence, never points: cite it in plain words, for example "Meta
@@ -1115,7 +1114,7 @@ factors:
 - Write the result in `detail.match`: `{score, client, band, factors, paidPartners, without, conflict,
   pastDeals, weights, scoredAt}`, `paidPartners` being the partners part by category
   (`{value, partners: [{name, category}]}`, `category` in, near or outside), which the campaign page
-  takes as it is, `score` being the five factor score and `client` the one without
+  takes as it is, `score` being the six factor score and `client` the one without
   Budget vs target, with `fitScore` equal to `score`. The page shows the date of the run, and names
   the inputs that can differ from the campaign page's as that section lists them.
 - Brand safety runs exactly as today, and every hard stop still decides first.

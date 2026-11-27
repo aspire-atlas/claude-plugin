@@ -144,9 +144,8 @@ draft, and in a channel post, uses the left column.
 | 1 Concepts approved, 2 Creators approved, 3 Fees approved, 4 Briefs approved | Gates 1 to 4 |
 | Creator changes approved (shown as "your call" on the changed brief) | Gate 4b |
 | Your decision: Priority Yes, Yes, Maybe, No ("Unreviewed" until one is picked) | slate call: Priority Yes and Yes are approved (Priority Yes adds `priority`), Maybe is maybe, No is rejected |
-| Campaign match: the score, Strong, Good, Possible, Weak, Competitor conflict | the match score, stored per creator per round (**1d**, **Creator Selection**, **The match score**) |
-| Performance, Brief fit, Paid history, Budget vs target, Content reach; Watch:; Scored without; About this data | the match score's five factors, its weak signals, its missing inputs and its explanation |
-| Past competitor deal: {brand} | a past paid partner that is a saved `competitor` |
+| Campaign match: the score, Strong, Good, Possible, Weak, Works with {competitor}, Excluded | the match score, stored per creator per round (**1d**, **Creator Selection**, **The match score**) |
+| Performance, Talks to camera, Paid history, Content reach, Budget vs target, Brief fit; Watch:; Scored without; About this data | the match score's six factors, its weak signals, its missing inputs and its explanation |
 | Casting: keywords, target cities | the concept's `keyword-{n}` and `city-{id}` in `briefs/{lane}-r{round}` |
 | Nano, Micro, Mid, Macro, Mega | the page's tier, from followers (**1d**, **Creator Selection**, **Tiers**) |
 | City | the creator's `location`, else their `country` |
@@ -159,7 +158,7 @@ draft, and in a channel post, uses the left column.
 | Why pass? Not our look, Too expensive, Wrong audience, Content quality, Already worked with them, Other | the surprise reason on a No for a creator the client saw scored 75 or more (`surprise` `pass`) |
 | What made them a yes? Love their content, Right look for the brand, Great price, Know them already, Fits the audience, Other | the surprise reason on a Priority Yes or Yes for a creator the client saw scored under 60 (`surprise` `pick`) |
 | Against the recommendation | a call that goes against vetting's recommendation, worked out from the agency's data |
-| Match score tuning: Agreement, Surprises, What {brand} seems to value, Did it sell, Retune; Holding up, Partly matching, Choosing differently; Apply tuned score, Back to default | the agency's check of the match score against the client's calls, and the weights it suggests (**1d**, **Creator Selection**, **Match score tuning**) |
+| Match score tuning: Agreement, Surprises, What {brand} seems to value, Did it sell, Retune; Holding up, Partly matching, Choosing differently; Apply tuned score, Back to default; Settings, Save settings | the agency's check of the match score against the client's calls, and the weights it suggests (**1d**, **Creator Selection**, **Match score tuning**) |
 | Status | roster state |
 | Your call needed | needs brand review |
 | No reply yet | overdue |
@@ -294,18 +293,19 @@ The campaign object:
             "url": "https://…", "round": "all", "date": "2026-10-14", "dateFrom": "document"}],
  "frameworks": [{"slot": 1, "code": "PAS", "name": "Problem, agitate, solve",
                  "use": "The hero, primary spend"}],
- "match": {"weights": {"performance": 0.30, "briefFit": 0.25, "paidHistory": 0.15,
-                       "budget": 0.15, "contentReach": 0.15},
+ "match": {"weights": {"performance": 0.30, "talksToCamera": 0.23, "paidHistory": 0.16,
+                       "contentReach": 0.13, "budget": 0.10, "briefFit": 0.08},
            "tuned": {"performance": {"at": "2026-11-12T16:40:00Z", "by": "Name"}},
            "talksToCamera": {"weights": {"speech": 45, "toCamera": 35, "explainer": 20},
-                             "minPosts": 20, "maxPosts": 100}},
+                             "minPosts": 20, "maxPosts": 100},
+           "bands": {"strong": 70, "good": 55, "possible": 42},
+           "hookRate": {"steps": [45, 35]}, "competitors": "flag"},
  "variantPlanToClient": true}
 ```
 
 `profileId` is the brand Profile the campaign runs for: the `profile_id` from Phase 2 + 3, an
-id, never a slug. Setup records are saved for the whole organization, so without it every Profile
-in the organization lists the campaign; with it, `get_cas_campaign` and the other `get_cas_*`
-tools can keep each Profile's campaigns apart. Setup in the chat (C7) writes it on every new
+id, never a slug. Without it every Profile in the organization lists the
+campaign, since setup records are saved for the whole organization. Setup in the chat (C7) writes it on every new
 campaign; the setup widget does not write it yet. A campaign saved without it (set up before this
 key existed, or through the setup widget) reads as the whole organization's, as before. When the
 organization has more than one live Profile, and the campaign's working state is on this
@@ -336,15 +336,25 @@ value is saved, Home hides its part (**1d**, **Home**).
 record like `products`: an agency edit on Master Brief's **Frameworks**, pulled with **Pulling
 decisions** through the supersede rule, or the CM saying it in the chat.
 
-`match` is optional: the match score's weights (**1d**, **Creator Selection**, **The match
-score**), one per factor, and in `tuned` when and by whom each factor's weight was last set. Without it, or for a factor
-it leaves out, the defaults there stand. `basis` is optional: what the last tuning
-saved from the page learned from, `{decisions, agreement, at}`, the number of client decisions and
-the agreement on Aspire's score before and after, so the page's **About this data** and
-discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It is written
-by **Match score tuning** (offered in its own picker by **Pulling decisions**, through the
-supersede rule) or the CM in the chat, and belongs to this campaign only, never to the brand. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
-`talksToCamera`: the camera screen's settings (**Camera screen**).
+`match` is optional: the match score's settings (**1d**, **Creator Selection**, **The match
+score**), every one per campaign: `weights`, one per factor, summing to 1; `talksToCamera`, the
+camera screen's settings (**Camera screen**); `bands`, each line lower than the one above;
+`hookRate.steps`, stored for sourcing and changing no score; `competitors`, `"flag"` or
+`"exclude"`; and in `tuned` when and by whom each weight or setting was last set. A key left out
+reads as the default there. A new campaign starts from the brand's last CAS campaign's `match`
+and `variantPlanToClient`, else the defaults. Older weights with no Talks to camera
+factor: tuned ones (any factor in `tuned`) keep the
+ratios among Performance, Paid history, Budget vs target and Content reach, scaled to sum 0.69,
+with Talks to camera 0.23 and Brief fit 0.08; untuned ones take the defaults. `basis` is optional:
+`{decisions, agreement, at}` from the last tuning saved from the page, so pages can say "tuned
+{date} from {n} client decisions". **Pulling decisions** or the CM in the chat writes `match`
+through the supersede rule. Discovery and vetting read it in creator-ads mode.
+
+**The settings in plain words**, the line the confirm round shows, each figure the campaign's:
+"Match score weights: hook rate and engagement 30%, talks to camera 23%, paid history 16%, views
+vs followers 13%, fee vs budget 10%, brief fit 8% · Talks to camera: newest 100 videos, 45 / 35 /
+20, minimum 20 · Hook rate: 45%, then 35% · Creators working with a competitor: flag them ·
+Variant plan shown to the client: yes". "Exclude them" and "no" for the other values.
 
 `variantPlanToClient` is optional and agency only, never inside `match`: whether the client sees
 the variant plan read only. Anything but `false` reads as on. "Change setup" asks "Show the variant
@@ -1096,13 +1106,7 @@ Performance**, **Reading the results**).
   outside it; record that only as their word, with how it was given, per **Gate 4**. Priority Yes
   and Yes record as approved, No as rejected. A Maybe stays open on the page with a question
   back to the client. A surprise reason the client picked ("Why pass: Too expensive") is named
-  in their words and recorded on the creator. When an Editor applied a tuned match score on the
-  page since the last pull, offer it after the batch, in one picker of its own: "Save the tuned
-  match score for {campaign}?" with the weights before and after, how many client decisions it
-  learned from and the agreement before and after, and "Save it (Recommended)" or "Keep it on
-  the page only". Saving supersedes `match` in `campaign:{slug}-cas`, so discovery and vetting
-  for this campaign score with the same weights. It is the campaign's calibration, never a
-  brand-wide one, and the page never writes it itself.
+  in their words and recorded on the creator. Tuned match score weights and settings are offered per **Match score weights** below.
 - **Record a reply** (rows 7, 10, 14, or whenever the CM pastes one): per **Rates and terms**,
   **Replies**. One picker proposes the record and the next move; a reply that changes what the
   client approved becomes "your call needed" for the client.
@@ -1613,16 +1617,17 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   variants for the round is dropped and named. One made for a concept that isn't theirs now is
   left out of `variantPlan` and named, and its page stamp stays as it is, listed on the card as
   "Made for {concept}" until an Editor clears it.
-- **Match score weights.** The weights an Editor applied on the page (**1d**, **Creator
+- **Match score weights.** The weights and settings an Editor saved on the page (**1d**, **Creator
   Selection**, **Match score tuning**) are saved to Atlas only here, in the chat, so discovery and
-  vetting score with the same weights. A `weight-*` stamp on `agency/match-score` counts when it
+  vetting score with them. A `setting-*` stamp follows the same rule as a weight, named in plain
+  words ("Bands 70 / 55 / 42 to 75 / 60 / 45"), and `setting-variant-plan` saves
+  `variantPlanToClient` beside `match`. A `weight-*` stamp on `agency/match-score` counts when it
   is newer than that factor's `tuned` time in `match` and its value differs from the weight `match`
   holds (the default when `match` has none), whatever the time of the last pull, so weights left
-  unanswered are offered again. A stamp older than its factor's `tuned` time is left as it is: the
-  CM changed that weight in the chat since, and the page already scores with the newer one. When
+  unanswered are offered again. An older stamp is left as it is, since the chat's newer weight already wins. When
   any counts, and they are newer than `matchDeclinedAt` on `agency/pull`, the pull offers them after the batch picker, in one picker of their own:
   "Save the tuned match score for {campaign}? {name} applied it on the page {time}, from {n}
-  client decisions: Performance 0.30 to 0.26, Brief fit 0.25 to 0.33, the rest unchanged.
+  client decisions: Performance 0.30 to 0.26, Brief fit 0.08 to 0.12, the rest unchanged.
   Agreement on Aspire's score for those decisions went from {b}% to {c}%. Discovery and vetting for {campaign} then
   score with it." (each "from" is the weight `match` holds in Atlas now, or the default, never `stats:` `before`; the decisions and agreement come from `stats:` on `agency/match-score`; a reset reads "Go back to the default match
   score for {campaign}? {name} set it back on the page {time}."), with "Save it (Recommended)" and
@@ -1632,14 +1637,10 @@ the client's calls, each named with who made it. The `send-` and `reopen-` stamp
   `stats:` (**1a**). **Keep it on the page only** writes nothing to Atlas and saves
   `matchDeclinedAt` on `agency/pull` as the newest counted stamp's `at`, so the same weights aren't
   offered again; the page keeps scoring with them, and discovery's and vetting's pages name them as
-  "weights tuned on the page and not yet pulled". New weights applied later are offered at the next
-  pull.
+  "weights tuned on the page and not yet pulled".
 
-  This is the campaign's own calibration, not a brand-wide one: `match` lives on
-  `campaign:{slug}-cas`, the setup record discovery and vetting already read in creator-ads mode for
-  this campaign. The weights come from one client's calls on one campaign's concepts and target
-  rate, so they never become the brand's default for another campaign or for discovery and vetting
-  outside creator-ads mode. There is no second key for them (**Atlas tools**, **CAS campaign
+  This is the campaign's own calibration: the brand's next CAS campaign starts from it (**1a**),
+  and discovery and vetting outside creator-ads mode never read it. There is no second key for them (**Atlas tools**, **CAS campaign
   records**).
 - **What stays on the page.** Notes, comments, files, the brief check and review versions,
   the proposed change lines and the calls on them,

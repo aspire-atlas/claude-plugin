@@ -1556,7 +1556,7 @@ card titles, `text-xl` for section titles, `text-2xl` for the page title. Weight
 | soft | New, Not started, Not received, Edited by {name}, Synced from Atlas, Sheet, Claude, From {file label}, Not sent, Not due, Good, Possible, Not scored yet, Too few decisions to judge yet, Not recorded yet, Resolved, Agency only, Awaiting decision, Unreviewed, Unpriced, Not sent yet, not asked yet, not shipped, Planned, Done, Returning, Up next, Paused, Not done, round closed, Scanned, Not read, Draft, Needs work, New concept, Carried forward, Deferred, With Aspire QA, Not cut yet, Not under contract, Back with editor, Not checked, Can't check, Version {k}, Proposed, Dropped, From round {n} results |
 | processing | Testing, Needs client review, Sent, Invoice sent, 50% paid, Offer sent, Details received, Shipped, Brief sent, in negotiation, In production, Now, Coming soon, Scanning, In review with client, Waiting for your sign off, Signed off, Aspire to confirm |
 | success | Winning, under target, Signed, Paid in full, Confirmed, Kept last round's product, Fees approved, Strong, Holding up, Picked, Priority Yes, Yes, Approved, Agreed, Delivered, Brief accepted, Granted, In market, Ahead, On track, Active, Updated {n}, Signed off, Pass, Accepted, Applied |
-| warning | Watch, Fatigued, details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Past competitor deal, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan, Results changed |
+| warning | Watch, Fatigued, details to add, On hold, Not confirmed for round {n}, More than planned, Fees changed since you approved, This isn't an approval you made, Weak, Partly matching, Works with {competitor}, Paid partnership: {competitor}, Changes requested, This isn't a sign off you made, This isn't a decision you made, This isn't a call you made, Approved on the earlier page, not recorded, Fail, Not counted, Over budget, Maybe, Countered, Your call needed, No reply yet, Brief changed, Pending, waiting for your approval, Running behind, Launch at risk, over target, days late, Waiting on you, Out of stock, Still needed, Needs a concept, Not in products in scope, Removed, Used in round {r}, Broken, Plan broken, Override, Cut for {concept}, Plan changed since this cut, Past the plan, Results changed |
 | error | Retire, Competitor conflict, Choosing differently, Passed, No, Rejected, Declined, returned, Couldn't scan, Not added, Couldn't import |
 
 The decision's Badge takes the variant of its choice (Unreviewed is soft). The match score's
@@ -1735,10 +1735,10 @@ prefixes.
 18. The match score: on each side, a creator's score reads the same on the Table, the card's
     ring, the score's reasons, **Export**, the sort and the creator viewer, and equals `score` in
     that side's stored result; the client and **Preview as client** show the client's score, with
-    four factor rows, levels ranked over the creators sent, and no price, expected cost, target
-    rate, weight or agency score anywhere they read, `scores` included; the agency sees five rows
-    and "The client sees {n}, without price"; a bio naming a saved competitor halves the score and
-    reads Competitor conflict; every input left out is named under "Scored without"; making a
+    five factor rows, levels ranked over the creators sent, and no price, expected cost, target
+    rate, weight or agency score anywhere they read, `scores` included; the agency sees six rows
+    and "The client sees {n}, without price"; a creator working with a saved competitor keeps
+    their score with "Works with {competitor}", or sits in Excluded; every input left out is named under "Scored without"; making a
     decision changes no score; each page edit **The match score** lists re-scores on the page and
     the client's open view follows; a Done round's scores don't move; a brief run or import leaves
     the **Casting** part as it was; the Factor bar's colors are green and amber under every brand

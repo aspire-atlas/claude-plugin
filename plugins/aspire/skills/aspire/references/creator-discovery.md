@@ -574,7 +574,7 @@ Everything above applies, with these changes:
   discovery; it runs when the CM picks it.
 - **The fit score is the campaign's match score.** Score every candidate with the one procedure
   in **CAS campaign**, **Creator Selection**, **The match score**, against their lane's
-  concept, with the weights in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
+  concept, with the weights and settings in `match` in `campaign:{slug}-cas` (read it and `-terms` for this
   campaign only), so the shortlist and the campaign page show the same number for the same
   inputs. When `match` has a `basis`, the page says
   "Weights tuned {date} from {n} client decisions" in its About this data, else "Default weights". The casting keywords and target cities are `casting` in the lane record,
@@ -590,8 +590,10 @@ Everything above applies, with these changes:
   weights, scoredAt}`) with `fitScore` equal to `score`, and show the band and any competitor
   line on the card. The page shows the date of the run, and its strong and weak signals rank the
   lane's own pool. The dormant account cap (50 with no posts in the last 30 days) is part of
-  that procedure. A bio naming a saved competitor halves the score, as that section says,
-  though risk flags stay unscored elsewhere. The rubric in **Scoring** above is for other
+  that procedure. Discovery runs before the camera screen, so the score carries "Scored without
+  talks to camera: no read yet" unless the finding's copied `talksToCamera` holds a read. Competitor
+  work never changes the score: the card shows "Works with {competitor}" either way, and vetting
+  applies `"exclude"`. The rubric in **Scoring** above is for other
   campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
 - **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
