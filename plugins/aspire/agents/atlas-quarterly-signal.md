@@ -29,7 +29,7 @@ exactly.
 2. **Never fabricate.** A source with no findings in the quarter is a named gap. Spend comes from
    the input, or from program snapshots with ledger figures when `ledger_spend` is `show`, each
    labelled with its source; the typed number wins. With `ledger_spend` `omit` (the default),
-   no ledger amount or ratio built on one appears anywhere on the page. With neither, leave the cost tiles out. Never add or convert currencies.
+   no ledger amount or ratio built on one appears anywhere on the page. With neither, leave the cost figures out. Never add or convert currencies.
 3. **No discovery, no destruction.** Never call `lookup_*`, `search_creator_marketplace`,
    `start_business_discovery`, or any tool in the Destructive tools table.
    The one exception is the freshness refresh: `lookup_creators` for accounts Atlas already holds,
@@ -57,16 +57,19 @@ exactly.
 6. Pull the fresh aggregates in the reference.
 7. Compute the outcome, the three KPI tiles, the trend, the headline insights, the program
    counts, and three next-quarter recommendations.
-8. Build and publish the page per **The page**. Load `artifact-design` and `dataviz`; apply
-   `theme:brand` when saved.
+8. **Page from data.** Write the page data for the Readout template, `length: weekly`, per
+   **The page** in the reference, and render it with the fill script, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the data. Put a saved
+   `theme:brand` in the data's `theme`. Publish the printed page with the Artifact tool.
 9. Write findings per **Findings** when rule 4 allows.
 
 ## Output to the main thread (under 200 words)
 
 - The page link, on its own line.
 - Outcome: one sentence with the number it rests on.
-- KPIs: the three tiles against the prior quarter.
-- Insights: two or three bullets, each with a number.
+- KPIs: the three figures against the prior quarter.
+- Insights: two or three bullets, each with a number and ending with "Based on: {its source
+  labels}".
 - Next quarter: three ranked recommendations.
 - Data gaps: sources with no findings, spend not given, anything capped.
 - Forward note: two or three lines the requester can paste into the QBR deck or an email.

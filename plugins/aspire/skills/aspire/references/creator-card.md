@@ -175,8 +175,8 @@ asks to see one, or a flow publishes a page.
 | Main thread, the user asked to see cards, and the host draws Atlas's tool widgets | `lookup_creators` with the chosen handles (**Cards in chat**). The host draws Atlas's own card; the plugin builds nothing | The host loads them; none enter the conversation |
 | Main thread, the user asked to see cards, and the host draws no widget (a terminal, a plain-text host) | The **Markdown fallback** below | None; post links only |
 | Main thread, 7 or more creators the user wants kept, or the user asks for a page | Published page (**Visual output**, Pages); more than 12 leads with a chart | Embedded, **Images** |
-| Agents (brief, discovery, account analyst, content review) | Inside the agent's published page | Embedded, **Images** |
-| One creator's full profile or portfolio view | Published page, the card at full width with the evidence sections below it (**Creator profile**) | Embedded, **Images** |
+| Agents (brief, discovery) | Inside the agent's published page | Embedded, **Images** |
+| One creator's full profile or portfolio view | Published page: the creator and the fit call, with the evidence below (**Creator profile**) | Embedded, **Images** |
 | The CAS campaign page (**CAS campaign** **1d**) | Published page, one card per creator, with the concept as the first flow chip and the "Hook post" and "Paid partnership" marks on its thumbnails; the same card, without thumbnails, sits in the creator viewer's **Profile**, after the match and the concept (**CAS campaign**, **Creator Selection**, **The creator viewer**) | Embedded, **Images** |
 
 The plugin never builds a creator card as an inline widget, and never calls `show_widget` for

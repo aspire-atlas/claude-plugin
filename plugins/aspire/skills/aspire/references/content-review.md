@@ -312,7 +312,7 @@ Apply `review:verdict-rule` (C1). With no saved rule, use option 1.
 
 **Go or no-go.** Every verdict maps to one call the brand reviewer can act on: **Approve** is
 Go; **Approve with edits** is Go once the edits are made; **Revise and resubmit** and **Do not
-post** are No-go. The verdict banner, the summary, and the verdict finding (`detail.goNoGo`)
+post** are No-go. The page's verdict, the summary, and the verdict finding (`detail.goNoGo`)
 carry it.
 
 **Severity.** Every Flag, Fail, and Can't check carries one, so a reviewer reads the risk at a
@@ -534,50 +534,47 @@ the judging pipeline's own schema, and this agent does not produce that.
 ## The page
 
 One page per review, with a new path each time so earlier reviews stay linkable. Title:
-"<Brand> Content Review: @<creator>, <date>". Sections in order:
+"<Brand> Content Review: @<creator>, <date>". The page is the Verdict template, filled from data
+and rendered with the fill script (`skills/page-standard/templates.md`, sections 1, 2 and 7); it
+writes no HTML, and the template sets the layout. Its argument fits two screens:
 
-1. **Verdict banner.** Verdict with its go or no-go, one-line reason, the highest severity,
-   counts of Pass / Flag / Fail / Can't check per dimension, stage chip (draft or published),
-   brief and deliverable name, and the "Prepared for" chip (**Recipient lens**). For the
-   `brand` lens the go or no-go is the largest element on the banner. The banner is the page's top
-   element, so the animated Aspire Atlas mark (**Artifact standard**) sits at the far right of the
-   banner row and never shrinks the go or no-go.
-2. **The brief.** The brief's title, brand, creator and deliverable, then a two-column table
-   with every field of the normalized deliverable in the brief's own words. Number the
-   must-include and avoid items the way the checks refer to them. Say where the brief came
-   from.
-3. **The post.** Media, caption, handle with profile picture, and the post link when
-   published. For video: a strip of every frame viewed, each labelled with its timestamp,
-   targeted frames marked. Then one line naming the extraction tool, the sampling step, and
-   the frame count.
-4. **Required edits.** Numbered, in priority order. Written as notes the team can forward to
-   the creator: plain, specific, polite, one fix each. If a brand red line blocks AI-generated
-   copy, describe what to change and never write replacement caption text.
-5. **Brief adherence**, **Brand guidelines**, **Brand safety.** One row per check: result
-   chip, severity, check name, evidence, fix. Fails first, then Flags, then Can't check, then
-   Passes collapsed.
-5b. **Ad reuse**, only when the check ran: the hook score, the pattern, the
-   first-three-seconds frame strip, and the cut list rows with rights. Labelled as advice that
-   does not affect the verdict. For the `performance` or `creative` lens it moves up to follow
-   the verdict banner.
-6. **Lessons applied.** Each saved lesson that changed a call, and any candidate lesson from
-   repeated overturns.
-7. **Footer.** The brief source, "numbers come from Atlas as of {timestamp}", what was not
-   checkable and why, and a note that images are a snapshot. After these, the page ends with the
-   artifact-standard footnote (**Artifact standard**).
+- `title`: "Is @{creator}'s {deliverable} ready to post?". `answer`: the verdict with its go or
+  no-go and the one-line reason, naming the highest severity ("No-go: the paid post has no
+  disclosure, a critical fail").
+- `sections.verdict`: `call` is the verdict word with its go or no-go ("Revise and resubmit:
+  no-go"); `status` `bad` for no-go, `warn` for Go once the edits are made, `ok` for Go; `reason`
+  is the one-line reason with the counts of Pass, Flag, Fail, and Can't check; `checks` is one row
+  per check, Fails first, then Flags, then Can't check, then Passes, each `note` holding the
+  severity, the evidence, and the fix (Fail `bad`, Flag `warn`, Pass `ok`, Can't check `flat`).
+  Past twelve checks, keep the eleven worst and count the rest by status in the twelfth
+  (`templates.md`, section 7, **Lists past their limit**).
+- `figures`: the stage (draft or published) against the brief's due date, and for a published
+  post its lead metric against the creator's own median when Atlas holds it.
+- `insights`: up to three, the calls that most change what the reviewer does: a red-line or
+  hard-rule hit, a brief miss, a lesson that changed a call. For the `performance` or `creative`
+  lens, the ad reuse check (the hook score and pattern), labelled as advice that does not affect
+  the verdict.
+- `actions`: the required edits, numbered in priority order, each written as a note the team can
+  forward to the creator: plain, specific, polite, one fix each (owner: the creator; job
+  `creator-outreach` when the team sends it). If a brand red line blocks AI-generated copy,
+  describe what to change and never write replacement caption text. An Approve with no edits
+  has one action: post it as reviewed (owner: the creator). `decisions`: approving the
+  post once the edits are in, by the reviewer.
+- `sections.posts`: a published post under review, with its metrics or the reason they are
+  missing, and the caption as `quote`. For video, the frames viewed are named by timestamp in its
+  `why`. A draft has no link or post time, so it is not a post entry: describe it (its file, the
+  caption, and the frames viewed by timestamp) in the first evidence line.
+- `evidence`: the brief's source and the must-include and avoid items, numbered as the checks
+  refer to them; each saved lesson that changed a call, and any candidate lesson from repeated
+  overturns; when the ad reuse check ran, its cut list rows with rights.
+- `method`: the extraction tool, the sampling step, and the frame count. `gaps`: what was not
+  checkable and why.
+- `footer.notes`: that images are a snapshot. `footer.source`: the source line
+  per **Artifact standard**.
 
-Page mechanics: every image follows **Creator card**, **Images**: sized to its rendered box
-at 2x, never upscaled, LANCZOS, WebP or JPEG at quality 85 or more, and placed with `width` and
-`height` at half its pixels. The post under review is the page's main image: for a published
-post, embed it with the snippet, page profile, as `detail@{W}x{H}` for its panel
-(`detail+text@…` when it is mostly text or graphics), passing `media.mediaUrl` then
-`media.thumbnailUrl`. Frames in the strip and draft media come from the local files under
-**Media**; resize them with the first tool on the **Resizing** list to twice their CSS width
-(a 160px frame is 320px wide, a 480px draft panel 960px), never past the file's own size, and
-encode them at the same settings. The creator card's images use the snippet's `avatar` and
-`thumb` kinds. Keep the images under 8MB and the page under 10MB; past that, embed every other
-frame of a long strip before lowering quality. Load `artifact-design` before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. The
-verdict banner and the result chips keep their semantic colors.
+A published post's image is encoded per templates.md, section 7; a draft's frames come from the
+local files under **Media** and are named, not embedded. The verdict and the check
+rows keep their semantic colors when a theme is saved.
 
 ## Atlas quirks that apply here
 

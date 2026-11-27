@@ -117,37 +117,37 @@ title.
 ## The page: one page, outcome first
 
 Title "<Brand> Quarterly Signal: {Qn YYYY}", a new path per quarter so earlier quarters stay
-linkable. Sections:
+linkable. The page is the Readout template, `length: weekly`, filled from data and rendered with
+the fill script (`skills/page-standard/templates.md`, sections 1, 2 and 7); it writes no HTML, and
+the template sets the layout. Its argument fits one screen:
 
-1. **Header:** brand, quarter, the "Prepared for" chip, prepared date, and the animated mark at the top right.
-2. **The outcome:** one sentence answering "is this working?", with the number it rests on.
-3. **Three KPI tiles:** quarter against the prior quarter, chosen from creator posts about the
-   brand, distinct creators, engagement, share of voice, and the saved lead metric (R4). With
-   spend: cost per 1,000 engagements and cost per creator post, the spend labelled as typed or
-   as from the program ledger. Program posts and creators delivering, from the dashboards, may
-   be tiles.
-4. **Trend:** one line chart of the lead metric by week across both quarters, from the weekly
-   findings when they cover the quarter, from the fresh aggregates otherwise.
-5. **Two or three headline insights:** each one sentence with a number, drawn from the saved
-   findings (a feature won, a creator format that outperformed, a safety record). A change over
-   the quarter that could help or hurt the brand is a trend to watch, with both readings and the
-   signals next quarter would show (**Page standard**, `recommendations.md`).
-6. **The program at work:** one row per influencer program from its dashboards: posts,
-   creators, posts on time, assets cleared for ads, and each goal's pace in words only ("on
-   pace", "behind", "met"). Never a target, a percent of one, or an amount other than the
-   typed spend. Then a compact row of counts: readouts delivered, briefs published,
-   creators reviewed and approved, candidates accepted, action items closed.
-7. **Next quarter:** three ranked recommendations tied to the numbers above, each ending with
-   its cost line (**Page standard**, `recommendations.md`): the typed spend or the program
-   ledger's figures per month, "No spend", or "Cannot be priced" with the missing figure and
-   who has it. Never a target or an amount the page may not show (item 6).
-8. **Appendix:** links to the quarter's readout, brief, shortlist, and market signal pages,
-   and each program's dashboard (`pageUrl` on its newest snapshot),
-   where the findings carry them, then sources and data gaps. The page ends with the
-   artifact-standard footnote, and the mark and the footnote follow **Artifact standard**.
-
-Keep it to one screen before the appendix. Load `artifact-design` and `dataviz` first; apply
-`theme:brand` per **Theme**, **Applying the theme**.
+- `title`: "Is {brand}'s creator program working?". `answer`: the outcome in one sentence, with
+  the number it rests on against the prior quarter.
+- `figures`: three, quarter against the prior quarter, chosen from creator posts about the brand,
+  distinct creators, engagement, share of voice, and the saved lead metric (R4). With spend: cost
+  per 1,000 engagements and cost per creator post, the spend labelled as typed (source `You`) or
+  as from the program ledger. Program posts and creators delivering, from the dashboards, may be
+  figures.
+- `insights`: two or three, each one sentence with a number, drawn from the saved findings (a
+  feature won, a creator format that outperformed, a safety record). The first may chart the
+  lead metric by month, this quarter against the prior one, as stacked bars; the weekly trend is
+  its evidence in words, from the weekly findings when they cover the quarter, from the fresh
+  aggregates otherwise. A change over the quarter that could help or hurt the brand is a trend to
+  watch, with both readings and the signals next quarter would show (**Page standard**,
+  `recommendations.md`).
+- `actions`: next quarter's three ranked recommendations, tied to the numbers above, each with
+  its cost (**Page standard**, `recommendations.md`): the typed spend or the program ledger's
+  figures per month, "No spend", or "Cannot be priced" with the missing figure and who has it.
+  Never a target or an amount the page may not show.
+- `sections.kpis`: the program at work: per influencer program, its posts, creators, posts on
+  time, and assets cleared for ads, each against the prior quarter, and each goal's pace in words
+  only ("on pace", "behind", "met"); then readouts delivered, briefs published, creators reviewed
+  and approved, candidates accepted, and action items closed. Never a target, a percent of one,
+  or an amount other than the typed spend.
+- `evidence`: links to the quarter's readout, brief, shortlist, and market signal pages, and each
+  program's dashboard (`pageUrl` on its newest snapshot), where the findings carry them.
+- `sources` and `gaps` as the template sets them. `footer.source`: the source line
+  per **Artifact standard**.
 
 ## Findings
 

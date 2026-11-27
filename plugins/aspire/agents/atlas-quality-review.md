@@ -66,8 +66,10 @@ question was asked before you started, and anything still open goes in your outp
    in-page links per **4.15**, and never pass a timecode you could not check.
 5. **Strengths:** three to six, each quoted.
 6. **Verdict** per **5**.
-7. **Build and publish** the page per **7**, title "{Work title} Review", as `publish` says: the
-   Artifact tool, a full HTML file at the path, or no page. With `earlier_review`, read it first,
+7. **Page from data.** Write the page data for the Verdict template per **7**, render it with the
+   fill script, per `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7, and fix what it prints. Write
+   no HTML: a fix goes in the data. Title "{Work title} Review", published as `publish` says: the
+   Artifact tool, the printed page saved at the path, or no page. With `earlier_review`, read it first,
    keep the ids of findings that persist, and mark each earlier finding fixed, still open, or no
    longer applies; publish with `url` set to it when it is an artifact link. No Artifact tool and
    `publish` is `artifact`: save the review page as a file and return its path, per
