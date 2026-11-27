@@ -37,6 +37,7 @@ export const ROSTER: readonly RosterEntry[] = [
   { type: 'aspire:atlas-creator-discovery', name: 'Creator discovery', blurb: 'Keeps a campaign shortlist full and scored', group: 'discover' },
   { type: 'aspire:atlas-creator-vetting', name: 'Creator vetting', blurb: 'Approve, maybe or reject a list of creators', group: 'discover' },
   { type: 'aspire:atlas-ad-reuse', name: 'Ad reuse', blurb: 'Best hooks to reuse as ads, with a cut list', group: 'discover' },
+  { type: 'aspire:atlas-camera-screen', name: 'Camera screen', blurb: 'Who on a slate talks to camera, scored', group: 'discover' },
 
   { type: 'aspire:atlas-creator-brief', name: 'Creator brief', blurb: 'A weekly or campaign brief with creators', group: 'create' },
   { type: 'aspire:atlas-ppa-pitch', name: 'PPA pitch', blurb: 'A casting deck for paid partnership ads', group: 'create' },
@@ -44,6 +45,7 @@ export const ROSTER: readonly RosterEntry[] = [
   { type: 'aspire:atlas-content-library', name: 'Content library', blurb: 'Creator content and the rights to use it', group: 'create' },
   { type: 'aspire:atlas-shops', name: 'Shops', blurb: 'An Instagram Shop and TikTok Shop setup plan', group: 'create' },
   { type: 'aspire:atlas-quality-review', name: 'Quality review', blurb: 'Checks a page or deck before you share it', group: 'create' },
+  { type: 'aspire:atlas-cas-creative-review', name: 'CAS creative review', blurb: 'A creative baseline and draft fixes before spend', group: 'create' },
 
   { type: 'aspire:atlas-creator-outreach', name: 'Creator outreach', blurb: 'First messages, follow-ups and replies', group: 'program' },
   { type: 'aspire:atlas-creator-negotiation', name: 'Creator negotiation', blurb: 'Offers, counters and renewals', group: 'program' },

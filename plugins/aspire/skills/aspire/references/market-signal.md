@@ -143,10 +143,10 @@ Filter path unless noted, `context` on every call, field paths from **Atlas sear
    read (section 9.4) and offers the refresh, with its time and cost, for each handle behind it
    up to the refresh limit (section 9.5), holding its findings and delivery until the relaunch. A handle Atlas does not hold is never
    refreshed (that would start discovery). The page's source line and the chat summary carry the
-   freshness line. Creators cited only as mention evidence (comparison
-   cards, quotes, share-of-voice counts) share the one mentions entry, marked `data-mention`.
-   A block that gives the brand's own organic results from a connected account carries `data-own`
-   (**Page standard**, section 8, **Paid label or none**).
+   freshness line. Each creator whose post is in the page data's
+   `sections.posts` gets its own freshness entry, from that post's read (the template's
+   `freshness` rule); quotes and share-of-voice counts cite no account. The paid label wording
+   follows **Page standard**, section 8, **Paid label or none**, and `templates.md`, section 7.
 3. **Mention sets.** Per entity: `search_posts` where the text matches the name or a spelling
    variant (`match_phrase`), or a handle is tagged or mentioned (the `nested` clause on `instagram.mentions` or
    `tiktok.mentions` in **Atlas search**), or a hashtag
@@ -266,7 +266,7 @@ message; no other reads.
   least 1.5 times the brand's rate. Each card holds what it is, the
   label "Wins reach", one line on what the posts have in common (from the posts read), the
   evidence (the multiple, both rates, and the number of creators), and one or two sample posts
-  as post cards (3.8) with their metrics. When over a quarter of the topic's posts carry a program
+  as posts with their metrics. When over a quarter of the topic's posts carry a program
   tag, the card is a trend to
   watch (**Page standard**, `recommendations.md`) instead of a win, and no move rests on it. Its
   two readings: the content works; or part of the reach was paid for or comes from who was
@@ -302,11 +302,11 @@ message; no other reads.
   | **Directional** | Either side is at or under the line, or no post carries the message yet | A test only |
 
   The sentence reads: "Posts that carry it drew 16.2 engagements per 1,000 views over 34 posts,
-  against 11.8 over 212 that do not (strong)." It is a comparison, so it carries the comparison
-  markup and the "directional" mark with its post count where a side is thin. A capped mention
+  against 11.8 over 212 that do not (strong)." It is a comparison, so it says "directional" with
+  its post count where a side is thin. A capped mention
   set is named in the method.
-- **A move that becomes a test** is written as one: the test plan block (3.15) with the message
-  as the one variable, the hypothesis, the posts to brief with it and without it (enough on each
+- **A move that becomes a test** is written as one: an action whose `effect` holds the test,
+  with the message as the one variable, the hypothesis, the posts to brief with it and without it (enough on each
   side to clear the directional line), engagement per 1,000 views as the measure, the date it
   reads out, and the Scale, Fix, or Stop rule. It is never worded as advice to adopt the message.
 - **Positioning decision.** When the moves add up to one positioning line, the page's Decisions
@@ -331,8 +331,9 @@ message; no other reads.
 
 ## Rendering for each lens
 
-The primary M3 lens (or the lens passed in the launch) leads. Every other saved lens gets a
-section. Each follows **Recipient lens**, **Rendering for a lens**.
+The primary M3 lens (or the lens passed in the launch) shapes the page (**Page**). Every other
+saved lens gets one evidence line there and its bullets in the chat summary and the delivery
+message. Each follows **Recipient lens**, **Rendering for a lens**; what each lens leads with:
 
 Ranking (**Recipient lens**, Headline and rank by the reader's result), as it applies here:
 
@@ -342,8 +343,8 @@ Ranking (**Recipient lens**, Headline and rank by the reader's result), as it ap
   rate over a topic's posts and keeps its definition. "Wins reach" answers the `team` reader;
   under another primary lens the one-line answer is written in that reader's result first.
 - This flow reads no ad or store data, so a leadership, growth, or performance reader gets the
-  fallback line, naming the metric and the reason and no connection. The page's "what's missing"
-  keeps its paid-results line.
+  fallback line, naming the metric and the reason and no connection. The page's gaps keep the
+  paid-results line.
 
 - **Product:** what changed on top, then features compared (won, lost, even, with the clips as
   evidence), then friction with quotes. No marketing gloss.
@@ -354,103 +355,84 @@ Ranking (**Recipient lens**, Headline and rank by the reader's result), as it ap
 - **Campaign:** three bullets: what the brand won on, the language to borrow, and what to
   avoid, for the next brief.
 - **Leadership** (question O3; never an M3 lens): the whole page changes shape, per
-  **Leadership page (O3)**. The saved lenses' sections go below the split, in its item 11.
+  **Leadership page (O3)**. The saved lenses get no line on that page.
 
 ## Page
 
-Title "<Brand> Market Signal", republished to the same path each run. Sections: header with the
-window, the "Prepared for" chip, and the animated mark at the top right; since last run; share of voice (a bar chart of posts and
-creators per entity, with the no-paid-label method note); the primary lens section; the other lens
-sections; comparison post cards with media and the quoted line; a verbatim wall (at most 12
-quotes, each linked); method and gaps (sets capped, competitors not indexed, fields missing);
-footer with "numbers come from Atlas as of {timestamp}" and a note that images are a snapshot, then the
-artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
-Images follow **Creator card**, **Images**, page profile. Load `artifact-design` and
-`dataviz` first; apply `theme:brand` per **Theme**, **Applying the theme**.
+Title "<Brand> Market Signal", republished to the same path each run. The page is the Readout
+template, `length: weekly`, filled from data and rendered with the fill script
+(`skills/page-standard/templates.md`, sections 1, 2 and 7); it writes no HTML, and the template
+sets the layout. The primary lens (**Rendering for each lens**) picks the answer, the insights,
+and their order:
 
-Build the page from the page blocks (`skills/page-standard/blocks.md`): the header and coverage
-strip (3.1, 3.2) with the brand's and each competitor's posts per platform, the answer (3.3), a
-decisions section (3.5) and next steps (3.6) after it, up to three insights (3.4), post cards
-(3.8), quotes (3.18), the method (3.11), and what's missing (3.12) for the gaps above.
+- `title`: "What are creators saying about {brand} against {competitors}?". `answer`: where the
+  brand stands, with its share of voice and the move against the baseline.
+- `figures`: the brand's share of voice in posts, in creators, and in engagement, each in
+  percentage points against the baseline. `sections.kpis`: each competitor's share of voice in
+  posts, against its baseline, and each entity's median engagement per 1,000 views.
+- `insights`: up to three, from what changed, features compared, friction, framing, and **Where
+  {brand} wins**, the ones that most change what the primary lens's reader does. The first may
+  chart share of voice by entity, this run against the baseline, as stacked bars of posts with
+  and without a paid label; its comparison carries the no-paid-label method note.
+- `actions`: the briefing and gap steps and each saved lens's next step, each with its cost line.
+  `decisions`: the positioning decision, with its message test (**Where the brand wins, and how
+  to stand apart**).
+- `sections.posts`: the win cards' sample posts, then the comparison posts with the strongest
+  openings, each with its quoted line as `quote`.
+- `evidence`: the gap card, the below-average topics, the concentrated-topic lines, one line per
+  other saved lens, up to four linked verbatims, and the line offering the cut list for the
+  reuse candidates.
+- `method`: the period, the threshold and why it was picked, the brand's rate, each message
+  test's two figures and post counts and the words matched, the topics with too few posts, and
+  the no-paid-label note. `gaps`: sets capped, competitors not indexed, fields missing, and paid
+  results ("Paid results need a connected Meta ad account"), the three that matter most.
+- `footer.notes`: that images are a snapshot.
 
-**Where {brand} wins, and how to stand apart.** When the page's reader or a saved lens is
-`pmm`, `team`, or `growth`, add this section after the insights (or after the lens sections,
-when the page has no insights), built per **Where the brand wins, and how to stand apart**:
-
-1. A one-line answer: where the brand wins reach and where it loses it. The page's answer (3.3)
-   gets one sentence of it, pointing here.
-2. Reach by topic: a bar chart of each topic's share of posts at the threshold, with its posts
-   ("32 of 54"), the brand's own rate as a marked bar, and a caption that states the threshold,
-   the network, the period, and that no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts. The
-   concentrated-topic line goes under it.
-3. The win cards, then the gap card.
-4. How to stand apart: the moves, then the "So:" line.
-
-The positioning decision goes in the page's decisions (3.5), the briefing and gap steps in
-its next steps (3.6), each with its cost line, and a move that became a test in a test plan
-block (3.15) under the moves. The method gives each message test's two figures, its post counts,
-and the words that were matched. The method states the period, the threshold and why it was picked, the
-brand's rate, that no post carries a paid label (Atlas holds no paid-partnership field) but any may still be paid, so each side may include paid posts, the topics with too few
-posts, and the
-posts left out for having no view count. The leadership
-page (**Leadership page (O3)**) leaves this section out.
+**Where {brand} wins, and how to stand apart** fills these fields when the page's reader or a
+saved lens is `pmm`, `team`, or `growth`, built per the section of that name above: its one-line
+answer is a sentence of `answer`; a win card is an insight with its sample post in
+`sections.posts`, or an evidence line when three insights rank above it; reach by topic is the
+first insight's chart when that insight is about reach (each topic's posts at the threshold as one
+segment, the rest as another, with the brand's own rate as a bar); and a move that became a test
+is an action whose `effect` states the hypothesis, the measure, the readout date, and the Scale,
+Fix, or Stop rule. The leadership page (**Leadership page (O3)**) leaves this out.
 
 ## Leadership page (O3)
 
 When the launch block's `question` is O3, or it has no `question` and its reader is
-`leadership`, the page answers question **O3**, "Leadership wants to
-know where we stand against competitors, and what to do", and must match the evidence of its
-approved example (`skills/page-standard/examples.md`, O3). Title "<Brand> Competitive Brief:
-{window}", published to its own path so the team's weekly page keeps its link. The page is split
-(block 3.14): everything above the split fits one screen.
+`leadership`, the page answers question **O3**, "Leadership wants to know where we stand against
+competitors, and what to do", and must match the evidence of its approved example
+(`skills/page-standard/examples.md`, O3). Title "<Brand> Competitive Brief: {window}", published to
+its own path so the team's weekly page keeps its link. It is the same Readout template, with
+`scope.question` `O3` and `scope.preparedBy` set, and its argument fits the first screen:
 
-Above the split:
-
-1. **Header** (3.1, 3.2): the brand band with "Prepared for" and "Prepared by" (the page
-   standard's reader rules), the window, and the posts per platform for the brand and each
-   competitor.
-2. **Answer** (3.3), written last: where the brand stands in one sentence, and a lede that
-   names the claims below.
-3. **Decisions** (3.5): up to three, each with who approves it and its deadline when it has one
-   (`data-by`). A deadline is a real date: the next run, a launch on the brand's calendar, or the
-   date the action that depends on it must start. Each carries its cost line, and a decision
-   about how to position the brand carries its message test (**Where the brand wins, and how to
-   stand apart**): with a flat, negative, or directional test it is a decision to approve a test.
-4. **Action plan** (3.6), at most five rows: one row per action: what, the owner as a role (social, product
-   marketing, product, performance) unless the brand's saved team names a person, when, how
-   you will know it worked, how strong the evidence is (the number of creators and posts
-   behind it), and what it costs.
-
-Below the split, in the order the claims use them:
-
-5. **Up to three claims** (3.4, summary variant first): one card per claim, each linking to its
-   section, drawn from share of voice, features compared, friction, and framing, picking those
-   that most change what leadership should do. Fewer claims with evidence means fewer cards;
-   never pad to three. A claim that could help or hurt the brand is a trend to watch, with both
-   readings and its signals, and no decision rests on it.
-6. **One section per claim** (3.4): the claim, the evidence with big numbers, the comparison
-   (the baseline, or a competitor), a chart for the headline claim (share of voice by period, or
-   share and growth by entity), the no-paid-label method note, and "What this means for you" as the
-   "So:" line.
-7. **Competitor comparison**: a table of each competitor with its share of voice, the features
-   it wins and loses on, and the friction creators raise about it, then a message ownership table
-   (which phrases belong to whom) from **Framing**. Both are this flow's own sections
-   (`blocks.md`, section 6).
-8. **What is working for you, and against you** (3.8): the posts on each side, with handle,
-   views, and the quoted line.
-9. **Scorecard for next month**: today's figure, the target, and the action it belongs to. A
-   target the brand has saved is labelled as its own; any other is labelled "proposed".
-10. **Comparison posts** ordered by opening strength (the retention proxy in **Reuse
-    candidates**) as post cards (3.8), then **In their words**: up to 8 quotes (3.18), each
-    linked.
-11. **Full data and method** (3.11): the data tables, how creators describe each product, and
-    each saved lens's section, each in a `details`; then the method with the platform counts
-    again, and numbered sources.
-12. **What's missing** (3.12): competitors not indexed, sets capped, and paid results ("Paid
-    results need a connected Meta ad account").
-13. **Atlas can draft next** (3.13): the brief update for the next campaign, and the leadership
-    summary as an email draft.
-14. **Footer** as on the team page.
+- `answer`, written last: where the brand stands in one sentence. `takeaway`: the one number it
+  rests on.
+- `decisions`: up to three, each with who approves it and its `by` date when it has one. A
+  deadline is a real date: the next run, a launch on the brand's calendar, or the date the action
+  that depends on it must start. Each carries its cost, and a decision about how to position the
+  brand carries its message test; with a flat, negative, or directional test it is a decision to
+  approve a test.
+- `actions`: at most five, the owner as a role (social, product marketing, product, performance)
+  unless the brand's saved team names a person, the `effect` saying how you will know it worked
+  and how strong the evidence is (the creators and posts behind it), and its cost.
+- `insights`: up to three claims, drawn from share of voice, features compared, friction, and
+  framing, picking those that most change what leadership should do. Fewer claims with evidence
+  means fewer insights; never pad to three. A claim that could help or hurt the brand is a trend
+  to watch, with both readings and its signals, and no decision rests on it. The headline claim
+  carries the chart (share of voice by entity, this period against the last).
+- `sections.kpis`: per competitor, its share of voice; then next month's scorecard, each tile
+  today's figure with the target as its comparison, a target the brand saved labelled as its own
+  and any other as "proposed".
+- `sections.posts`: what is working for the brand and against it, then the comparison posts in
+  order of opening strength (the retention proxy in **Reuse candidates**), each with its quoted
+  line.
+- `evidence`: one line per competitor (the features it wins and loses on, and the friction
+  creators raise about it), the phrases each side owns from **Framing**, and up to four quotes,
+  each linked.
+- `method`, `gaps`, and `drafts`: the method with the platform counts and numbered sources;
+  competitors not indexed, sets capped, and paid results; the brief update for the next campaign
+  and the leadership summary as an email draft.
 
 The leadership page is never posted to the saved routing: its link goes back to the main thread,
 for the requester to send on. Scheduled runs build the team page.
@@ -491,8 +473,7 @@ read. `sov.paid` stays empty. A flow that shows `sov.organic` labels it "no paid
 
 Read `marketsignal:routing` and the per-lens destinations in `marketsignal:lenses`. The page
 and chat summary always ship. Slack and email follow **Readouts**, **Delivery**. A lens with
-its own destination gets its own message: that lens's three bullets and the page link with
-the lens section's anchor (`#lens-product`). Interactive runs confirm the sends once;
+its own destination gets its own message: that lens's three bullets and the page link. Interactive runs confirm the sends once;
 unattended runs send on the M3 and M4 standing approval. Never send anywhere else.
 
 ## Scheduled (unattended) runs

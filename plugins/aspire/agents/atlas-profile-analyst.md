@@ -15,7 +15,8 @@ handle.
 linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and one handle), `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), `run`
 (`interactive`, the default, or `unattended`), `onboarding: true` when the launch is the first
-insights at the end of onboarding, and a digest of
+insights at the end of onboarding, `page: true` when the user asked for the review as a page, `render_only: true` on the "chart it"
+relaunch after a review already ran, and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
 `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
@@ -33,14 +34,19 @@ given, name it in one line of the summary and stop that branch.
 `lookup_creators`, never ask a question, and write nothing to Atlas: skip step 8 and return the
 findings and pushes only, saying in the summary that nothing was saved.
 
+**Render-only runs** (`render_only: true`, the "chart it" relaunch after a review already ran)
+never call `lookup_creators` and write nothing to Atlas: skip step 3's lookup and step 8, read
+what Atlas holds, and build the page (step 10). The first run resolved the handle and saved the
+findings.
+
 **Process:**
 
 1. Load tools: `ToolSearch` with `select:` for `list_post_search_fields`, `search_posts`,
-   `search_creators`, `list_creator_search_fields`, `append_insights`, `report_checkpoint` under the given prefix. In mode
-   `handle`, also load `lookup_creators`.
+   `search_creators`, `list_creator_search_fields`, `append_insights` (not with `render_only: true`), `report_checkpoint` under the given prefix. In mode
+   `handle`, also load `lookup_creators` (not with `render_only: true`).
 2. Take field paths from `atlas-search.md`; call `list_post_search_fields` or `list_creator_search_fields`
    only for a path it does not list. Never guess a path.
-3. **Resolve the target and verify it is current (mode `handle` only).** Follow **Resolve** in
+3. **Resolve the target and verify it is current (mode `handle` only; not with `render_only: true`).** Follow **Resolve** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`. Never run a lookup in
    mode `own`: connected channels are indexed by Atlas directly. A handle that cannot be resolved
    stops the run without writing insights. Report the freshness it keeps in the summary.
@@ -55,9 +61,8 @@ findings and pushes only, saying in the summary that nothing was saved.
    line (never a `review:` or `applicantreview:` key; those are content review and one campaign's
    applicant screening only).
 6. Mode `own` only: cross reference the brand's 90-day goal and competitors. Name gaps and quick wins.
-   On the page, a block that gives the brand's own organic figures carries `data-own`, and a
-   competitor's or creator's posts are never called organic or unpaid
-   (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, **Paid label or none**).
+   A competitor's or creator's posts are never called organic or unpaid, in the summary or on a
+   page (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 8, **Paid label or none**).
    **Benchmark against competitors Atlas already indexes.** For each `competitor` handle that
    `search_creators` returns, read its last 90 days with the same `search_posts` filter and compare
    on rates, never raw counts: engagement per post against follower count, posts per week, format
@@ -78,7 +83,7 @@ findings and pushes only, saying in the summary that nothing was saved.
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply brand red line checks only to the
      brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
-8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
+8. Interactive runs only, not with `render_only: true`: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),
@@ -90,12 +95,27 @@ findings and pushes only, saying in the summary that nothing was saved.
    finding.
 9. Never invent data. If a search returns nothing, report indexing as still in progress and stop without
    writing insights.
+10. **Page, only when the launch passes `page: true`** (the user asked for the review as a page, or
+   said "chart it"). Write the page data for the Readout template, `length: weekly`, and render it
+   with the fill script, per `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1, 2 and 7. Write no HTML: a
+   fix goes in the data. `title` is the reader's question ("How is @{handle} doing on
+   {network}?"); `answer` is the headline with its comparison; `figures` are cadence, engagement
+   per post against followers, and median views, each against the account's own 90-day median, the
+   peer set (mode `handle`), or the competitors (mode `own`); `insights` are the three strongest
+   insights, the first charting the format mix against the comparison as stacked bars;
+   `actions` are the ranked next steps and, in mode `own`, the three pushes (job
+   `creator-brief` when a push needs creators); `sections.posts` holds the top 3 and bottom 2
+   posts, each with its `why`; `sections.kpis` holds each competitor's or peer's rates. Put a
+   saved `theme:brand` in the data's `theme`, and publish the printed page with the Artifact tool,
+   title "{Brand or @handle} Account Review". A render-only run (above) gets here without a lookup or a write. Without `page: true`, publish
+   nothing: the summary is the answer.
 
 **Output format (executive summary, under 250 words):**
 
 - Headline: one sentence that answers the primary lens's decision (for lens `team`, overall account
   health)
-- Insights: 3 to 5 bullets, each with a number and a "so what"
+- Insights: 3 to 5 bullets, each with a number and a "so what", ending with "Based on: {its
+  source labels}"
 - Next week's pushes (mode `own`): three bullets, each with day, format, angle, and target
 - Recommended next steps: 2 to 3 bullets, ranked by impact, matching the action items written
 - Data gaps: anything missing, still indexing, or not measurable yet. In mode `handle`, lead with the

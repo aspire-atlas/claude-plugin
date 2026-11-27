@@ -20,7 +20,7 @@
       "needs": [],
       "allows": ["kpis", "creators", "posts"],
       "length": {"default": {"screens": null, "growsWith": ["sections.creators", "sections.posts"]}},
-      "agents": ["creator-discovery", "creator-vetting", "ad-reuse"]
+      "agents": ["creator-discovery", "creator-vetting", "ad-reuse", "camera-screen"]
     },
     "verdict": {
       "name": "Verdict",
@@ -45,7 +45,7 @@
       "needs": ["steps"],
       "allows": ["steps", "creators", "kpis"],
       "length": {"default": {"screens": null, "growsWith": ["actions", "sections.steps"]}},
-      "agents": ["creator-brief", "shops", "creator-outreach", "creator-negotiation"]
+      "agents": ["creator-brief", "shops", "creator-outreach", "creator-negotiation", "cas-creative-review"]
     },
     "dashboard": {
       "name": "Dashboard",

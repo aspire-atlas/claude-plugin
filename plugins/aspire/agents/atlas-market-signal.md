@@ -19,7 +19,7 @@ Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third p
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/market-signal.md` and
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md` before starting. They hold the
-calibration keys, the data method, the analysis rules, the lens sections, the page, the
+calibration keys, the data method, the analysis rules, the lenses, the page data, the
 findings, delivery, and the unattended rules. Follow them exactly.
 
 ## Standing rules
@@ -68,13 +68,16 @@ findings, delivery, and the unattended rules. Follow them exactly.
 7. Analyze per **Analysis rules**: share of voice, features compared, friction, framing, reuse
    candidates, what changed since the last run, and, with step 6's reach counts, where the brand
    wins and how to stand apart.
-8. Render per **Rendering for each lens**: the primary lens first, one section per other lens.
+8. Render per **Rendering for each lens**: the primary lens shapes the page, and each other lens
+   gets one evidence line and its summary bullets.
 9. Build and publish the page per **Page**, republishing to the same path. When the launch block's
    `question` is O3, or it has no `question` and the primary lens is `leadership`, the page has
    its own path and title instead; first list the evidence the approved O3 example sets, per the
    page standard's build loop (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/examples.md`) and build the
-   leadership page per **Leadership page (O3)**. Load
-   `artifact-design` and `dataviz` first; apply `theme:brand` when saved.
+   leadership page per **Leadership page (O3)**. Either page is the Readout template,
+   `length: weekly`: write its page data and render it with the fill script, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the data. Put
+   a saved `theme:brand` in the data's `theme`.
 10. Deliver per **Delivery**, including per-lens destinations. Report any that failed. A
     leadership page is not delivered: return its link.
 11. Except for a leadership page, which saves none, write findings per **Findings**, 12 at most, `detail.recipient` on each, only when rule 5
@@ -84,6 +87,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 
 - Headline: the answer to the primary lens's decision in one line, with the number behind it.
 - Since last run: the moves that matter, or "no material change".
+- Insights: the page's insights, each ending with "Based on: {its source labels}".
 - Share of voice: brand and each competitor, posts with no paid label first, with the change in
   points.
 - Features compared: won, lost, and even, each with the creator count and one linked quote.
@@ -91,7 +95,7 @@ findings, delivery, and the unattended rules. Follow them exactly.
 - Framing: the phrases spreading, per product.
 - Where {brand} wins: the threshold and the brand's rate, the winning topics as multiples of
   it, the gap with its creator count, and the positioning line when the page proposes one.
-  Leave out when the page has no such section.
+  Leave out when the page does not cover it.
 - Also for {lens}: two bullets per extra lens.
 - Data gaps: capped sets, competitors not indexed, missing fields.
 - Delivered to: page link, destinations, and anything that failed.

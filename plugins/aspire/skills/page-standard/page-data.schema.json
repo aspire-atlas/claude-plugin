@@ -134,10 +134,10 @@
           "description": "The /aspire job that does the step: a brand snapshot report job, or an agent by its name without the atlas- prefix.",
           "enum": ["connect-channels", "account-review", "creator-discovery", "creator-vetting", "creator-brief", "creator-outreach",
                    "content-sourcing", "ad-reuse", "brand-safety", "weekly-report",
-                   "affiliate-manager", "campaign-orchestrator", "content-library", "content-review", "creator-negotiation",
+                   "affiliate-manager", "campaign-orchestrator", "cas-creative-review", "content-library", "content-review", "creator-negotiation",
                    "creator-profile", "daily-insights-report", "deliverable-tracker", "market-signal", "post-analysis",
                    "ppa-pitch", "product-fulfillment", "profile-analyst", "program-dashboard", "program-ledger",
-                   "quality-review", "quarterly-signal", "roster-manager", "shops", "weekly-insights-report"]
+                   "quality-review", "quarterly-signal", "roster-manager", "shops", "weekly-insights-report", "camera-screen"]
         },
         "cost": {"$ref": "#/$defs/cost"},
         "source": {"$ref": "#/$defs/source"},

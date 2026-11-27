@@ -17,6 +17,7 @@ and the order. What each part says, the reader rules, and the R1 to R15 checks s
 - [4. The six templates](#4-the-six-templates)
 - [5. Length budgets](#5-length-budgets)
 - [6. Which agent uses which template](#6-which-agent-uses-which-template)
+- [7. Fitting a flow's page into the data](#7-fitting-a-flows-page-into-the-data)
 
 ## 1. Making a page from data
 
@@ -154,12 +155,81 @@ Readout's Leadership lens, the competitive brief), still fits its argument on th
 | Template | Agents |
 | -------- | ------ |
 | Readout | daily-insights-report, weekly-insights-report, market-signal, quarterly-signal, profile-analyst |
-| Shortlist | creator-discovery, creator-vetting, ad-reuse |
+| Shortlist | creator-discovery, creator-vetting, ad-reuse, camera-screen |
 | Verdict | content-review, post-analysis, quality-review |
 | Profile | creator-profile |
-| Plan | creator-brief, shops, creator-outreach, creator-negotiation |
+| Plan | creator-brief, shops, creator-outreach, creator-negotiation, cas-creative-review |
 | Dashboard | program-dashboard, program-ledger, deliverable-tracker, roster-manager, affiliate-manager, campaign-orchestrator, content-library, content-sourcing, product-fulfillment |
 
 The PPA pitch uses no template: its page is a deck with a fixed set of eleven slides
 (`ppa-pitch.md`). An agent's own reference still wins where it sets a layout the template does not
 cover, as `SKILL.md`, section 1, says.
+
+## 7. Fitting a flow's page into the data
+
+A flow that renders through a template keeps its own rules for what to read, what to compute, and
+what each part says. Its reference maps those onto the fields in section 2 and sets no layout: the
+template sets the order, the blocks, the mark, and the source line. Where a flow has more than the
+fields hold, it fits the content in this way and never adds HTML to the printed page.
+
+- **The answer states the finding.** `answer` is the conclusion with its number and its
+  comparison ("Engagement rate was 4.1%, up 38% on the 28-day median"), never a topic title.
+  `title` is the reader's question. A banner a flow used to draw (a repeat window, a sample, a
+  stale read) is the first `footer.notes` line and, when it changes the answer, `takeaway`.
+- **The question code.** `scope.question` is the launch block's `question`, or the code the flow
+  answers for this reader (`orchestration.md`, **3**). A page that cites posts must carry one.
+- **Every number has a comparison and a source.** A figure, KPI tile, or stat with no baseline,
+  prior period, peer, goal, or own usual to set against it stays off the page. Each insight,
+  action, figure, and evidence line carries one of the source labels in section 2.
+- **Rank, then cut.** The three strongest findings for the reader are the `insights`. A finding
+  that ranks fourth or lower becomes an evidence line, a KPI tile, or a post's `why`, or it goes;
+  it is never a fourth insight.
+- **One chart.** Only the first insight carries a chart, a stacked bar. A line, scatter,
+  timeline, or second chart a flow used to draw becomes that insight's evidence in words ("9
+  weeks, the last the highest") or a KPI tile with its comparison.
+- **Tables become tiles or lines.** A short table of figures (share of voice per brand, rates per
+  metric, verdict counts) becomes `sections.kpis` where the template allows them, or `figures`.
+  A table of items (open action items, reviews, competitors, findings) becomes evidence lines,
+  one per row, each up to 200 characters with its link. Past ten rows, show nine and count the rest
+  in the tenth line.
+- **Lenses.** The page renders for the primary lens (`recipient-lens.md`): it picks the answer,
+  the insights, and their order. Each other saved lens gets at most one evidence line on the page
+  and its bullets in the chat summary and the delivery message. A lens that needs a page of its
+  own gets one from its own run.
+- **At least one action.** `actions` is never empty. When nothing else is due, the one action is
+  the flow's standing next step (the next run, the next review, or publishing the approved work),
+  with its owner and date.
+- **Flags and red-line hits** that need someone to act are actions, ranked first. Ones that need
+  approval are decisions. The rest are evidence lines.
+- **Posts and media.** A post the page cites goes in `sections.posts` where the template allows
+  it (up to 20), with its metrics, the missing ones and their reason, its `usual`, a one-line
+  `why`, and an exact `quote` when the flow quotes it. Embed its image with the **Images** snippet
+  in `creator-card.md`, page profile, kind `thumb@96x171` (the post card's box), into `image`. A
+  frame still, timeline, or strip a flow used to draw goes; name the timestamps it showed in the
+  post's `why` or an evidence line. On a template that allows no posts, link the post from an
+  evidence line.
+- **Paid label wording.** Follow `post-kinds.md`. The template has no `data-own` mark, so on a
+  page its check reads (O1, O2, O3, I6, or with mention evidence) no field says "organic" or
+  "unpaid" of posts beside a handle, the brand's own included: say "{brand}'s own posts", and
+  "paid label" or "no paid label" for anyone else's.
+- **Gaps.** The three that most change what the reader can conclude go in `gaps`, each "{gap}:
+  {what connecting it would add}". The rest go in the chat summary.
+- **Lists past their limit.** The fill refuses a list over its cap, so a flow never relies on
+  spilling into another list:
+  - `actions` (12): past twelve, the twelfth counts the rest ("Fix the other 6 findings, listed in
+    the chat summary").
+  - `sections.verdict.checks` (12): past twelve, keep the eleven worst rows and count the rest
+    by status in the twelfth ("8 more: 5 pass, 3 not checked").
+  - `method.notes` (6): the method's own notes come first; anything past six is counted in the
+    sixth ("and 7 more brands on screen, listed in the chat summary").
+  - Long text: `effect`, `decision.text`, and `then` hold 140 characters. A list (a cut list, a set
+    of tiers) goes in evidence lines, one item each, and the field keeps a short summary.
+- **Theme.** A saved theme goes in `theme`: the `:root` and `@media` token rules from `theme.md`,
+  **Page tokens**, without the `<style>` tags, as `css`, and `fonts.href` as `fontsHref`.
+- **The footer.** `updated` is the shell clock's UTC time; one `freshness` entry per cited
+  account; `notes` holds the images-are-a-snapshot line when the page embeds images; `source` is
+  the source line word for word.
+
+**In chat,** each insight in the summary ends with "Based on: {its source labels}", the same
+labels its page data carries ("Based on: Atlas, Brand memory").
+

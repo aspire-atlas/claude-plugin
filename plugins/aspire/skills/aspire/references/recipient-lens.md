@@ -118,7 +118,8 @@ Never ask who the output is for in plain text, and never ask more than once per 
 
 - **Lead with the decision.** The first line of the chat summary and the page headline answer
   the primary lens's `decision` in the reader's terms. The page header carries a "Prepared for"
-  chip: the reader (or team), the decision, and `when` when known.
+  chip: the reader (or team), the decision, and `when` when known; on a template page, that is
+  the data's `scope.reader`.
 - **Headline and rank by the reader's result.** The headline's figure and the order of the
   page's ranked posts and topics use the primary lens's row in **Team catalog**, Result judged on.
   The same data gives a paid-social page and a social-team page different headlines and a
@@ -147,7 +148,10 @@ Never ask who the output is for in plain text, and never ask more than once per 
 - **Same numbers everywhere.** Every lens reads the same analysis. A figure never changes
   between lenses, and a lens never adds a claim the data does not support.
 - **Extra lenses are extra sections.** After the primary content, one section per additional
-  lens ("Also for PMM"), at most five bullets each, built from the same analysis. Pull more
+  lens ("Also for PMM"), at most five bullets each, built from the same analysis. A page that
+  renders through a template has no extra sections: each other lens gets one evidence line there
+  and its bullets in the chat summary and the delivery message (`skills/page-standard/templates.md`,
+  section 7, **Lenses**). Pull more
   data only when a lens needs a field the primary did not (a transcript for a cut list).
 - **Name what the reader needs but Atlas doesn't hold.** Spend, conversions, usage rights,
   product telemetry: list them under data gaps and never infer them. On a page shared outside
