@@ -134,7 +134,7 @@ Title: "Post Analysis: {short name}". The page is the Verdict template, filled f
 rendered with the fill script (`skills/page-standard/templates.md`, sections 1, 2 and 7); it writes
 no HTML, and the template sets the layout. Its argument fits two screens, so the analysis below is
 ranked into the fields, never drawn as extra sections. Anything with no data behind it is left
-out and named in `gaps` or the method's notes. The brand's question picks the order:
+out and named in `gaps` or the chat summary. The brand's question picks the order:
 
 - `title`: the brand's question about the post ("Is @{account}'s {format} safe to sponsor?").
   `answer`: the verdict for that question in one sentence, with the number it rests on.
@@ -150,7 +150,8 @@ out and named in `gaps` or the method's notes. The brand's question picks the or
   the post, and reuse rights (likeness,
   marks on screen, the audio as original, licensed, or unconfirmed: a checklist for legal, not
   legal advice). The categories rated low risk on every reading are counted in one row, and so are the red lines
-  the post passes. Past twelve rows, the lowest-risk rows go to the method's notes.
+  the post passes. Past twelve rows, keep the eleven highest-risk rows and count the rest by
+  status in the twelfth.
 - `figures`: views against followers, interactions per view against the account's median, and
   the boost lift (total minus organic, as a share of likes) when Atlas holds both counts. Say who
   paid for the boost only when a record says so.
@@ -159,11 +160,13 @@ out and named in `gaps` or the method's notes. The brand's question picks the or
   organic against total per metric as stacked bars.
 - `actions`: what the brand should do: sponsor, partner, reuse as posted or trimmed, or pass, each
   with its owner and cost; for the `performance` or `creative` lens, the ad reuse check from **Ad
-  reuse** (the hook score, the pattern, and the cut list as the action's `effect`), advice that
-  never changes the safety verdict. `decisions`: the call the brand must make, with the fit by
-  advertiser risk tolerance (conservative, standard, permissive: the verticals each suits and
-  whether to use it as posted or trimmed), labelled "Aspire read based on the scores and evidence
-  above. Not an Atlas score."
+  reuse** (the hook score and pattern in the action's `effect`, and each cut of the cut list as
+  its own evidence line with its timestamps, length, placement, and rights), advice that never
+  changes the safety verdict. `decisions`: the call the brand must make, in one short line ("Use
+  as posted, trimmed, or pass, for {brand}'s risk tolerance"), with the fit by advertiser risk
+  tolerance as three evidence lines (conservative, standard, permissive: the verticals each suits
+  and whether to use it as posted or trimmed), each with the source `Our read`; the method's first
+  note reads "Aspire read based on the scores and evidence above. Not an Atlas score."
 - `sections.posts`: the post itself, with its metrics, the caption as `quote`, and the people on
   screen and its format in `why`.
 - `evidence`: the brands in the video, one line per brand or group (paid sponsor, wardrobe, show
@@ -173,10 +176,12 @@ out and named in `gaps` or the method's notes. The brand's question picks the or
   energy, authenticity, promotional intent) and the primary emotion and tone; and the account
   baseline (this post's rank on views, interaction rate, and comments per 1,000 likes, against
   the account medians, with a warning when the held posts are far from its date). Ten lines at
-  most; the rest go in the method's notes.
-- `method`: how brand and profanity timestamps were derived (frames, transcript, audio), how
-  speakers were identified, and how rates were computed, each rate with the counts it uses. End
-  with "Not a benchmark for {brand}" when the account is a different size or category.
+  most, ranked for the brand's question: the tenth counts the rest, and the chat summary lists
+  them.
+- `method.notes`, six at most: the Aspire read label above, how brand and profanity timestamps
+  were derived (frames, transcript, audio), how speakers were identified, how rates were computed
+  with the counts each uses, and "Not a benchmark for {brand}" when the account is a different
+  size or category.
 - `footer.notes`: the snapshot time and that images are a snapshot. `footer.source`: the source
   line per **Artifact standard**.
 

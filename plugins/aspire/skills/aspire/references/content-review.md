@@ -546,7 +546,8 @@ writes no HTML, and the template sets the layout. Its argument fits two screens:
   is the one-line reason with the counts of Pass, Flag, Fail, and Can't check; `checks` is one row
   per check, Fails first, then Flags, then Can't check, then Passes, each `note` holding the
   severity, the evidence, and the fix (Fail `bad`, Flag `warn`, Pass `ok`, Can't check `flat`).
-  Past twelve checks, the Passes are counted in one row.
+  Past twelve checks, keep the eleven worst and count the rest by status in the twelfth
+  (`templates.md`, section 7, **Lists past their limit**).
 - `figures`: the stage (draft or published) against the brief's due date, and for a published
   post its lead metric against the creator's own median when Atlas holds it.
 - `insights`: up to three, the calls that most change what the reviewer does: a red-line or

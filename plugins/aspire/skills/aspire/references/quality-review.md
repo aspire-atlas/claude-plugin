@@ -374,27 +374,31 @@ there is a profile; the verdict keeps its semantic colors. Its argument fits the
 - `title`: "Is {work title} ready to send?". `answer`: the verdict (Ready, Ready with fixes, Not
   ready) and its one-sentence reason. `scope.reader` is the team (a review is for the team, never
   the work's reader); `scope.range` is a short coverage label of up to 60 characters ("All 24
-  slides, notes not seen"), and the full coverage line (**4.0**) goes in the method's notes.
+  slides, notes not seen"), and the full coverage line (**4.0**) is the method's first note.
   `scope.platforms` lists the networks the work cites; when it cites none, one platform at 0
   posts with the note "The work cites no social posts", and `R2` in `scope.na`.
 - `sections.verdict`: `call` is the verdict; `status` `ok` for Ready, `warn` for Ready with fixes,
   `bad` for Not ready; `reason` is the one-sentence reason; `checks` is the scorecard: each brief
   requirement (**4.1**), then each check, as `bad` (FAIL), `ok` (PASS), or `flat` (N/A), each
-  `note` its one-line reason. FAILs come first; past twelve rows, the PASS and N/A rows are counted
-  in one row each.
+  `note` its one-line reason. FAILs come first; past twelve rows, keep the eleven worst and count the
+  rest by status in the twelfth (`templates.md`, section 7, **Lists past their limit**).
 - `insights`: each Critical finding, or the three worst findings when there is none, each with
   its quote as `evidence`, where it sits and the check it fails as `comparison`, and why it matters
   and the fix as `so`. Source `Our read`.
-- `actions`: every finding worst first, ranked: the fix as verb and object, its id, severity,
-  check, and place in `effect`, the owner as the flow or person that made the work, and its cost.
-  The share steps from **4.11**, item 4, follow. With no finding and no share step, the one action
+- `actions`: the findings worst first, ranked: the fix as verb and object, its id, severity,
+  check, and place in `effect`, the owner as the flow or person that made the work, its job (the
+  /aspire job of the flow that made the work when it is one, otherwise `quality-review` for the
+  re-review after the fixes), and its cost. The share steps from **4.11**, item 4, follow. Twelve
+  actions at most: past that, the twelfth counts the rest ("Fix the other 6 findings, listed in
+  the fixes block"), and every finding stays in the fixes block (**8**). With no finding and no share step, the one action
   is sending the work as it is (owner: the requester). `decisions`: anything only the requester can
   decide (who may see a figure, whether to send with a High finding open).
 - `evidence`: three to six strengths, each with its quote; the consistency rows (**4.4**), the
   feasibility math (**4.5**), the data access rows (**4.11**), the facts to source or confirm
   (**4.3**), the Atlas re-check results when it ran, and the timecodes not verified (**4.15**), each
   as one line, left out under the same rules as before; on a re-review, each earlier finding as
-  fixed, still open, or no longer applies. Past ten lines, the rest go in the method's notes.
+  fixed, still open, or no longer applies. Past ten lines, the tenth counts the rest, and the
+  chat summary lists them.
 - `method`: the rubric version and what the review could not see. `confidence`: how much of the
   work the review could read.
 - `footer.source`: the source line per **Artifact standard**, section 3, **Review pages**, with

@@ -15,7 +15,8 @@ handle.
 linked handle; mode `handle`: exactly one network, `instagram` or `tiktok`, and one handle), `recipient` (one or more lenses per
 `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/recipient-lens.md`; default `team`), `run`
 (`interactive`, the default, or `unattended`), `onboarding: true` when the launch is the first
-insights at the end of onboarding, `page: true` when the user asked for the review as a page, and a digest of
+insights at the end of onboarding, `page: true` when the user asked for the review as a page, `render_only: true` on the "chart it"
+relaunch after a review already ran, and a digest of
 the brand's calibrations (summary, goals, competitors, red lines, partners). Every Atlas tool needs a
 `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
@@ -101,8 +102,10 @@ findings and pushes only, saying in the summary that nothing was saved.
    `creator-brief` when a push needs creators); `sections.posts` holds the top 3 and bottom 2
    posts, each with its `why`; `sections.kpis` holds each competitor's or peer's rates. Put a
    saved `theme:brand` in the data's `theme`, and publish the printed page with the Artifact tool,
-   title "{Brand or @handle} Account Review". Without `page: true`, publish nothing: the summary is
-   the answer.
+   title "{Brand or @handle} Account Review". With `render_only: true` (the "chart it" relaunch),
+   skip step 3's lookup and step 8's writes: the first run resolved the handle and saved the
+   findings, so this run only reads and renders. Without `page: true`, publish
+   nothing: the summary is the answer.
 
 **Output format (executive summary, under 250 words):**
 

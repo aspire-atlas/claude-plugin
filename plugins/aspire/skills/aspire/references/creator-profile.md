@@ -64,7 +64,7 @@ Profile template, filled from data and rendered with the fill script
 sets the layout. Its argument fits two screens. Put the saved theme in the data's `theme`.
 
 Each part below is filled only when its rule in the table says so. A part left out is named in the
-method's notes, never shown empty.
+method's notes (one note, counting them when there are several), never shown empty.
 
 ## Data behind each part
 

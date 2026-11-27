@@ -62,8 +62,9 @@ against competitors goes to **Market signal**.
    account's card per **Creator card**, **Cards in chat** (the host draws it from
    `lookup_creators` on the reviewed handle, which Atlas holds after this review); "show the
    posts" does the same with `lookup_posts` on the top and bottom posts; "chart it" relaunches
-   `atlas-profile-analyst` on the same target with `page: true`, and it publishes the review as
-   a page through its template. When the reviewed account is a
+   `atlas-profile-analyst` on the same target with `page: true` and `render_only: true`, and it
+   publishes the review as a page through its template. That relaunch writes nothing to Atlas
+   (the first run saved the findings) and makes no lookup. When the reviewed account is a
    creator, offer its full profile in one line after the summary (**Creator profile**).
 8. Unattended run with no `AskUserQuestion` available: default to `own` mode, never start a
    lookup, and write nothing to Atlas; the agent returns the findings and pushes only.

@@ -248,7 +248,7 @@ that makes the top three is an insight, the rest are KPI tiles or evidence lines
    check, a delivery error to fix, a recommendation to try).
 4. Whenever Meta's figures are left out (connector missing, sign in expired, no linked or enabled
    account, a call failed), add "Meta Ads data not included: {reason}" to the page's `gaps`
-   (or the method's notes when three gaps rank above it) and finish the report as normal. Never fail, stop, or retry more than once.
+   (or the chat summary when three gaps rank above it) and finish the report as normal. Never fail, stop, or retry more than once.
 
 Never a Meta write tool, in any run mode. Findings drawn from Meta's figures may join the run's
 `append_insights` under the same limits, with `detail.source: "meta_ads"`.
@@ -411,8 +411,9 @@ here and its bullets in the chat summary and the delivery message (templates.md,
 
 - `title`: "How did {brand}'s week of {week label} go?". `answer`: the headline, the lead metric
   against the prior week and the 8-week median.
-- `figures`: the three R4 metrics the primary lens ranks by, each against the prior week, with
-  the 8-week median or `target:weekly-health` in `comparison` when present. `sections.kpis`: the
+- `figures`: the lead metric (R4) and two others the primary lens reads, such as posts and
+  engagement rate, each against the prior week, with the 8-week median or `target:weekly-health`
+  in `comparison` when present. `sections.kpis`: the
   rest of the numbers bullet (posts, engagement, engagement rate, reach or views, followers with
   delta) and the format split against the prior week.
 - `insights`: the storyline's bullets (three, or fewer per **Orchestration contract** **2**,

@@ -213,7 +213,17 @@ fields hold, it fits the content in this way and never adds HTML to the printed 
   "unpaid" of posts beside a handle, the brand's own included: say "{brand}'s own posts", and
   "paid label" or "no paid label" for anyone else's.
 - **Gaps.** The three that most change what the reader can conclude go in `gaps`, each "{gap}:
-  {what connecting it would add}". The rest go in the method's `notes` or the chat summary.
+  {what connecting it would add}". The rest go in the chat summary.
+- **Lists past their limit.** The fill refuses a list over its cap, so a flow never relies on
+  spilling into another list:
+  - `actions` (12): past twelve, the twelfth counts the rest ("Fix the other 6 findings, listed in
+    the chat summary").
+  - `sections.verdict.checks` (12): past twelve, keep the eleven worst rows and count the rest
+    by status in the twelfth ("8 more: 5 pass, 3 not checked").
+  - `method.notes` (6): the method's own notes come first; anything past six is counted in the
+    sixth ("and 7 more brands on screen, listed in the chat summary").
+  - Long text: `effect`, `decision.text`, and `then` hold 140 characters. A list (a cut list, a set
+    of tiers) goes in evidence lines, one item each, and the field keeps a short summary.
 - **Theme.** A saved theme goes in `theme`: the `:root` and `@media` token rules from `theme.md`,
   **Page tokens**, without the `<style>` tags, as `css`, and `fonts.href` as `fontsHref`.
 - **The footer.** `updated` is the shell clock's UTC time; one `freshness` entry per cited
