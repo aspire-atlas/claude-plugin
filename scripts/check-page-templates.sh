@@ -11,7 +11,7 @@
 #     TODO(new-agent) lines is reported as waiting until it is filled in
 #   - every agent with a template renders through it: its file names its template ("the Readout
 #     template") and templates.md, and no longer loads artifact-design or dataviz to draw the page.
-#     The agents not converted yet are listed in NOT_CONVERTED below, which only shrinks
+#     The converted agents are listed in CONVERTED below, which only grows
 #
 #   scripts/check-page-templates.sh
 set -euo pipefail
@@ -84,29 +84,28 @@ for a, where in sorted(mapped.items()):
 jobs = set(schema["$defs"]["action"]["properties"]["job"]["enum"])
 for a in sorted(agents - jobs - waiting):
     problems.append("agent %s is not a job in page-data.schema.json" % a)
-# Agents that still draw their own page. The list only shrinks: an agent converted to its template
-# leaves it, and a listed agent that already renders through its template fails until removed.
-NOT_CONVERTED = {"creator-discovery", "creator-vetting", "ad-reuse", "creator-brief", "shops", "creator-outreach",
-                 "creator-negotiation", "cas-creative-review", "program-dashboard", "program-ledger", "deliverable-tracker", "roster-manager",
-                 "affiliate-manager", "campaign-orchestrator", "content-library", "content-sourcing",
-                 "product-fulfillment"}
+# Agents converted to render through their template. The list only grows: a converted agent that
+# stops rendering through its template fails, and an agent not listed yet that already does fails
+# until it is added, so the list stays true.
+CONVERTED = {"daily-insights-report", "weekly-insights-report", "market-signal", "quarterly-signal",
+             "profile-analyst", "content-review", "post-analysis", "quality-review", "creator-profile"}
 for a, where in sorted(mapped.items()):
     if where == ["none"] or a not in agents or a in waiting:
         continue
     body = (agents_dir / ("atlas-%s.md" % a)).read_text()
     name = tpl["templates"][where[0]]["name"]
     renders = ("the %s template" % name) in body and "page-standard/templates.md" in body
-    if a in NOT_CONVERTED:
+    if a not in CONVERTED:
         if renders:
-            problems.append("agent %s renders through the %s template: remove it from NOT_CONVERTED" % (a, name))
+            problems.append("agent %s renders through the %s template: add it to CONVERTED" % (a, name))
         continue
     if not renders:
         problems.append("agent %s does not render through its template: name \"the %s template\" and templates.md" % (a, name))
     for skill in ("artifact-design", "dataviz"):
         if ("`%s`" % skill) in body:
             problems.append("agent %s renders through its template but still loads %s to draw the page" % (a, skill))
-for a in sorted(NOT_CONVERTED - set(mapped)):
-    problems.append("NOT_CONVERTED names %s, which has no template" % a)
+for a in sorted(CONVERTED - set(mapped)):
+    problems.append("CONVERTED names %s, which has no template" % a)
 doc = (ps / "templates.md").read_text()
 table = re.search(r"^## 6\. .*?\n\| Template \| Agents \|\n\|[- |]+\|\n(.*?)\n\n", doc, re.S | re.M)
 if not table:
