@@ -1653,7 +1653,7 @@ score's reasons name every input left out, under "Scored without". The inputs wi
 | Median views | Fewer than 3 Reels with views in Atlas, or no TikTok median | Content reach from the badge alone, or left out when there is no badge data either |
 | Expected cost, target rate | An unpriced creator, or a campaign with no target rate | Budget vs target is left out, and the agency's reasons say which is missing |
 
-A creator Claude hasn't scored yet (new in the pool since the last publish) shows "Not scored yet"
+A creator Claude hasn't scored yet shows "Not scored yet"
 with no ring, as on discovery's page, and sorts last.
 
 **Recent posting.** A creator with posts in Atlas but none from the last 30 days is capped at 50 on
@@ -1668,9 +1668,11 @@ or a partnership marked post in Atlas names one. The score never changes for it;
 
 - `"flag"`, the default: the creator stays in with a warning Badge "Works with {competitor}", one
   per competitor, newest first, up to two and then "and {n} more". Both sides see it.
-- `"exclude"`: the creator moves to an agency only **Excluded** group under the pool, with the
-  reason, and is never sent to the client (one already sent stays sent). Vetting recommends Reject
-  with that reason.
+- `"exclude"`: the creator moves to **Excluded**, an agency only Collapsible after the pool,
+  closed, "Excluded ({n})": a Table row each with the handle, concept, score and band, and the
+  reason. They have no decision control, are in no count, filter or figure, and are never sent
+  (one already sent stays sent). Back on `"flag"`, they return to the pool. Vetting recommends
+  Reject with that reason.
 
 A score stored with band `conflict` before this rule still reads "Competitor conflict"; no new
 score writes it. Vetting's other competitor checks still decide its recommendation.
@@ -1683,7 +1685,7 @@ third is a strong signal and the bottom third a weak one, with ties kept togethe
 side. With fewer than 6 creators holding a value, nothing is marked, and the reasons say "Too few
 creators to compare". The agency's levels rank the round's whole pool; the client's rank only the
 creators sent to the client, so a level never says anything about a creator the client hasn't
-seen. Claude ranks both at publish and stores each creator's levels. A concept change on the page
+seen. Claude stores each creator's levels at publish. A concept change on the page
 re-ranks Brief fit for the round, and a talks to camera weight or minimum re-ranks Talks to
 camera; a weight or band change re-ranks nothing, since no factor value moves.
 The **Watch:** line lists the creator's weak signals in plain words with their values, weakest
@@ -1745,9 +1747,7 @@ clears the creator's variant plan overrides after a Dialog when they have any (*
 Creators**, **Concept and variant plan**). It
 re-scores the creator on the page as above, and is pulled into the roster as `lane` and `persona`,
 the persona as its name in the round's brief; a `null` persona stamp is pulled as the persona the
-page's own rule resolves to, the roster's when it belongs to the concept, else Claude's pick, else
-the concept's first, and writes nothing when that is already the roster's (**Pulling
-decisions**).
+page's own rule resolves to (**Pulling decisions**).
 
 #### Match score tuning
 
@@ -1835,14 +1835,16 @@ font-semibold`, separated by a Separator:
    (outline size sm). Apply is disabled while the suggestion equals the weights in use, while no counted call has arrived since the last Apply or Back to default (`stats:` `at`), or while no round has 3 or more picks and 3 or more passes, counted over every round as the suggestion is, whatever the **Round switcher** shows; Back to default is disabled while
    every weight is the default.
 6. **Settings**, for an Editor, each with "default" or "changed {date}" under it: the talks to
-   camera weights (speech, to camera, explainer, summing to 100), the minimum analysed posts and
-   the videos read (20 to 300); the bands, each lower than the one above; the hook rate steps;
+   camera weights (speech, to camera, explainer, summing to 100), the videos read (20 to 300)
+   and the minimum analysed posts (1 up to the videos read, so it can never drop every read); the bands, each lower than the one above; the hook rate steps;
    competitor work, a Select "Include and flag" or "Exclude"; and a Switch "Show the variant plan
    to the client". **Save settings** (outline size sm) opens a Dialog listing each change and,
    on **Save**, writes their stamps, re-scores and logs as **Apply** does below. Weights, bands,
    the talks to camera weights and the minimum re-score every creator from stored inputs, with no
    Atlas read; the videos read takes effect at the next camera screen run; the hook rate steps and
-   competitor work change no score.
+   competitor work change no score. The variant plan Switch also takes effect at once: it writes
+   `plansToClient` in `agency/frameworks` and writes or deletes the client's `plans/*` in the same
+   save.
 
 **How the suggestion is worked out.** The default weights come from `defaults:` on
 `agency/match-score`, never from the page's code (**1e**, **What the page keeps**). On the
@@ -1869,9 +1871,7 @@ from {n} decisions across {r} rounds". It is worked out again every time a count
    one more). Their final weights are those shares times 1 less the Budget vs target weight. So the
    client's five weights, which are those shares, never depend on anything about price.
 6. **Shown** to two decimals and kept to three.
-
-The suggestion is worked out again on every view, so it follows new calls; it is saved only when an
-Editor applies it.
+An Editor's Apply saves it.
 
 **Apply tuned score** opens a Dialog, "Apply the tuned score?", that lists each changed weight
 ("Brief fit 0.08 to 0.12") and says "Every creator's match score changes for both sides. Aspire's
@@ -1893,21 +1893,20 @@ weights it resets. On **Apply** the page, in this order:
    Brief fit 0.08 to 0.12, Paid history 0.16 to 0.13" or "Set the match score back to the default
    weights", and, only when at least one `scores` document changed, one entry in its client readable log, "Updated the match scores", which names no weight, factor or number (**1e**, **The activity log**). A retune that moves only Budget vs target changes no client score, so it writes no client entry.
 
-While it runs, both Buttons are disabled and show "Applying"; a refused write shows "Not saved" and
-leaves the weights as they were. Two Editors applying at once follow the re-score's own rule: the
-page reads the weights again just before it writes and starts over when they changed.
+While it runs, both Buttons show "Applying"; a refused write shows "Not saved" and changes
+nothing. Two Editors follow the re-score's rule.
 
-**From the page to Atlas.** Applying changes the score on the page only. Discovery and vetting score
-from `match` in `campaign:{slug}-cas`, so the next **Pulling decisions** offers, after the batch
-picker and in a picker of its own, to save the weights and settings there (**Pulling decisions**, **Match score
-weights**). The page never writes to Atlas.
+**From the page to Atlas.** The page never writes to Atlas: the next **Pulling decisions** offers,
+in a picker of its own, to save the weights and settings to `match` (**Pulling decisions**,
+**Match score weights**), which discovery and vetting score from.
 
 **The weights' stamps**: `agency/match-score`, one stamp per factor: `weight-performance`,
 `weight-talks-to-camera`, `weight-paid-history`, `weight-content-reach`, `weight-budget` and
 `weight-brief-fit`, and one per setting (**1e**, **What the page keeps**). For each
 factor or setting the newer of the stamp's `at` and that factor's `tuned` time in `match` in
 `campaign:{slug}-cas` wins, so a change in the chat after a pull wins; a missing key reads as `match`, else the
-default. A `null` stamp means "back to the default": it reads as the default, and **Pulling
+default. Five-factor stamps (`weight-*` with no `weight-talks-to-camera`) are read through the
+same conversion as older weights in `match` (**1a**), by the page and the pull. A `null` stamp means "back to the default": it reads as the default, and **Pulling
 decisions** removes that factor's weight from `match`. Claude never writes these stamps, so an
 Editor's tuning stays `manual` until it is pulled.
 

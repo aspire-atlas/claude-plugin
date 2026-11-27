@@ -46,12 +46,12 @@ PAGE_STD_MAX=7300
 # shrinks, remove a line once its file is under REF_MAX, and never add one (split the file by
 # section instead). One per line: <file, from the skills/ folder>|<most words>
 BIG='aspire/references/cas-campaign.md|26440
-aspire/references/cas-campaign-data.md|19157
+aspire/references/cas-campaign-data.md|19150
 aspire/references/cas-campaign-page.md|21712
-aspire/references/cas-campaign-page-brief.md|25562
+aspire/references/cas-campaign-page-brief.md|25560
 aspire/references/cas-campaign-page-creators.md|24061
-aspire/references/cas-campaign-page-results.md|27358
-aspire/references/creator-vetting.md|14695'
+aspire/references/cas-campaign-page-results.md|27356
+aspire/references/creator-vetting.md|14689'
 FX=scripts/fixtures/skill-layout
 
 # Reference citations allowed besides SKILL.md and page-standard. Shrink-only: never add a line to

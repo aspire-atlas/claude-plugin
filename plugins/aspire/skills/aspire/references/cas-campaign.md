@@ -155,8 +155,8 @@ draft, and in a channel post, uses the left column.
 | Hook post; Paid partnership | the creator's most viewed Reel in 90 days; a post whose caption discloses a paid deal |
 | Play on Instagram, Play on TikTok | a video the page holds no copy of, opened on the network |
 | What made the call? Performance, Brief fit, Paid history, Price, Reach, Other | the reason on a decision (`clientReason`, `rejectReason`) |
-| Why pass? Not our look, Too expensive, Wrong audience, Content quality, Already worked with them, Other | the surprise reason on a No for a creator the client saw scored 75 or more (`surprise` `pass`) |
-| What made them a yes? Love their content, Right look for the brand, Great price, Know them already, Fits the audience, Other | the surprise reason on a Priority Yes or Yes for a creator the client saw scored under 60 (`surprise` `pick`) |
+| Why pass? Not our look, Too expensive, Wrong audience, Content quality, Already worked with them, Other | the surprise reason on a No for a creator the client saw with a Strong score (`surprise` `pass`) |
+| What made them a yes? Love their content, Right look for the brand, Great price, Know them already, Fits the audience, Other | the surprise reason on a Priority Yes or Yes for a creator the client saw scored under Good (`surprise` `pick`) |
 | Against the recommendation | a call that goes against vetting's recommendation, worked out from the agency's data |
 | Match score tuning: Agreement, Surprises, What {brand} seems to value, Did it sell, Retune; Holding up, Partly matching, Choosing differently; Apply tuned score, Back to default; Settings, Save settings | the agency's check of the match score against the client's calls, and the weights it suggests (**1d**, **Creator Selection**, **Match score tuning**) |
 | Status | roster state |

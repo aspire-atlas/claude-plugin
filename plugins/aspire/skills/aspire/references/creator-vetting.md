@@ -1082,7 +1082,7 @@ in `campaign:{slug}-cas` (the defaults there without it). When `match` has a `ba
 factors:
 
 - **Persona fit is Brief fit.** Read the concept's casting keywords and target cities from
-  `casting` in the lane record, which the campaign page's edits are pulled into. Only when it
+  `casting` in the lane record. Only when it
   holds none, derive them from the lane's persona and casting
   filter, and say on the page that they are derived, not saved. Judge each keyword
   against the captions of the last 90 days' posts only, and cite the post for every match.
@@ -1104,10 +1104,10 @@ factors:
   the bands (70, 55, 42, or `bands` in `match`) only label the score; the two are separate.
 - An input with no data is left out and named, never scored as zero. On TikTok that is hook rate, engaged accounts, past paid partners and badges; say so on the
   card ("Scored without hook rate, which TikTok doesn't report").
-- Competitor work never changes the score. With `competitors` `"exclude"`, a creator whose bio
-  or paid partners name a saved competitor is recommended Reject with "Works with {competitor}";
+- Competitor work never changes the score. With `competitors` `"exclude"`, a creator whose bio, paid
+  partners or a partnership marked post names a saved competitor is recommended Reject with "Works with {competitor}";
   with `"flag"` the card shows that Badge. A saved competitor's own handle is still a hard stop.
-- Partnership readiness isn't scored. It stays one of the figures on every row.
+- Partnership readiness isn't scored; it stays a figure on every row.
 - For the paid track record, read the discovery finding's `detail.recommendationTypes` when
   present. It is supporting evidence, never points: cite it in plain words, for example "Meta
   ranks this creator under high ad performance".
