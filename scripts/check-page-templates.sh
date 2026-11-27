@@ -5,7 +5,7 @@
 #     the page check (page-check.md) fails nothing on any rendered page
 #   - the fill script refuses each fail-<rule>*.json fixture there, on that rule and no other
 #   - page-templates.json gives every template a length budget and only typed sections the data
-#     shape (page-data.schema.json) defines
+#     shape (page-data.schema.json) defines, and the page check's BUDGETS hold the same numbers
 #   - every agent has one template or a reason it has none, the mapping table in templates.md says
 #     the same, and every agent is a job an action can name. A scaffold from new-agent.sh still holding
 #     TODO(new-agent) lines is reported as waiting until it is filled in
@@ -19,7 +19,7 @@ FX=scripts/fixtures/page-templates
 fail=0
 err() { echo "FAIL $*"; fail=1; }
 
-for f in "$PS/templates.md" "$PS/page-fill.md" "$PS/page-data.schema.json" "$PS/page-templates.json"; do
+for f in "$PS/templates.md" "$PS/page-fill.md" "$PS/page-data.schema.json" "$PS/page-templates.json" "$PS/glossary.md"; do
   [ -f "$f" ] || { echo "FAIL $f is missing"; exit 1; }
 done
 grep -qF 'templates.md' "$PS/SKILL.md" || err "$PS/SKILL.md does not point to templates.md"
@@ -27,10 +27,20 @@ command -v python3 >/dev/null || { echo "SKIP page templates (no python3)"; exit
 
 # The templates, the data shape, the agents, and the mapping table agree.
 out=$(python3 -I - "$PS" plugins/aspire/agents <<'PY'
-import json, re, sys
+import ast, json, re, sys
 from pathlib import Path
 ps, agents_dir = Path(sys.argv[1]), Path(sys.argv[2])
 tpl = json.loads((ps / "page-templates.json").read_text())
+# The page check measures the budgets in screens (R10); its BUDGETS and TEMPLATES match this file.
+check = (ps / "page-check.md").read_text()
+found = re.search(r"^BUDGETS = (\{.*?\})$", check, re.M)
+want = {("%s %s" % (name, key) if key != "default" else name): b["screens"]
+        for name, t in tpl["templates"].items() for key, b in t["length"].items() if isinstance(b.get("screens"), int)}
+if not found or ast.literal_eval(found.group(1)) != want:
+    print("page-check.md's BUDGETS (%s) differ from page-templates.json's budgets in screens (%s)" % (found and found.group(1), want))
+found = re.search(r"^TEMPLATES = (\(.*?\))$", check, re.M)
+if not found or set(ast.literal_eval(found.group(1))) != set(tpl["templates"]):
+    print("page-check.md's TEMPLATES differ from page-templates.json's templates")
 schema = json.loads((ps / "page-data.schema.json").read_text())
 problems = []
 sections = set(schema["$defs"]["sections"]["properties"])
@@ -96,7 +106,7 @@ trap 'rm -rf "$tmp"' EXIT
 awk '/^<!-- page-fill -->$/{f=1;next} /^<!-- \/page-fill -->$/{f=0} f' "$PS/page-fill.md" | sed '1d;$d' > "$tmp/page_fill.py"
 awk '/^<!-- page-check -->$/{f=1;next} /^<!-- \/page-check -->$/{f=0} f' "$PS/page-check.md" | sed '1d;$d' > "$tmp/page_check.py"
 [ -s "$tmp/page_fill.py" ] || err "$PS/page-fill.md has no <!-- page-fill --> script"
-cp "$PS/page-data.schema.json" "$PS/page-templates.json" "$PS/blocks.md" "$PS/page-check.md" \
+cp "$PS/page-data.schema.json" "$PS/page-templates.json" "$PS/blocks.md" "$PS/page-check.md" "$PS/glossary.md" \
   plugins/aspire/skills/aspire/references/artifact-standard.md plugins/aspire/assets/aspire-animated.svg.md "$tmp/"
 rendered=0
 for t in $(python3 -I -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["templates"]))' "$PS/page-templates.json"); do

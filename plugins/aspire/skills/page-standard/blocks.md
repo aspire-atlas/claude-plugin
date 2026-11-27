@@ -383,12 +383,12 @@ one, unless the flow's reference gives each insight its own chart.
 
 <!-- block:insight -->
 ```html
-<article class="pb-card pb-insight" data-block="insight">
-  <p class="pb-label">Insight 1</p>
+<article class="pb-card pb-insight" data-block="insight" data-source="Atlas">
+  <p class="pb-label">Insight 1 <span class="pb-chip pb-src" title="Source">Atlas</span></p>
   <p class="pb-claim">Unboxing videos drive most of the brand's views.</p>
   <dl>
     <dt>Evidence</dt><dd>14 unboxing videos had 61% of views from 412 Instagram posts.</dd>
-    <dt>Compared with</dt><dd>38% in the 13 weeks before.</dd>
+    <dt>Compared with</dt><dd data-vs>38% in the 13 weeks before.</dd>
   </dl>
   <svg viewBox="0 0 320 96" role="img" aria-label="Share of views from unboxing videos: 38% before, 61% now">
     <title>Share of views from unboxing videos</title>
@@ -952,10 +952,10 @@ its figures as a row of tiles under the answer; a tracker may show up to twelve.
 
 <!-- block:kpi -->
 ```html
-<article class="pb-card pb-kpi" data-block="kpi" data-status="ok">
+<article class="pb-card pb-kpi" data-block="kpi" data-status="ok" data-source="Atlas">
   <p class="pb-label">Views last week</p>
   <p class="pb-kpi-value pb-num">412,800</p>
-  <p class="pb-kpi-vs"><span class="pb-kpi-dot pb-ok"></span>1.4 times the 8-week median of 291,000</p>
+  <p class="pb-kpi-vs" data-vs><span class="pb-kpi-dot pb-ok"></span>1.4 times the 8-week median of 291,000</p>
   <p><span class="pb-chip pb-src" title="Source">Atlas</span></p>
 </article>
 ```

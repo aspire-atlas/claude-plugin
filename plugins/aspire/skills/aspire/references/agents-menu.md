@@ -82,6 +82,7 @@ Where step 5 above hands each agent off. Each named section owns the connection 
 | `atlas-shops` | Phase 1, then Phase 2 + 3, then **Shops** (its shop and stage questions first) |
 | `atlas-quality-review` | **Quality review** (it asks for the work to review first; Phase 1 and Phase 2 + 3 only when the Atlas re-check is wanted) |
 | `atlas-camera-screen` | Phase 1, then Phase 2 + 3, then **Camera screen** |
+| `atlas-cas-creative-review` | Phase 1, then Phase 2 + 3, then **CAS creative review** |
 
 ## Older agent names
 

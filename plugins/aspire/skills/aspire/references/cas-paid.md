@@ -228,8 +228,13 @@ built on it, so when a match isn't certain, ask for it rather than guess.
   Confirm before putting two together, and never put an old flight and a new flight of the same
   creative together without saying so.
 - **Names before launch.** The planned ad names map one to one to a creator and a variant. When
-  they don't, the creative baseline proposes names in this shape before launch, because names fixed
-  after launch break the match: `{Brand}_{Wave}_{Creator}_{Persona}_{Product}_{Length}s_{HookID}_{CTAID}`.
+  they don't, the creative baseline proposes names before launch, because names fixed after launch
+  break the match. Atlas matches an ad by the campaign's naming convention, `adNaming` in
+  `get_cas_campaign`: fill every template it holds (`ad` for the ad name, `adSet` for the ad set
+  name, `{wave}` the wave being read) and name its `marker`, which the campaign or ad set name must
+  hold. Only when no `adNaming` is returned, propose
+  `{Brand}_{Wave}_{Creator}_{Persona}_{Product}_{Length}s_{HookID}_{CTAID}`, and say ads named that
+  way can't be matched until a convention is saved.
 - **Records to doubt.** Before trusting the creator records, check for a creator listed twice, notes
   copied from another creator, a variant label that doesn't match its file, and one folder of final
   files shared by several variants. Ask rather than assume.
@@ -295,7 +300,8 @@ a difference map, for each pair that will run side by side, of what really diffe
 test, and the one figure that will answer it (a hook swap is answered by ad hook rate, 15 seconds
 against 45 by hold rate and cost per result); the pairs that differ in nothing that matters, which
 split spend and teach nothing; the tests the brief intended that no variant covers; and the ad names.
-The diagnosis starts from this baseline, so it is kept on its page as tables that can be read back.
+The diagnosis starts from this baseline, so it is kept on its page as tables that can be read back,
+and as the campaign's `baseline` finding (**CAS campaign**, **Working state (findings)**).
 
 ## Text placement and safe zones
 

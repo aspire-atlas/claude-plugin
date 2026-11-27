@@ -46,7 +46,7 @@ const STEPS_HEADING = '(next|first) steps?|what to do (first|now|next)'
 
 const CONTROLS = 'button, [role="button"], summary, input[type="button"], input[type="submit"], a[data-action]'
 
-function loadPlaywright(): any {
+export function loadPlaywright(): any {
   const from = (dir: string) => createRequire(join(dir, 'x.js'))('playwright')
   const tries: Array<() => any> = [
     () => from(dirname(fileURLToPath(import.meta.url))),
@@ -62,7 +62,7 @@ function loadPlaywright(): any {
 
 // CHROME_PATH names a Chrome or Chromium to use instead of Playwright's own, for a machine where Playwright
 // cannot install one (CI sets it to the runner image's Chrome).
-async function launch(playwright: any) {
+export async function launch(playwright: any) {
   const chrome = process.env.CHROME_PATH
   if (chrome) return playwright.chromium.launch({ executablePath: chrome, args: ['--no-sandbox'] })
   try {

@@ -96,7 +96,7 @@ message and runs here with its own confirmation; widgets never write.
 
 - `atlas-creator-discovery` (rows 2, 3): run mode `interactive`, `campaign_type` `creator-ads`,
   the campaign slug, the lane, `recipient` `campaign`.
-- `atlas-camera-screen` (row 4, before vetting): `job` `cas-screen`, the slug, the lane and `save`.
+- `atlas-camera-screen` (row 4): `job` `cas-screen`, the slug, the lane and `save`.
 - `atlas-creator-vetting` (row 4): the lane's pool, the lane as criteria, `recipient`
   `campaign` then `brand`.
 - `atlas-creator-brief` (row 10, and `revision` for a creator's changed brief): `brief_mode`
@@ -344,7 +344,7 @@ the agreement on Aspire's score before and after, so the page's **About this dat
 discovery's and vetting's pages can say "tuned {date} from {n} client decisions". It is written
 by **Match score tuning** (offered in its own picker by **Pulling decisions**, through the
 supersede rule) or the CM in the chat, and belongs to this campaign only, never to the brand. Discovery and vetting read it in creator-ads mode, so they score with the same weights.
-`talksToCamera` (optional, agency only): the camera screen's settings (**Camera screen**).
+`talksToCamera`: the camera screen's settings (**Camera screen**).
 
 `variantPlanToClient` is optional and agency only, never inside `match`: whether the client sees
 the variant plan read only. Anything but `false` reads as on. "Change setup" asks "Show the variant
@@ -452,6 +452,7 @@ record type the newest finding per identity wins, by `detail.recordedAt`.
 | `cut` | the cut (`{net}-{handle}-r{round}-{variant}`) | The creator's account | `action_item` `medium` while With Aspire QA, Needs client review or Changes requested; `went_well` when Approved | `cut` (the page's cut id), `handle`, `network`, `lane` (the concept it was cut for), `variant` (1 to 5), `title`, `version` (the newest version sent to {brand}, `null` while none is), `link` (that version's address for a linked version, empty for an upload), `asset` (that version's upload asset id, empty for a link), `reviewLink` (the campaign page's address with `#review/r{round}/{cut}/v{version}`), `sentAt`, `status` (`qa`, `client-review`, `changes` or `approved`: With Aspire QA, Needs client review, Changes requested, Approved), `verdict` (`approved`, `changes`, or `null` while no call counts on `version`), `verdictBy` (`{writer, name, at, confirmed}`: the page account whose call counts, its name, when, and true once the CM confirmed it as {brand}'s), `openComments` (open client readable threads on `version`), `check` (`{hook, brand, product, cta, captions, safezone, disclosure, runtime}`, each pass, fail or `null`, the brief check on `version`), `latestVersion` (the newest version, sent or in Aspire QA), `versions` (how many), `firstAddedAt` (the `addedAt:` of its first version) |
 | `hook` | one per hook or CTA, never replaced | The brand's account | `went_well` | `lane`, `type` (hook, cta), `text`, `pattern`, `firstBriefed` (round and date) |
 | `hook-review` | hook + round | The brand's account | `went_well` when it led; `needs_improvement` when it lagged or was not used; `action_item` `low` when held or not measurable | `lane`, `hook` (the text), `pattern`, `postsMatched`, `vsMedian`, `result` (led, held, lagged, not used, not measurable yet) |
+| `baseline` | round | The brand's account | `went_well` | As **CAS creative review**, **Saved answers** sets out |
 | `page-sides` | the campaign | The brand's account | `went_well` | `editors` (`{viewerId: firstSeenAt}`, every id Claude has seen with an `editors/{id}` marker or an `activity-editors/{id}` document, never removed), `approvers` (`{viewerId: {name, gate, gates, confirmedAt}}`, the page accounts the CM confirmed as a step's approver: `gate` the first step it was confirmed for and `gates` every step since, a record with no `gates` reading as `[gate]`), `deciders` (`{viewerId: {name, confirmedAt}}`, the page accounts the CM confirmed as {brand}'s for creator decisions and cut calls), `refused` (`{"{writer}/{item}": at}`, sign offs the CM said not to record, `{writer}/fees-r{round}` for a fee approval, whose value is the refused item's `at`, so a later item from that writer isn't refused, `{writer}/decisions` for an account whose creator decisions don't count, and `{writer}/cut-calls` for one whose cut calls don't). Written in the same answer as the pull that saw something new (**Pulling decisions**, **The creator decisions**, **The cut calls**, **The fee approval** and **The brief sign off**) |
 | `ledger` | one per line, never replaced | The brand's account | `needs_improvement` | `gate`, `round`, `handle` (Gate 4b only), `daysSlipped`, `reason`, `shifted` (the gates and dates it moved) |
 
@@ -554,7 +555,7 @@ widgets use, so a field is renamed only here and in the same change on the serve
 | `cut` | `verdictBy.writer` (a page account id) and `verdictBy.confirmed` (the agency's "Aspire to confirm") | Every other field, `verdictBy.name` and `verdictBy.at` included. A version in Aspire QA is a view, not a secret (**1d**, **Content Review**), so `latestVersion` reads as "Aspire is checking version {k}"; a cut with no version sent has no file to show |
 
 Every other record type (`round`, `gate`, `roster`, `draft`, `reply`, `brief-revision`, `hook`,
-`hook-review`, `page-sides`, `ledger`) and any field not named here is agency only for a client
+`hook-review`, `baseline`, `page-sides`, `ledger`) and any field not named here is agency only for a client
 caller until a row here says otherwise, so a server read fails closed.
 
 ### Rounds
@@ -939,7 +940,7 @@ vocabulary and start with the round once the campaign has more than one: "Round 
 | 1 | No lanes saved | "No concepts yet." | Set up the campaign | **CAS campaign**, Setup | The setup records, Gate 1 cleared | None. After setup, offer the weekly call. |
 | 2 | Lanes saved, pool empty | "{n} concepts ready. No creators yet." | Find creators for every concept | `atlas-creator-discovery`, creator-ads mode | Discovery's undecided findings, one pool per lane | None |
 | 3 | Pool below target on any lane | "{concept}: {n} of {target} creators." One line per concept. | Find more creators for {concept} (the emptiest first) | `atlas-creator-discovery`, creator-ads mode | Same as row 2 | None |
-| 4 | Pool at target, Gate 2 not sent | "Every concept has enough creators to screen." or "Screened. Ready for the client." | Screen the {concept} creators, until every concept is screened; then send the creators for approval | `atlas-camera-screen`, then `atlas-creator-vetting` with the lane as criteria; then **Gate 2 packet** below | Talks to camera reads and vetting's findings; then a `roster` candidate per slate creator and Gate 2 `open` | Reminder at its due time |
+| 4 | Pool at target, Gate 2 not sent | "Every concept has enough creators to screen." or "Screened. Ready for the client." | Screen the {concept} creators, until every concept is screened; then send the creators for approval | `atlas-camera-screen`, then `atlas-creator-vetting` with the lane as criteria; then **Gate 2 packet** below | Both agents' findings; then a `roster` candidate per slate creator and Gate 2 `open` | Reminder at its due time |
 | 5 | Gate 2 open | "Creators with {approver} since {sent}. Due {due}." Past due: "{n} days late." | Pull the client's decisions. Past due: log the delay, or chase the backup. | **CAS campaign**, Run, **Pulling decisions** | `roster` approved (with `priority` for a Priority Yes), maybe, or rejected (with `rejectReason` when given), discovery verdicts, Gate 2 `cleared` once no creator awaits a decision; a `ledger` line when late | Removes the reminder |
 | 6 | Gate 2 cleared, no rates | "{n} creators approved. No fees yet." | Draft the fees and the offer emails | **Rates and terms** | `roster` rate `offered` with the offer; an offer `draft` per creator | None |
 | 7 | Rates drafted, Gate 3 not sent | "Offers out to {n} creators. {c} countered. {r} with no reply yet." | Record a reply. When every creator has agreed or declined: send the fees for approval. | **Rates and terms**, Replies; then **Gate 3 packet** below | `reply`, `roster`, the next `draft`; then Gate 3 `open` | Reminder at its due time |
@@ -1068,11 +1069,11 @@ Performance**, **Reading the results**).
 
 - **Discovery** (rows 2 and 3): `atlas-creator-discovery` with the campaign slug, run mode
   `interactive`, `campaign_type` `creator-ads`, the lane to fill, and `recipient` (`campaign`).
-- **Vetting** (row 4): first `atlas-camera-screen` (**Camera screen**); then `atlas-creator-vetting` with the lane's pool as the list (the lane's
+- **Vetting** (row 4): `atlas-camera-screen` (**Camera screen**), then `atlas-creator-vetting` with the lane's pool as the list (the lane's
   undecided candidates from discovery), the lane as the criteria source, and `recipient`
-  (`campaign`, then `brand`). The Run picker confirms both agents' saves: "Screen the {concept} creators and save the results to Atlas?" Without
+  (`campaign`, then `brand`). The Run picker confirms both saves: "Screen the {concept} creators and save the results to Atlas?" Without
   `vetting:thresholds`, you may offer V2 from **Creator vetting** first, with its own
-  confirmation; it is not required.
+  confirmation.
 - **Sending a step for approval** (rows 4, 7, 11): per **Gate packets**. The campaign page is the
   approval page, linked to Creator Selection, Selected Creators or Master Brief; the CM shares it
   with the client as Contributor. The briefs can also be sent from the page's Send for sign off;
@@ -1457,8 +1458,7 @@ writer, and the campaign's newest `page-sides` finding (**1a**). An item whose i
 `signoff.item` is already recorded and is skipped, and so is one in `page-sides` `refused`. Of the rest, only the newest item for the round
 is checked and named; older ones are left as they are and never named, since a newer send, sign off
 or reopen already replaced them. Its writer is the id in its path,
-which the rules let only that person or the page's owner write (**1e**, **What the rules enforce,
-and what they can't**). Before it is offered:
+which the rules let only that person or the page's owner write (**1e**). Before it is offered:
 
 1. **The writer is on the client's side.** An item whose writer has an `editors/{id}` marker now,
    or is in `page-sides` `editors`, is dropped and named: "Sign off by {name}, from an Aspire
