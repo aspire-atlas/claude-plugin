@@ -112,7 +112,7 @@ middle.
 | 2 | Insight | `atlas-profile-analyst`, `atlas-market-signal`, `atlas-weekly-insights-report`, `atlas-ad-reuse` | `onboarding-`, `account-review-`, `market-signal-`, `readout-weekly-`, `ad-reuse-` findings |
 | 3 | Plan | `atlas-creator-brief`, `atlas-ppa-pitch`, **Program setup**, **CAS campaign** setup | `creator-brief-`, `ppa-pitch-`, `program:{slug}-*`, `campaign:{slug}-*` |
 | 4 | Source | `atlas-creator-discovery` | `creator-discovery-` pool, `campaign:{slug}-pool` target |
-| 5 | Vet | `atlas-creator-vetting`, CAS Gate 2 | `creator-vetting-`, `creator:*`, CAS `gate` |
+| 5 | Vet | `atlas-creator-vetting`, `atlas-camera-screen` (CAS row 4, before vetting), CAS Gate 2 | `creator-vetting-`, `creator:*`, CAS `gate` |
 | 6 | Reach | `atlas-creator-outreach`, CAS details emails | program `roster` at Approved, Contacted, Replied; `draft`, `reply` |
 | 7 | Deal | `atlas-creator-negotiation`, **Rates and terms**, CAS Gate 3 | program `terms`; CAS `roster` rate, `gate` |
 | 8 | Ship | `atlas-product-fulfillment`, CAS 1f | `fulfillment` |

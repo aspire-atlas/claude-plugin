@@ -348,8 +348,10 @@ defaults}`), with one addition: `criteriaMap.version`, the version of `campaign:
 the map was built from (**Scoring**). Every candidate written in one run carries the same map. A
 creator-ads candidate carries neither. Records written before the map have no `fitBreakdown`: the
 next run re-scores them against the map like any other undecided candidate. Reading state back: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-`creator-discovery-{profile}-{campaign}`, newest first, paged; the newest record per `entityId`
-wins. `search_insights` returns findings tenant-wide, so always filter on the prefix.
+`creator-discovery-{profile}-{campaign}-`, newest first, paged, keeping only records whose
+`runKey` is that prefix plus a date and nothing else (`...-{campaign}-{YYYY-MM-DD}`), since the
+prefix alone also matches a longer slug (`spring` would take `spring-teachers`); the newest
+record per `entityId` wins. Every reader of a campaign's pool reads it this way. `search_insights` returns findings tenant-wide, so always filter on the prefix.
 
 ## The living page
 
@@ -484,8 +486,7 @@ Credits question (**Orchestration contract** **2**), since its answer sets wheth
 should the discovery agent do?" Options: "Fill the shortlist to {target}", "Show the current
 shortlist", "Record decisions on the shortlist", "Change setup". Credits asks the cost in
 candidates (the target minus the undecided candidates already in the pool, counted from the
-newest pool records as the agent's pool rebuild does, `search_insights` on the
-`creator-discovery-{profile}-{campaign}` run key) and applies only to
+newest pool records as the agent's pool rebuild does, per **State written to Atlas**) and applies only to
 "Fill the shortlist", so it opens "If it fills the shortlist, …". It is asked on every interactive
 run, a repeat run included, and takes Scope's slot, which discovery does not ask. The campaign is
 settled before this call (its own question when more than one is active), so `{n}` and `{target}`
@@ -602,7 +603,7 @@ Everything above applies, with these changes:
   ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
   `reach`, `engagedAccounts`, `category` and `contactRoute` (the route in words, never the
   address). One more key, `talksToCamera` (`{score, speech, toCamera, explainer, analysedPosts,
-  weights, scoredAt}`), is the camera screen's read: discovery never writes it, and when
+  totalAnalysed, weights, minPosts, maxPosts, scoredAt}`), is the camera screen's read: discovery never writes it, and when
   discovery writes a new version of a finding that holds one, it copies `talksToCamera` from the
   newest version unchanged. `get_cas_selection` reads them for the selection widget; it also accepts the
   Instagram field names cited below (`reelsHookRate`, `pastBrandPartnershipPartners`,

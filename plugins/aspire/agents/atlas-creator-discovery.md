@@ -94,8 +94,9 @@ the category read of paid partners belongs to vetting.
    (stance `note`), show the lift under "Notes". Another review's calls, and its other rejects,
    are never read here (`references/creator-vetting.md`, **Creator calibrations**).
 4. Rebuild the pool: `search_insights` with a `prefix` filter on `detail.account_review.runKey` =
-   `creator-discovery-{profile}-{campaign}`, newest first, paged. Newest record per `entityId`
-   wins. Count undecided against the pool target; that gap is this run's fill quota, lowered to
+   `creator-discovery-{profile}-{campaign}-`, newest first, paged, keeping only records whose
+   `runKey` is that prefix plus a date and nothing else (**State written to Atlas**). Newest record
+   per `entityId` wins. Count undecided against the pool target; that gap is this run's fill quota, lowered to
    the launch block's `approved.spend.cap` when it is not `null` (its `spend.unit` is
    `candidates`; 0 means add none and re-score what the pool holds; in creator-ads mode it caps
    the candidates added across all lanes, emptiest lane first). With
