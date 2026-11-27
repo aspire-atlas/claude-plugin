@@ -59,8 +59,12 @@ NOT_READER = frozenset(("version", "template", "length", "account", "accounts", 
 CHART_SERIES = 6
 # No figure reaches a quadrillion; the bound keeps every number a float can hold exactly.
 NUMBER_BOUND = 10 ** 15
-# A published page stays under 10MB (creator-card.md, Images), well inside the Artifact limit.
+# A published page stays under 10MB (creator-card.md, Images, Budgets), well inside the Artifact limit.
 PAGE_LIMIT = 10_000_000
+# Images stay under 8MB of data URIs, cut in creator-card.md's order (Images, Budgets).
+IMAGE_LIMIT = 8_000_000
+CUT_ORDER = ("cut to two thumbnails per creator card, then post images past the first five to thumbnails, "
+             "then images in secondary sections, then embed again at quality 80")
 FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "glossary.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
@@ -745,8 +749,9 @@ def main(argv):
     except (OSError, ValueError, AttributeError) as err:
         print(json.dumps({"rule": "read", "path": str(err), "message": "a file beside the page data lacks the part the page needs"}))
         return 2
-    if len(html_page) > PAGE_LIMIT:
-        print(json.dumps({"rule": "page-size", "path": "sections", "message": "the page is %d characters, over %d; cut thumbnails per card, then post images" % (len(html_page), PAGE_LIMIT)}))
+    images = sum(len(m) for m in re.findall(r'src="(data:image/[^"]*)"', html_page))
+    if images > IMAGE_LIMIT or len(html_page) > PAGE_LIMIT:
+        print(json.dumps({"rule": "page-size", "path": "sections", "message": "the images are %d characters (at most %d) and the page %d (at most %d); %s" % (images, IMAGE_LIMIT, len(html_page), PAGE_LIMIT, CUT_ORDER)}))
         return 1
     if "--check" in argv:
         print(json.dumps({"ok": True, "template": data["template"]}))
