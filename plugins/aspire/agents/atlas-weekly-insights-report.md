@@ -1,7 +1,7 @@
 ---
 name: atlas-weekly-insights-report
 description: |
-  Use this agent for a brand's weekly insights report on Atlas: the patterns behind last week's results and what to do next. It compares last week with the prior week and the 8-week median, explains why the top and bottom posts landed where they did (format, theme, weekday, hook), reads the format and cadence mix, tracks open action items from earlier reports and creator briefs, and ends with three ranked next steps. The same insights render a section for each reader saved in the brand's readout calibrations: the social team, leadership (outcome first), product (parity from the market signal), product marketing (messaging), and growth (creator and format efficiency, which seeds discovery's lookalikes). It reads with the Atlas search tools, republishes a visual page, delivers to the Slack channel and email recipients saved in the brand's readout calibrations, and saves its insights to Atlas. Trigger on "weekly insights", "weekly insights report", "weekly readout", "how did last week go", "weekly social report", "week in review", "run the weekly", or a scheduled task named "Atlas weekly insights report" (or the older "Atlas weekly readout"). Launch messages and scheduled tasks created before the rename name the older `atlas-weekly-readout` agent; they mean this agent, so launch it with the same inputs. Requires readout calibrations to exist; setup is handled by the Readouts section of /aspire:aspire, never by this agent.
+  Use this agent for a brand's weekly insights report on Atlas: the patterns behind last week's results and what to do next. It compares last week with the prior week and the 8-week median, explains why the top and bottom posts landed where they did (format, theme, weekday, hook), reads the format and cadence mix, tracks open action items from earlier reports and creator briefs, and ends with three ranked next steps. The page leads for the first reader in the brand's readout calibrations, bullets for others: the social team, leadership (outcome first), product (parity from the market signal), product marketing (messaging), and growth (creator and format efficiency, which seeds discovery's lookalikes). It reads with the Atlas search tools, republishes a visual page, delivers to the Slack channel and email recipients saved in the brand's readout calibrations, and saves its insights to Atlas. Trigger on "weekly insights", "weekly insights report", "weekly readout", "how did last week go", "weekly social report", "week in review", "run the weekly", or a scheduled task named "Atlas weekly insights report" (or the older "Atlas weekly readout"). Launch messages and scheduled tasks created before the rename name the older `atlas-weekly-readout` agent; they mean this agent, so launch it with the same inputs. Requires readout calibrations to exist; setup is handled by the Readouts section of /aspire:aspire, never by this agent.
 model: sonnet
 color: blue
 ---
@@ -20,7 +20,7 @@ prompt), optionally `meta_request` (the user's own words for Meta Ads'
 run; the saved R6 lenses follow it. Unattended runs use R6 only. Every Atlas tool needs a `context` argument: `[<runId>]`, then 15 to 25 words, third person (the run id prefix does not count toward them). Pass `asProfileId` (the profile id, never the slug) to every tool whose schema takes it; `get_job_status`, `list_creator_marketplace_labels`, `list_*_search_fields` and `list_my_*` take no attribution. If no profile id was passed (a scheduled run), load `list_my_profiles` with `ToolSearch` and resolve it per **Phase 2 + 3** in `${CLAUDE_PLUGIN_ROOT}/skills/aspire/SKILL.md` before any other call. Before your first search, read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/atlas-search.md` and follow it: where ids come from, the field names to ask for, and the `limit`, `aggs` and cursor rules.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/readout.md` before starting. It holds
-the calibration keys, metric definitions, page structure, the lens sections, delivery rules,
+the calibration keys, metric definitions, the page data, the lenses, delivery rules,
 and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 
 ## Standing rules
@@ -92,14 +92,13 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/meta-ads-tools.md`. Load `list_ad_accounts`
    under the Atlas prefix; only accounts linked to this Profile with `is_ads_mcp_enabled` true are
    in scope. Missing connector, expired sign in, nothing in scope, or a failed call: leave the
-   block out, name the reason under "What is missing", and finish the report. Never call a Meta
+   block out, name the reason in the page's gaps, and finish the report. Never call a Meta
    write tool.
-5. Build the page per **Weekly readout** in the reference (the answer block with the storyline's
-   bullets, KPI strip with benchmark row, 9-week line chart, post cards, mix small-multiples,
-   open items table, ranked next steps, then one section per non-`team` lens with its anchor). Load
-   `artifact-design` and `dataviz` first. Apply `theme:brand` when saved, per
-   `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/theme.md`, **Applying the theme**. Publish with
-   the Artifact tool, title "<Brand> Weekly Insights Report", republishing to the same path.
+5. **Page from data.** Write the page data for the Readout template, `length: weekly`, per
+   **Weekly readout**, **Page data** in the reference, for the primary lens, and render it with
+   the fill script, per `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the
+   data. Put a saved `theme:brand` in the data's `theme`. Publish the printed page with the
+   Artifact tool, title "<Brand> Weekly Insights Report", republishing to the same path.
 6. Deliver per **Delivery**: Slack message and email when routed and available, and one
    message per lens destination. Report any destination that could not be reached.
 7. Write findings with `append_insights`: `runKey` `readout-weekly-{profile}-{ISO week}`,
@@ -115,8 +114,8 @@ and the unattended run rules. Follow it exactly. Read `recipient-lens.md` too.
 
 - Headline: the week in one line, in the primary lens's result with its comparison (reference,
   **Data pull**, **Ranking**; for `team`, the lead metric vs prior week and vs 8-week median).
-- Storyline: the bullets the page opens with, each with the posts, accounts, or views behind
-  it; the Slack message and the email carry the same ones (reference, **Scheduled
+- Storyline: the page's insights, each with the posts, accounts, or views behind it and ending
+  with "Based on: {its source labels}"; the Slack message and the email carry the same ones (reference, **Scheduled
   (unattended) runs**, Storyline).
 - Numbers: posts, engagement, engagement rate, reach or views, followers with delta.
 - What worked: top 3 posts, in the order **Ranking** gives, with metric, link, and the shared

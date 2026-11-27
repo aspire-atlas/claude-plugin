@@ -1,7 +1,7 @@
 ---
 name: atlas-post-analysis
 description: |
-  Use this agent to analyze one published Instagram or TikTok post in depth for a brand on Atlas deciding whether to sponsor, partner with, or reuse it: reach and engagement with organic and paid boost apart, the content's structure and scores, every brand on screen timed to the second with frame stills, brand safety across the 12 industry categories with each profanity instance timed and attributed, sponsor disclosure, people on screen and what reuse would need cleared, the account's own baseline, and what it all means for the brand asking. It refetches the post into Atlas, reads the video frames and audio, publishes one page, and saves its findings to Atlas when the user approved it. Trigger on "analyze this post", "post analysis", "break down this Reel", "what brands are in this video", "is this post safe to sponsor", "should we partner with this show", or "how did this post do". Needs the post's link; no brief. A post checked against a brief is the `atlas-content-review` agent's job.
+  Use this agent to analyze one published Instagram or TikTok post in depth for a brand on Atlas deciding whether to sponsor, partner with, or reuse it: reach and engagement with organic and paid boost apart, the content's structure and scores, every brand on screen timed to the second, brand safety across the 12 industry categories with each profanity instance timed and attributed, sponsor disclosure, people on screen and what reuse would need cleared, the account's own baseline, and what it all means for the brand asking. It refetches the post into Atlas, reads the video frames and audio, publishes one page, and saves its findings to Atlas when the user approved it. Trigger on "analyze this post", "post analysis", "break down this Reel", "what brands are in this video", "is this post safe to sponsor", "should we partner with this show", or "how did this post do". Needs the post's link; no brief. A post checked against a brief is the `atlas-content-review` agent's job.
 model: inherit
 color: magenta
 ---
@@ -67,9 +67,10 @@ and the cut list (**Ad reuse check (content review)**).
    the transcript, the on-screen text, and the audio. Cross-check each against Atlas's
    `featuredBrands`, `overlayText`, and `brandSafety`, and name every disagreement.
 7. Compute the rates, the boost lift, and the baseline medians and ranks from the counts.
-8. Build and publish the page per **The page** with the Artifact tool. Load `artifact-design`
-   and `dataviz` first; apply `theme:brand` when saved. Check it once at desktop and 400px
-   width, in light and dark.
+8. **Page from data.** Write the page data for the Verdict template per **The page** in the
+   reference, and render it with the fill script, per
+   `${CLAUDE_PLUGIN_ROOT}/skills/page-standard/templates.md`, sections 1 and 7. Write no HTML: a fix goes in the data. Put a saved
+   `theme:brand` in the data's `theme`. Publish the printed page with the Artifact tool.
 9. Write findings per **State written to Atlas** when rule 5 allows.
 10. If the post cannot be resolved, say so with the reason and stop without writing.
 
@@ -77,7 +78,8 @@ and the cut list (**Ad reuse check (content review)**).
 
 - The page link, on its own line.
 - Headline: the verdict for the brand's question in one sentence.
-- Findings: four or five bullets, each with a number.
+- Findings: four or five bullets, each with a number and ending with "Based on: {its source
+  labels}".
 - Brands on screen: the count, the paid sponsor if any, and how it is disclosed.
 - Safety: the overall read, the profanity count with the first time, and the cleanest trim.
 - Corrections: any value that changed from an earlier analysis, old to new.

@@ -363,37 +363,50 @@ next steps concrete enough to act on. Three to six strengths; never pad.
 ## 7. The page
 
 Title "{Work title} Review". One page, published per `publish`: with the Artifact tool (`artifact`),
-as a full HTML file (`file:{path}`), or not at all (`none`). A re-review reads `earlier_review`
-first; when it is an artifact link and `publish` is `artifact`, publish with `url` set to it, so
-the team keeps one link. Load `artifact-design`, and `dataviz` for any chart. Apply the brand's
-saved theme when there is a profile (**Theme**, **Applying the theme**), semantic colors excepted.
-Sections, in order, with these exact headings where quoted:
+as the printed page saved to the path (`file:{path}`), or not at all (`none`). A re-review reads
+`earlier_review` first; when it is an artifact link and `publish` is `artifact`, publish with `url`
+set to it, so the team keeps one link. The page is the Verdict template, filled from data and
+rendered with the fill script (`skills/page-standard/templates.md`, sections 1, 2 and 7); it writes
+no HTML, and the template sets the layout. Put the brand's saved theme in the data's `theme` when
+there is a profile; the verdict keeps its semantic colors. Its argument fits the first screen at
+1280×800, and within two screens at 390px wide:
 
-1. **Header:** the mark at the top right and the "Prepared for" chip per **Artifact standard**; the
-   work's title and where it lives; the verdict stamp (Ready, Ready with fixes, Not ready) and its
-   one-sentence reason; the coverage line (**4.0**).
-2. **"Before you send"**: each Critical finding in one line, the top three fixes, and the share
-   steps from **4.11**, item 4. It fits the first screen at 1280×800, and within two screens at 390px
-   wide.
-3. **"Scorecard"**: a PASS, FAIL, or N/A tile for each brief requirement (**4.1**), then one for each
-   check, each with its one-line reason.
-4. **Findings, worst first:** id, severity, check, title, where, the quote, why it matters, the fix.
-5. **Strengths:** three to six, each with its quote.
-6. Each of these inside a `<details>` element that starts closed, left out under the same rules as
-   before: the **consistency table** (item, one place says, another says, fix; **4.4**; left out
-   when empty); the **feasibility chart** (budget or capacity against what is promised, with the
-   per-unit math; **4.5**; left out when it does not apply); the **data access table** (each live
-   read, connector, outside tool, or private link; who can see it; who cannot; the fix; shown
-   whenever **4.11** found anything); **suggested fixes** (before-and-after mock-ups of the two to
-   four biggest fixes, drawn in CSS, with placeholders highlighted); the full **check before
-   sending** list (facts to source or confirm (**4.3**), the Atlas re-check results when it ran,
-   timecodes not verified (**4.15**), and who must share what with the reader (**4.11**, item 4));
-   and, on a re-review, **earlier findings** (each fixed, still open, or no longer applies).
-7. **Footer:** the coverage line again, then the source line per **Artifact standard**, section
-   3, **Review pages**, with the rubric version and the team audience line (a review is for the
-   team, never the work's reader).
+- `title`: "Is {work title} ready to send?". `answer`: the verdict (Ready, Ready with fixes, Not
+  ready) and its one-sentence reason. `scope.reader` is the team (a review is for the team, never
+  the work's reader); `scope.range` is a short coverage label of up to 60 characters ("All 24
+  slides, notes not seen"), and the full coverage line (**4.0**) is the method's first note.
+  `scope.platforms` lists the networks the work cites; when it cites none, one platform at 0
+  posts with the note "The work cites no social posts", and `R2` in `scope.na`.
+- `sections.verdict`: `call` is the verdict; `status` `ok` for Ready, `warn` for Ready with fixes,
+  `bad` for Not ready; `reason` is the one-sentence reason; `checks` is the scorecard: each brief
+  requirement (**4.1**), then each check, as `bad` (FAIL), `ok` (PASS), or `flat` (N/A), each
+  `note` its one-line reason. FAILs come first; past twelve rows, keep the eleven worst and count the
+  rest by status in the twelfth (`templates.md`, section 7, **Lists past their limit**).
+- `insights`: each Critical finding, or the three worst findings when there is none, each with
+  its quote as `evidence`, where it sits and the check it fails as `comparison`, and why it matters
+  and the fix as `so`. Source `Our read`.
+- `actions`: the findings worst first, ranked: the fix as verb and object, its id, severity,
+  check, and place in `effect`, the owner as the flow or person that made the work, its job (the
+  /aspire job of the flow that made the work when it is one, otherwise `quality-review` for the
+  re-review after the fixes), and its cost. The share steps from **4.11**, item 4, follow. Twelve
+  actions at most, and the share steps always fit: findings take at most twelve minus the share
+  steps, and past that the last finding slot counts the rest ("Fix the other 6 findings, listed
+  in the fixes block"). Every finding stays in the fixes block (**8**). With no finding and no share step, the one action
+  is sending the work as it is (owner: the requester). `decisions`: anything only the requester can
+  decide (who may see a figure, whether to send with a High finding open).
+- `evidence`: three to six strengths, each with its quote; the consistency rows (**4.4**), the
+  feasibility math (**4.5**), the data access rows (**4.11**), the facts to source or confirm
+  (**4.3**), the Atlas re-check results when it ran, and the timecodes not verified (**4.15**), each
+  as one line, left out under the same rules as before; on a re-review, each earlier finding as
+  fixed, still open, or no longer applies. Past ten lines, the tenth counts the rest, and the
+  audit trail lists them (outside the summary's word count).
+- `method`: the rubric version and what the review could not see. `confidence`: how much of the
+  work the review could read.
+- `footer.source`: the source line per **Artifact standard**, section 3, **Review pages**, with
+  the rubric version and the team audience line.
 
-The page scrolls vertically only: no horizontal scroll at 390px wide.
+A suggested fix is a highlighted placeholder (`{budget}`) in the action's words, never a drawn
+mock-up.
 
 ## 8. Output to the main thread
 
