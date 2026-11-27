@@ -1,0 +1,488 @@
+{
+  "version": 1,
+  "template": "shortlist",
+  "example": true,
+  "title": "Which creator posts should Brightside Toys run as ads, and how do we cut them?",
+  "answer": "12 posts scored. Put test budget behind 2, starting with @makerjune's unboxing Reel.",
+  "takeaway": "The 2 put the toy on screen in the first second, and 9 of the 12 scored did not.",
+  "scope": {
+    "reader": "paid social",
+    "brand": "Brightside Toys",
+    "range": "Oct 1 to Nov 22, 2026",
+    "question": "P1",
+    "accounts": [
+      "instagram:makerjune",
+      "tiktok:dadbuildsit"
+    ],
+    "platforms": [
+      {
+        "network": "instagram",
+        "posts": 214
+      },
+      {
+        "network": "tiktok",
+        "posts": 131
+      },
+      {
+        "network": "youtube",
+        "posts": 0,
+        "note": "Connecting it would add long-form reviews."
+      }
+    ]
+  },
+  "figures": [],
+  "insights": [
+    {
+      "text": "Posts that show the toy in the first second hold viewers longer.",
+      "evidence": "The 3 posts with the toy on screen by 0:01 scored a median 81 on the hook score.",
+      "comparison": "against a median of 54 for the other 9",
+      "so": "Open every cut on the product.",
+      "source": "Atlas",
+      "chart": {
+        "title": "Median hook score",
+        "bars": [
+          {
+            "label": "Toy by 0:01",
+            "segments": [
+              {
+                "label": "Hook score",
+                "value": 81
+              }
+            ]
+          },
+          {
+            "label": "Later",
+            "segments": [
+              {
+                "label": "Hook score",
+                "value": 54
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "text": "Spoken hooks work without sound only when captioned.",
+      "evidence": "4 of the 5 spoken hooks had no captions.",
+      "comparison": "the captioned one scored 22 points higher",
+      "so": "Add captions to every cut.",
+      "source": "Atlas"
+    }
+  ],
+  "actions": [
+    {
+      "rank": 1,
+      "verb": "Cut",
+      "object": "the 2 storyboards below",
+      "owner": "Creative",
+      "due": "2026-11-30",
+      "effect": "2 cuts ready to test by Dec 1",
+      "job": "ad-reuse",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, editor time only"
+      },
+      "source": "Our read",
+      "first": true
+    },
+    {
+      "rank": 2,
+      "verb": "Run",
+      "object": "tests A and B for 7 days",
+      "owner": "Paid social",
+      "due": "2026-12-08",
+      "effect": "A hook rate to scale or stop each cut",
+      "job": "ad-reuse",
+      "cost": {
+        "kind": "unpriced",
+        "missing": "the test budget",
+        "holder": "paid social",
+        "line": "Cannot be priced: the test budget is not set yet; paid social has it"
+      },
+      "source": "Our read"
+    }
+  ],
+  "decisions": [
+    {
+      "text": "Approve licensing @dadbuildsit's build video for paid use",
+      "approver": "the paid social lead",
+      "by": "2026-11-28",
+      "then": "Atlas drafts the rights request.",
+      "cost": {
+        "kind": "unpriced",
+        "missing": "the usage fee",
+        "holder": "the creator",
+        "line": "Cannot be priced: the usage fee is not set; the creator has it"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "text": "Held back: @dadbuildsit's tower race (71), the same format as the build video, held for round two; 7 left",
+      "source": "Our read"
+    },
+    {
+      "text": "Rights: @makerjune's Reel, paid usage until Jan 31, 2027, from the program record",
+      "source": "Brand memory"
+    },
+    {
+      "text": "Rights: @dadbuildsit's build video, not held in Atlas; confirm usage rights before paid use",
+      "source": "Atlas"
+    },
+    {
+      "text": "Every post scored: 12 scored, 3 run, 2 cut first, 7 leave; 9 found, 3 briefed",
+      "source": "Our read"
+    }
+  ],
+  "gaps": [
+    "Paid results: a connected Meta ad account would show which posts already ran and what they cost."
+  ],
+  "confidence": {
+    "level": "medium",
+    "why": "Watch time is measured on 1 of the 2 posts; the other uses the creator's average."
+  },
+  "sources": [
+    "Creator posts Atlas holds that mention or tag the brand, Oct 1 to Nov 22, 2026",
+    "The brand's saved rights records"
+  ],
+  "method": {
+    "weights": [
+      {
+        "label": "Hook by 3 seconds",
+        "percent": 30
+      },
+      {
+        "label": "Brand by 3 seconds",
+        "percent": 20
+      },
+      {
+        "label": "Works without sound",
+        "percent": 15
+      },
+      {
+        "label": "Retention",
+        "percent": 15
+      },
+      {
+        "label": "A segment that stands alone",
+        "percent": 10
+      },
+      {
+        "label": "Ready for paid",
+        "percent": 10
+      }
+    ],
+    "notes": [
+      "41 videos about the brand, 12 read frame by frame and scored, 2 recommended."
+    ]
+  },
+  "drafts": [
+    {
+      "draft": "The brief for the next creator round",
+      "waitsOn": "After the first test week"
+    }
+  ],
+  "sections": {
+    "posts": [
+      {
+        "href": "https://www.instagram.com/reel/EXAMPLE1/",
+        "account": "instagram:makerjune",
+        "postedAt": "Oct 12, 2026, 6:10 PM ET",
+        "group": "Found",
+        "badge": "F1",
+        "score": {
+          "label": "Hook score",
+          "value": 82
+        },
+        "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+        "alt": "Child opens the box",
+        "metrics": {
+          "views": 48200,
+          "likes": 3100,
+          "comments": 210,
+          "shares": 340,
+          "saves": 520,
+          "engagement": 87
+        },
+        "usual": "2.1x her usual",
+        "why": "The only recommended post that works without sound.",
+        "checks": [
+          {
+            "status": "ok",
+            "text": "The toy on screen at 0:00"
+          },
+          {
+            "status": "warn",
+            "text": "No captions: cut 1 adds them"
+          }
+        ]
+      },
+      {
+        "href": "https://www.tiktok.com/@dadbuildsit/video/EXAMPLE2",
+        "account": "tiktok:dadbuildsit",
+        "postedAt": "Nov 3, 2026, 9:00 AM ET",
+        "group": "Briefed",
+        "badge": "B1",
+        "score": {
+          "label": "Hook score",
+          "value": 74
+        },
+        "metrics": {
+          "views": 31000,
+          "likes": 2200,
+          "comments": 95,
+          "shares": 120,
+          "engagement": 78
+        },
+        "missing": {
+          "saves": "TikTok does not share saves for other accounts' posts"
+        },
+        "usual": "1.4x his usual",
+        "why": "Shows the build, which no found post does.",
+        "checks": [
+          {
+            "status": "warn",
+            "text": "The toy first at 0:04: cut 2 starts there"
+          },
+          {
+            "status": "ok",
+            "text": "Captions burned in"
+          }
+        ]
+      }
+    ],
+    "storyboards": {
+      "structure": [
+        {
+          "name": "Hook",
+          "time": "0 to 3s",
+          "seconds": 3
+        },
+        {
+          "name": "Brand",
+          "time": "3 to 6s",
+          "seconds": 3
+        },
+        {
+          "name": "Build",
+          "time": "6 to 9s",
+          "seconds": 3
+        },
+        {
+          "name": "Reveal",
+          "time": "9 to 12s",
+          "seconds": 3
+        },
+        {
+          "name": "End card",
+          "time": "+2s",
+          "seconds": 2,
+          "end": true
+        }
+      ],
+      "specs": [
+        "9:16, under 15 seconds",
+        "Captions on every spoken line",
+        "Timecodes within 1.5 seconds until scanned"
+      ],
+      "cuts": [
+        {
+          "title": "Cut 1: 14 seconds from @makerjune's unboxing",
+          "account": "instagram:makerjune",
+          "href": "https://www.instagram.com/reel/EXAMPLE1/",
+          "badge": "F1",
+          "length": 14,
+          "scanned": true,
+          "meta": "Product-first hook, Oct 12. Runs in tests A and B.",
+          "beats": [
+            {
+              "name": "Hook",
+              "time": "0:00 to 0:03",
+              "seconds": 3,
+              "text": "The lid opens and the child gasps.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "Child gasps as the lid opens"
+            },
+            {
+              "name": "Brand",
+              "time": "0:03 to 0:06",
+              "seconds": 3,
+              "text": "The logo turns to camera.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "Logo on the box side"
+            },
+            {
+              "name": "Build",
+              "time": "0:06 to 0:09",
+              "seconds": 3,
+              "text": "The pieces go together.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "Pieces laid out on the floor"
+            },
+            {
+              "name": "Reveal",
+              "time": "0:09 to 0:12",
+              "seconds": 3,
+              "text": "The playset lights up.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "Finished playset lit up"
+            },
+            {
+              "name": "End card",
+              "time": "+2s",
+              "seconds": 2,
+              "text": "Product name and offer.",
+              "insert": "The brand supplies the end card",
+              "end": true
+            }
+          ],
+          "notes": [
+            "Cut the first 1.5 seconds of the original, before the lid moves.",
+            "Add captions to every spoken line."
+          ]
+        },
+        {
+          "title": "Cut 2: 14 seconds from @dadbuildsit's build",
+          "account": "tiktok:dadbuildsit",
+          "href": "https://www.tiktok.com/@dadbuildsit/video/EXAMPLE2",
+          "badge": "B1",
+          "length": 14,
+          "scanned": false,
+          "meta": "Build hook, Nov 3. Runs in test A.",
+          "beats": [
+            {
+              "name": "Hook",
+              "time": "0:04 to 0:07",
+              "seconds": 3,
+              "text": "The finished tower falls and he laughs.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "Tower falls over"
+            },
+            {
+              "name": "Brand",
+              "time": "0:07 to 0:10",
+              "seconds": 3,
+              "text": "The box with the logo.",
+              "insert": "Logo on white, from the brand"
+            },
+            {
+              "name": "Build",
+              "time": "0:10 to 0:13",
+              "seconds": 3,
+              "text": "He rebuilds it with his son.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "Father and son building"
+            },
+            {
+              "name": "Reveal",
+              "time": "0:13 to 0:16",
+              "seconds": 3,
+              "text": "The tower stands taller.",
+              "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==",
+              "alt": "The rebuilt tower"
+            },
+            {
+              "name": "End card",
+              "time": "+2s",
+              "seconds": 2,
+              "text": "Product name and offer.",
+              "insert": "The brand supplies the end card",
+              "end": true
+            }
+          ],
+          "notes": [
+            "Start at 0:04, where the toy first shows."
+          ]
+        }
+      ]
+    },
+    "tests": {
+      "runs": "7 days",
+      "rows": [
+        {
+          "name": "A",
+          "variable": "Hook: lid opening against the falling tower",
+          "cuts": "1 and 2",
+          "measure": "Hook rate",
+          "hypothesis": "The lid opening holds more people past 3 seconds",
+          "scale": "30% or more",
+          "fix": "20% to 30%, re-cut the first second",
+          "stop": "Under 20%"
+        },
+        {
+          "name": "B",
+          "variable": "Length: 14 against 6 seconds",
+          "cuts": "1 and a 6-second cut of 1",
+          "measure": "Click rate",
+          "hypothesis": "The shorter cut costs less per click",
+          "scale": "Set from the first test week",
+          "fix": "Within 10% of the longer cut",
+          "stop": "More than 20% above the longer cut"
+        }
+      ],
+      "measures": [
+        {
+          "name": "Hook rate",
+          "means": "the share of people who watch past 3 seconds"
+        },
+        {
+          "name": "Cost per click",
+          "means": "spend divided by link clicks, in the ad account's currency"
+        }
+      ]
+    },
+    "kpis": [
+      {
+        "label": "Posts considered",
+        "value": 345,
+        "comparison": "Instagram and TikTok, Oct 1 to Nov 22",
+        "source": "Atlas"
+      },
+      {
+        "label": "About the brand",
+        "value": 58,
+        "comparison": "of 345 considered",
+        "source": "Atlas"
+      },
+      {
+        "label": "Videos",
+        "value": 41,
+        "comparison": "of 58 about the brand",
+        "source": "Atlas"
+      },
+      {
+        "label": "Read frame by frame and scored",
+        "value": 12,
+        "comparison": "of 41 videos",
+        "source": "Atlas"
+      },
+      {
+        "label": "Recommended",
+        "value": 2,
+        "comparison": "of 12 scored",
+        "status": "ok",
+        "source": "Our read"
+      }
+    ]
+  },
+  "footer": {
+    "updated": "2026-11-22T14:00:00Z",
+    "freshness": [
+      {
+        "account": "instagram:makerjune",
+        "newest": "2026-11-20",
+        "fetched": "2026-11-22"
+      },
+      {
+        "account": "tiktok:dadbuildsit",
+        "newest": "2026-11-18",
+        "fetched": "2026-11-21"
+      }
+    ],
+    "notes": [
+      "Images are a snapshot from when the page was made."
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas. Not for any decision. Internal use only. Not for public publishing."
+  }
+}

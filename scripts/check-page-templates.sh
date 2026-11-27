@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks the page templates (plugins/aspire/skills/page-standard/templates.md):
 #   - the fill script in page-fill.md renders every template from its example data in
-#     scripts/fixtures/page-templates/<template>.json, each example carries the Example label, and
+#     scripts/fixtures/page-templates/<template>.json (and any <template>-<kind>.json), each example carries the Example label, and
 #     the page check (page-check.md) fails nothing on any rendered page
 #   - the fill script refuses each fail-<rule>*.json fixture there, on that rule and no other
 #   - page-templates.json gives every template a length budget and only typed sections the data
@@ -88,7 +88,8 @@ for a in sorted(agents - jobs - waiting):
 # stops rendering through its template fails, and an agent not listed yet that already does fails
 # until it is added, so the list stays true.
 CONVERTED = {"daily-insights-report", "weekly-insights-report", "market-signal", "quarterly-signal",
-             "profile-analyst", "content-review", "post-analysis", "quality-review", "creator-profile"}
+             "profile-analyst", "content-review", "post-analysis", "quality-review", "creator-profile",
+             "ad-reuse"}
 for a, where in sorted(mapped.items()):
     if where == ["none"] or a not in agents or a in waiting:
         continue
@@ -135,19 +136,23 @@ cp "$PS/page-data.schema.json" "$PS/page-templates.json" "$PS/blocks.md" "$PS/pa
   plugins/aspire/skills/aspire/references/artifact-standard.md plugins/aspire/assets/aspire-animated.svg.md "$tmp/"
 rendered=0
 for t in $(python3 -I -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["templates"]))' "$PS/page-templates.json"); do
-  f=$FX/$t.json
-  [ -f "$f" ] || { err "$f is missing (each template has an example)"; continue; }
-  python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("example") is True else 1)' "$f" ||
-    err "$f does not set \"example\": true, so its page would not carry the Example label"
-  cp "$f" "$tmp/page.json"
-  page=$(python3 -I "$tmp/page_fill.py" "$tmp/page.json" 2>&1) && code=0 || code=$?
-  [ "$code" -eq 0 ] || { err "the fill script did not render $f (exit $code): $page"; continue; }
-  printf '%s\n' "$page" > "$tmp/$t.html"
-  grep -q '>Example<' "$tmp/$t.html" || err "the page rendered from $f carries no Example label"
-  out=$(python3 -I "$tmp/page_check.py" "$tmp/$t.html" 2>&1) && code=0 || code=$?
-  failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
-  [ "$code" -eq 0 ] && [ -z "$failed" ] || err "the page rendered from $f fails the page check (${failed:-exit $code}): $out"
-  rendered=$((rendered + 1))
+  [ -f "$FX/$t.json" ] || { err "$FX/$t.json is missing (each template has an example)"; continue; }
+  # A template may keep more examples, one per kind of page it serves, as <template>-<kind>.json.
+  for f in "$FX/$t.json" "$FX/$t"-*.json; do
+    [ -f "$f" ] || continue
+    python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("example") is True else 1)' "$f" ||
+      err "$f does not set \"example\": true, so its page would not carry the Example label"
+    cp "$f" "$tmp/page.json"
+    page=$(python3 -I "$tmp/page_fill.py" "$tmp/page.json" 2>&1) && code=0 || code=$?
+    [ "$code" -eq 0 ] || { err "the fill script did not render $f (exit $code): $page"; continue; }
+    h="$tmp/$(basename "$f" .json).html"
+    printf '%s\n' "$page" > "$h"
+    grep -q '>Example<' "$h" || err "the page rendered from $f carries no Example label"
+    out=$(python3 -I "$tmp/page_check.py" "$h" 2>&1) && code=0 || code=$?
+    failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
+    [ "$code" -eq 0 ] && [ -z "$failed" ] || err "the page rendered from $f fails the page check (${failed:-exit $code}): $out"
+    rendered=$((rendered + 1))
+  done
 done
 # Figures print in fixed point with no float noise: the fill script's num() on known values.
 nums=$(python3 -I - "$tmp/page_fill.py" <<'PY' 2>&1

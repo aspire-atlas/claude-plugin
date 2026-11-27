@@ -159,10 +159,10 @@ How to read them:
 
 Frames follow **Content review**, **Media**: the same extractor order and working folder.
 Sample the opening densely (0, 0.5, 1, 1.5, 2, 2.5 and 3 seconds), then every 3 seconds. For each
-recommended cut, also extract a frame at every storyboard beat's timecode (**Page**, item 8),
+recommended cut, also extract a frame at every storyboard beat's timecode (**Page**, `sections.storyboards`),
 measured from the cut's in point.
 View every frame extracted, and note what each shows with its timecode: these frames are the only
-source for each learning's frame pair (**Page**, item 6). With the cover only, score the hook
+source for each learning's frame pair (**Page**, `insights`). With the cover only, score the hook
 components "Can't check" and say so; never infer the opening from a cover.
 
 ## Hook score (out of 100)
@@ -296,165 +296,148 @@ date shows as expired.
 
 Ranking (**Recipient lens**, Headline and rank by the reader's result), as it applies here: no
 post has sign-ups, sales, or cost per result before it runs as an ad, so the hook score is this
-flow's stand-in and both lists rank by it. The answer says so in one line. A candidate that
+flow's stand-in and both groups rank by it. The answer says so in one line. A candidate that
 already ran keeps its "already run as an ad" label and is ranked as **Counts that include paid
 delivery** says, never higher because an ad inflated its counts.
 
-- **Performance** (primary): the reasoning first: how Atlas narrowed the posts, what it learned,
-  and the recommended posts checked against each learning, each with its one line on why it was
-  picked (**Page**, item 7). The licensing candidates follow in the folded scoring section as two lists, found then
-  briefed, each ranked by hook score, with the pattern table. The edit plan (storyboards, cut
-  list, and test plan) sits behind its own fold.
-- **Creative** (primary): items 1 to 5 of **Page** stay where they are (header, answer, the
-  strip, decisions, next steps). Then the learnings, as on the performance lens: each pattern in
-  plain words with its works and misses frame pair, so the team can reuse it in the next edit.
-  The edit plan comes right after them, open: the storyboards and the cut list, grouped by post,
-  with frame thumbnails at the in and out points. The recommended posts follow; the ranking stays
-  folded. The order is items 1 to 6, then 8, 7, 9 and on.
-- Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries
-  every section; the primary lens decides the order and which parts are folded.
+Both lenses are one hand-off (Performance picks, Creative cuts), so the page always carries the
+picks, the storyboards, and the test plan, in the order the template sets. The primary lens picks
+the answer, the order of the insights, and which action ranks first:
+
+- **Performance** (primary): the answer names what to put budget behind, and the first action
+  is licensing or the first test.
+- **Creative** (primary): the answer names the cuts to make, the insights lead with the
+  patterns to reuse in the next edit, and the first action is cutting the storyboards.
 
 ## Page (ad reuse agent)
 
 The page answers question **P1**, "Which creator posts should we run as ads, and how do we cut
 them?", and must match the evidence of its approved example (`skills/page-standard/examples.md`,
-P1). Build it from the page blocks (`skills/page-standard/blocks.md`); the block numbers below are
-that file's. The page tells the reasoning: how much Atlas read, what it learned from the posts,
-and why each pick won. The scoring is the proof, folded below.
+P1). It tells the reasoning: how much Atlas read, what it learned from the posts, and why each
+pick won, then how to cut each pick and how to test the cuts.
 
-Title "<Brand> Ad Reuse: {window}", republished to the same path for the same brand. One page per
-brand: a run over two brands publishes two pages. Sections, in this order for the `performance`
-lens (**Output for each lens** sets the order for `creative`):
+The page uses the **Shortlist** template. Return its page data and fill it per
+`skills/page-standard/templates.md`; write no HTML. The template sets the order, the blocks, the
+mark and the footer (**Artifact standard**). The page's file name is "<Brand> Ad Reuse: {window}",
+republished to the same path for the same brand. One page per brand: a run over two brands
+publishes two pages. What goes in each field:
 
-1. **Header** (3.1, 3.2): the "Prepared for" chip, the animated mark at the top right, the brand,
-   the window, and the posts considered per platform with the count that had measured data. A
-   platform with posts that the run did not score says so on its chip ("TikTok: 9 posts, not
-   scored").
-2. **Answer** (3.3): the decision, written last ("12 posts scored. Put budget behind 3, starting
-   with @handle's launch Reel."), and a one-line takeaway naming the top learning.
-3. **How Atlas got there** (the flow's own strip, `blocks.md` section 6): one row of steps from the
-   posts considered to the posts recommended, each a count and a few words, in the order the run
-   took them, which is the **Candidate pool** order:
-   - posts considered, per platform ("1,556 Instagram posts that mention or tag {brand}");
-   - creators' posts with the brand as the subject, after the account map sets aside the
-     brand's own and non-creator accounts and the competitor screen sets aside other brands'
-     posts (name both counts set aside in the method);
-   - the videos among them;
-   - posts read frame by frame (the prefilter's top 12);
-   - posts scored;
-   - posts recommended, the last step marked with the accent.
+- **`title`, `answer`, `takeaway`**: the `title` is the P1 question for the brand. The `answer`,
+  written last, is the decision ("12 posts scored. Put budget behind 3, starting with @handle's
+  launch Reel."). The `takeaway` names the top learning. `scope.question` is `P1`,
+  `scope.reader` comes from `recipient` (**Recipient lens**), and `scope.platforms` gives the
+  posts considered per platform; a platform with posts the run did not score says so in its
+  `note`.
+- **How Atlas got there, `sections.kpis`**: one tile per step, in the order the run took them,
+  which is the **Candidate pool** order, each a count and a few words, so the tiles narrow from
+  left to right. `figures` stay empty, so the steps are the only tiles.
+  - posts considered, per platform ("Instagram posts that mention or tag {brand}");
+  - creators' posts with the brand as the subject, after the account map sets aside the
+    brand's own and non-creator accounts and the competitor screen sets aside other brands'
+    posts (name both counts set aside in `method.notes`);
+  - the videos among them;
+  - posts read frame by frame (the prefilter's top 12);
+  - posts scored;
+  - posts recommended, `status` `ok`.
 
-   Each count is taken from the step before it, so the strip narrows from left to right.
+  Each tile's `comparison` is the step before it ("of 1,556 considered"); the first names the
+  window. Every count is this run's own. A step the run did not take is left out, never
+  estimated: when the run framed only the scored posts, "read frame by frame" and "scored" are
+  one tile. A count taken from a sample says "about" ("about 40"), and the method says how it
+  was estimated.
+- **`decisions`**: what needs approval before any spend, each with its `by` date when the test
+  plan sets one: licensing each candidate whose rights are not held, the test budget, and access
+  to the ad account or the raw files. Empty when nothing does.
+- **`actions`**: up to four recommendations, ranked, each with its owner (performance or
+  creative), its date, and what it should change. Rights requests use `job` `content-sourcing`;
+  the next creator round uses `creator-brief`. The test weeks are the tests' actions and dates.
+- **`insights`, what Atlas learned**: up to three learnings. On a `build` or `state` storyline
+  pass they are the storyline's bullets, in their order and wording
+  (`skills/page-standard/storyline.md`).
+  - `text` is the claim. `evidence` starts with the headline stat ("9 of 12 put {brand} on screen
+    in the first second"), names the posts behind it, and ends with the frame pair in words: where
+    the learning works and where it misses, each with its handle and timecode ("Works: @handle,
+    0:01. Misses: @handle, the product first at 0:07"). Both come from frames already extracted and
+    viewed (**What to read per candidate**); a side no frame read shows says "no frame read shows
+    this". A learning that rests on fewer than 3 posts says how few.
+  - `comparison` is what the stat is set against (the other posts, the median, the account's own).
+  - Only the first learning carries a `chart`, a stacked bar of the data behind it from this run
+    (seconds to the first brand appearance by candidate, or the median score by group). The
+    others give their measure in words in `evidence`.
+  - `so` is "So Atlas recommends": the action, naming the cut, the brief, or the test it changes
+    ("Open every cut on the product."). Hedges go here, never in the claim.
+- **`sections.posts`, the posts Atlas recommends**: one card per recommended candidate
+  (recommended candidates follow the agent's top candidates rule: up to five, at most three from
+  a path unless the other path has fewer than two). `group` is `Found` or `Briefed`, found first,
+  never mixed, and never compare organic traction across them (**Candidate pool**, **Two
+  paths**). Each card holds:
+  - `badge`, its rank within its path (F1, F2, B1); `score`, the hook score with `label` "Hook
+    score, measured", "Hook score, creator average" or "Hook score, proxy";
+  - `image`, the opening frame (`thumb@96x171`), with any measured early rate in `why`;
+  - `metrics` and `missing` for the P1 row (`skills/page-standard/SKILL.md`, section 8), `usual`;
+  - `checks`, one per learning in the insights' order: `ok` and how the post meets it ("{brand}
+    on screen at 0:00"), or `warn` and the fix the cut list makes ("Never names {brand}: add the
+    logo over the first seconds"). Each fix is a row or an edit note in the cut list. A miss no
+    cut can fix is `bad` and says so;
+  - `why`, one line on why it was picked: what it adds as a paid ad that the other recommended
+    posts don't.
+- **`sections.storyboards`, how to cut them**: `structure` holds the five beats every cut
+  shares (hook 0 to 3s, brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card +2s,
+  `end` true), and `specs` the specs from **Cut list** that every cut shares, with the "±1.5s"
+  tolerance on timecodes read from frames. Then one cut per recommended ad, in the posts' order:
+  - `title` names the cut and the post ("Cut 1: 14 seconds from @handle's unboxing"), `badge`
+    is the post's badge, `href` and `account` the post's, `length` the cut length, and `meta`
+    the hook line, date, pattern, and the tests it runs in.
+  - `beats`: one per beat, its `time` measured in the post, its `seconds`, and one line of
+    `text`. Its `image` is the frame read at that beat's timecode (`thumb@132x235`) with an `alt`
+    saying what it shows; where the post has no usable frame, an `insert` names what to add.
+    Never draw a still that wasn't extracted. On a 15-second cut the end card runs 12 to 15s. A
+    6-second bumper has two beats: the hook 0 to 3s, then the brand with the end card 3 to 6s. A
+    30-second cut lengthens the build to 6 to 24s, with the reveal 24 to 27s and the end card 27
+    to 30s. The beats add up to the cut length; the fill refuses them otherwise.
+  - `scanned` stays false, so the cut shows "Draft timecodes", until a 1-second frame scan
+    confirms every timecode (**Quality review**, 4.15).
+  - `notes`, the edit notes, including every `warn` fix from the post's `checks`.
+- **`sections.tests`, the test plan**: one row per variable (hook pattern, opening line, cut
+  length, or placement), each with the cuts in it, the measure it is judged on, the hypothesis,
+  and its `scale`, `fix`, and `stop` rules. A rule's threshold comes from the brand's saved
+  targets or the account's own results; with neither, the rule names the measure and says the
+  threshold is set from the first test week. `runs` is how long each test runs before its call,
+  and `measures` defines each measure once.
+- **`evidence`**, at most ten lines, in this order:
+  - **Held back**: one line naming every candidate with a **run** or **cut first** verdict that
+    was not picked, with its score and the reason in a few words ("@handle's torn paper tutorial
+    (88): the same format as the watercolor post, held for round two"), and the count of
+    **leave** candidates. On a page for a client, only the counts by verdict, with no handles or
+    reasons (R10: no named rejects).
+  - **Rights**: one line per recommended candidate with its source and expiry, from **Rights
+    sources** ("@handle's Reel: paid usage until Jan 31, 2027, from the program record").
+  - **Cut list**: one line per cut not shown as a storyboard (a second or third cut of a
+    candidate), with its in and out points and lengths.
+  - **Every post scored**: one line with the counts by verdict and path ("12 scored: 3 run, 2
+    cut first, 7 leave; 9 found, 3 briefed"). The full tables, ranked by hook score within each
+    path with the retention label, go in the chat summary; on a page for a client they list
+    only the recommended posts.
+- **`method`**: `weights` are the six parts of the hook score. `notes`, at most six, give the
+  counts from the tiles with the counts set aside by the account map and the competitor screen,
+  the retention levels and thresholds, the hook evidence rule, the verdict bands and the
+  override (**Hook score**, **Verdict bands**), and the hook pattern table as one line per
+  leading pattern with its median retention score and level mix ("Product first: median 81, 3
+  measured, 2 proxy"). The ratings matrix goes in the chat summary.
+- **`gaps`**: paid results ("Paid results: a connected Meta ad account would show which of these
+  cuts already ran and what they cost"), boosted views where organic is not held, and candidates
+  scored on cover frames only. When `reuse_scope` includes `creators`, a fourth goes in the chat
+  summary: creator posts rarely carry measured watch time, because it comes from the account
+  owner's insights, so most creator candidates score retention on the creator average or the
+  proxy.
+- **`drafts`**: the brief for the next creator round, built from the learnings and the patterns
+  that led, and the rights requests for candidates without them.
+- **`footer`**: the sources, `updated` from the shell clock, one `freshness` entry per cited
+  account, the images-are-a-snapshot note, and the artifact-standard source line.
 
-   Every count is this run's own. A step the run did not take is left out, never estimated: when
-   the run framed only the scored posts, "read frame by frame" and "scored" are one step. A count
-   taken from a sample says "about" ("about 40"), and the method says how it was estimated. The
-   strip is one row at desktop width and wraps on a phone, so the decisions and the next steps
-   still start on the first screen (R10). When the rendered page would push the decisions below
-   the first screen, move the strip to just after the next steps instead. The method repeats
-   these counts.
-4. **Decisions** (3.5): what needs approval before any spend, each with its date when the test
-   plan sets one: licensing each candidate whose rights are not held, the test budget, and access
-   to the ad account or the raw files. With none, "Nothing needs approval."
-5. **Next steps** (3.6): up to four recommendations, ranked, each with who does it (performance or
-   creative), by when, and what it should change.
-6. **What Atlas learned** (3.4, one card per learning): up to three learnings. On a `build` or
-   `state` storyline pass they are the storyline's bullets, in their order and wording
-   (`skills/page-standard/storyline.md`). Each card holds, in this order:
-   - **The headline stat** (`pb-stat`): one figure and what it counts ("9 of 12", "put {brand}
-     on screen in the first second").
-   - **The claim** as the card's heading, then a short paragraph (two or three sentences) with
-     the evidence and its comparison, naming the posts behind it. A learning that rests on fewer
-     than 3 posts says how few.
-   - **A chart of the data behind it**, from this run. Each learning here carries its own chart,
-     an exception to 3.4's one-chart rule, because each rests on a different measure: seconds to
-     the first brand appearance by candidate, the median score by group, or average watch time
-     against video length. Posts that miss the learning use the status tokens.
-   - **A frame pair**: one still where the learning works and one where it misses, each labelled
-     "Works" (`pb-chip pb-ok`) or "Misses" (`pb-chip pb-bad`), with the handle and the timecode
-     ("@handle, 0:01") and an alt text saying what the frame shows. Both come from frames already
-     extracted and viewed for the candidates (**What to read per candidate**); the pair needs no
-     new media read. Never draw a still that wasn't extracted. When no frame read shows one
-     side, that side says "No frame read shows this" and the card keeps the other. A learning
-     that frames can't show at all (watch time, a score by group) has no pair: the card says
-     "No frame shows this: it rests on {the measure}" and its chart carries the proof.
-   - **"So Atlas recommends"**: the action, as the card's "So:" line (`pb-so`), naming the cut,
-     the brief, or the test it changes ("Open every cut on the product. Where the creator didn't,
-     lay the logo over the first seconds."). Hedges go here, never in the claim.
-7. **The posts Atlas recommends** (3.8, one card per recommended candidate; recommended
-   candidates follow the agent's top candidates rule: up to five, at most three from a path unless
-   the other path has fewer than two). Never title the section "The picks" or "Top picks" (R11).
-   Show the cards as two groups, **Found** then **Briefed**, never mixed, and never compare organic
-   traction across them (**Candidate pool**, **Two paths**). Each card holds the opening frame as its thumbnail and the first-3-seconds
-   frame strip (the opening frames from **What to read per candidate**), with any measured early
-   rate cited beside the opening frame; the badge (its rank within its path, F1, F2, B1); the handle; the score
-   out of 100 with the retention label as a small chip ("Measured", "Creator average, not this
-   post" or "Proxy"); what the post is, its length, and the metric row. Then one line per
-   learning, in the order of item 6:
-   - **✓** (`pb-chip pb-ok`) and how the post meets it ("{brand} on screen at 0:00");
-   - **+** (`pb-chip pb-warn`) and the fix the cut list makes ("Never names {brand} → add the
-     logo over the first seconds"). Each fix is a row or an edit note in the cut list. A miss no
-     cut can fix says so in place of a fix.
-
-   The symbol stays in the text so the line reads without color. Then one line on why it was
-   picked: what it adds as a paid ad that the other recommended posts don't. Under the cards,
-   **Held back** names every candidate with a **run** or **cut first** verdict that was not
-   picked, with its score and the reason in a few words ("@handle's torn paper tutorial (88): the
-   same format as the watercolor post, held for round two"), and counts the **leave** candidates,
-   which are listed in item 10. On a page for a client, **Held back** gives only the counts by
-   verdict, with no handles or reasons, and item 10's tables list only the recommended posts
-   (R10: no named rejects).
-8. **The edit plan**: on the `performance` lens, one `details`, closed, titled "The edit plan:
-   storyboards, cut list and test plan"; on the `creative` lens, open and placed right after
-   **What Atlas learned** (item 6), before item 7. It holds:
-   - **Cut structure and storyboards** (3.9): the five beats every cut shares (hook 0 to 3s,
-     brand 3 to 6s, build 6 to 9s, reveal 9 to 12s, then the end card, per the page standard) and
-     the specs from **Cut list**. On a 15-second cut the end card runs 12 to 15s. Then one
-     storyboard per recommended ad, in item 7's order: the badge, the hook line, handle, date,
-     pattern, cut length, and the tests it runs in; a still for every beat, taken from the frames
-     read at that beat's timecode, or an insert tile naming what to add when the post has no
-     usable frame there; the timecodes, a one-line description per beat, the duration strip, and
-     edit notes, including every "+" fix from the pick's card. A 6-second bumper has two beats:
-     the hook 0 to 3s, then the brand with the end card 3 to 6s. A 30-second cut lengthens the
-     build to 6 to 24s, with the reveal 24 to 27s and the end card 27 to 30s. The duration strip
-     always adds up to the cut length. Timecodes from frames carry "±1.5s" and every timecode
-     stays a draft until a 1-second frame scan confirms it (**Quality review**, 4.15).
-   - **Cut list** table, one row per cut (**Cut list**).
-   - **Test plan** (3.15): one test per variable (hook pattern, opening line, cut length, or
-     placement), each with the ads in it, the metric it is judged on, the hypothesis, and its
-     Scale, Fix, and Stop rules. A rule's threshold comes from the brand's saved targets or the
-     account's own results; with neither, the rule names the metric and says the threshold is
-     set from the first test week. Then the test weeks as a timeline (3.17).
-9. **Rights** (3.10): one row per recommended candidate with its source and expiry, from
-   **Rights sources**.
-10. **How Atlas scored it** (3.11), each part in its own `details`, closed:
-    - **Every post scored** (3.16): two tables, **Found** then **Briefed**, never merged, each
-      with one row per candidate on that path considered for frame work, ranked by hook score
-      within its table: thumbnail, handle, source (brand or creator), date, length, organic
-      traction, the score bar with the retention label as a small chip, the verdict (run, cut
-      first, or leave), and a one-line note.
-    - **Hook patterns**: the pattern table, whose "Retention" column gives the median retention
-      score and the level mix per pattern ("3 measured, 2 proxy").
-    - **The six parts of the score**: the components with their weights, what full marks and
-      zero mean for each, the retention levels and thresholds, the hook evidence rule, the
-      verdict bands and the override (**Hook score**, **Verdict bands**), the counts from item 3
-      and the platform counts again, then the ratings matrix (every candidate by component).
-11. **What's missing** (3.12): paid results ("Paid results need a connected Meta ad account: they
-    would show which of these cuts already ran and what they cost"), boosted views where organic
-    is not held, and candidates scored on cover frames only.
-12. **Atlas can draft next** (3.13): the brief for the next creator round, built from the
-    learnings and the patterns that led, and the rights requests for candidates without them.
-13. **Footer** with sources and "numbers come from Atlas as of {timestamp}", then the
-    artifact-standard footnote.
-
-Labels on the page are plain words only, never a field name. The mark and the footnote follow
-**Artifact standard**.
-
-When `reuse_scope` includes `creators`, what's missing adds one line: "Creator posts rarely
-carry measured watch time, because it comes from the account owner's insights. Most creator
-candidates score retention on the creator average or the proxy." Images follow **Creator card**, **Images**, page profile;
-frames follow **Content review**, **The page**, page mechanics. Load `artifact-design` and
-`dataviz` first, and apply `theme:brand` per **Theme**, **Applying the theme**.
+Labels on the page are plain words only, never a field name. Images follow **Creator card**,
+**Images**, page profile; frames follow **Content review**, **The page**, page mechanics. Put
+`theme:brand` in the data's `theme` when saved, per **Theme**, **Applying the theme**.
 
 ## Findings (ad reuse agent)
 

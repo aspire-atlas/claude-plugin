@@ -84,9 +84,11 @@ by its name without the `atlas-` prefix. The page shows it in plain words.
 | ------- | ------------- | ----- |
 | `kpis` | Up to twelve more KPI tiles, shape as `figures` | 3.24 |
 | `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to twelve `stats`, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it. The creator card's own parts are optional: the profile picture (`image`, embedded per `creator-card.md`, **Images**), the `score` ring (a fit or match score out of 100), up to twelve labelled `details` (brand safety, notes, points per criterion, contact route, fee), and up to three post `thumbs` | 3.7 |
-| `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, and an optional quote | 3.8 |
+| `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, and an optional quote. A ranked post adds its `badge` (F1), its `score` out of 100, its `group` (shown as a heading over the posts in it), and up to three `checks`, one per insight in their order: `ok` where it meets it, `warn` with the fix where it misses | 3.8 |
 | `verdict` | The `call`, its `status`, the `reason`, and the `checks` behind it | 3.25 |
 | `steps` | Dated plan steps: `when`, `what`, and `who` | 3.17 |
+| `storyboards` | One `cut` per ad: its `title`, the post it is cut from (`account`, `href`, one of `posts`), its `badge`, its `length` in seconds, whether a frame scan confirmed the timecodes (`scanned`), a `meta` line, its `beats` (each a `name`, `time`, `seconds`, one line of `text`, and a real frame `image` with its `alt`, an `insert` naming where the footage comes from, or neither for "No frame at this time"; the last may be the `end` card), and its edit `notes`. Optionally the beat `structure` every cut shares and the `specs` they share, shown once above the cuts | 3.9 |
+| `tests` | The test plan: how long each test `runs`, one row per test (its `name`, the one `variable`, the `cuts` in it, the `measure`, the `hypothesis`, and the `scale`, `fix`, and `stop` rules), and each measure defined once in `measures` | 3.15 |
 
 The repository keeps one complete example data file per template in
 `scripts/fixtures/page-templates/`.
@@ -103,6 +105,8 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `dates`: every date is a real date, `footer.updated` a real date and time.
 - `maybe-settle`: every Maybe carries its settle question.
 - `post-metrics`: a metric is shown or missing, never both.
+- `storyboard`: a cut's beats add up to its length; the post it is cut from is one of `sections.posts`, whose card shows its metrics; a beat holds a frame or an insert, never both; a frame has its `alt`; only the last beat is the end card.
+- `test-measures`: every test's measure is defined in `sections.tests.measures`.
 - `one-chart`: only the first insight carries a chart.
 - `chart-series`: a chart has at most six segment labels, so each keeps its own color.
 - `method-weights`: the weights add up to 100.
@@ -128,7 +132,7 @@ answer, plan steps follow the actions, and creators and posts are the evidence.
 | Template | For | Needs | Also allows |
 | -------- | --- | ----- | ----------- |
 | Readout | What happened in a period and what to do about it | Nothing beyond the parts | `kpis`, `posts` |
-| Shortlist | Ranked creators or posts, each with a verdict and its reason | `creators` or `posts` | `kpis` |
+| Shortlist | Ranked creators or posts, each with a verdict and its reason | `creators` or `posts` | `kpis`, `storyboards`, `tests` |
 | Verdict | One piece of work or one post, judged | `verdict` | `posts` |
 | Profile | One creator in full | Exactly one of `creators` | `kpis`, `posts` |
 | Plan | Dated steps toward one goal | `steps` | `creators`, `kpis` |
@@ -137,7 +141,10 @@ answer, plan steps follow the actions, and creators and posts are the evidence.
 A Shortlist groups its creators by verdict and shows the tally under the answer. The tally counts
 the cards on the page; `figures` give any counts that include creators folded into `evidence`. The groups are
 named To contact, Maybes, and Left out; a page whose groups mean something else (a standing pool,
-for example) names them in `groups`.
+for example) names them in `groups`. Ranked posts show under their own `group` headings, in the
+order the groups first appear. A Shortlist of posts to run as ads (ad reuse, P1) adds a storyboard
+per recommended ad and the test plan after the posts, so the reader sees the picks, how to cut
+them, and how to test them in that order.
 
 ## 5. Length budgets
 
@@ -212,9 +219,15 @@ fields hold, it fits the content in this way and never adds HTML to the printed 
   it (up to 20), with its metrics, the missing ones and their reason, its `usual`, a one-line
   `why`, and an exact `quote` when the flow quotes it. Embed its image with the **Images** snippet
   in `creator-card.md`, page profile, kind `thumb@96x171` (the post card's box), into `image`. A
-  frame still, timeline, or strip a flow used to draw goes; name the timestamps it showed in the
-  post's `why` or an evidence line. On a template that allows no posts, link the post from an
-  evidence line.
+  frame still, timeline, or strip a flow used to draw goes, except a storyboard; name the
+  timestamps it showed in the post's `why` or an evidence line. On a template that allows no
+  posts, link the post from an evidence line.
+- **Storyboards and the test plan.** A cut-down a flow recommends is a `sections.storyboards`
+  cut, with a real frame for every beat (embedded as the post's image is, kind `thumb@132x235`), an
+  insert tile where the post has no footage, and `scanned` false until a 1-second frame scan
+  confirms every timecode. A page that recommends paid spend carries `sections.tests` where the
+  template allows it. A cut list goes in evidence lines, one cut each, and rights in evidence lines,
+  one candidate each with its expiry.
 - **Paid label wording.** Follow `post-kinds.md`. The template has no `data-own` mark, so on a
   page its check reads (O1, O2, O3, I6, or with mention evidence) no field says "organic" or
   "unpaid" of posts beside a handle, the brand's own included: say "{brand}'s own posts", and

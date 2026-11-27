@@ -275,7 +275,19 @@
         },
         "usual": {"$ref": "#/$defs/text40", "description": "The views against the creator's usual, as \"3.1x her usual\"."},
         "why": {"$ref": "#/$defs/text200"},
-        "quote": {"$ref": "#/$defs/text280", "description": "Words from the post, quoted exactly."}
+        "quote": {"$ref": "#/$defs/text280", "description": "Words from the post, quoted exactly."},
+        "badge": {"$ref": "#/$defs/text40", "description": "The post's rank in its group, as F1 or B2."},
+        "score": {
+          "type": "object", "additionalProperties": false, "required": ["label", "value"],
+          "description": "The post's score out of 100, with a short label such as Hook score.",
+          "properties": {"label": {"$ref": "#/$defs/text40"}, "value": {"type": "integer", "minimum": 0, "maximum": 100}}
+        },
+        "group": {"$ref": "#/$defs/text40", "description": "The group the post is shown in, as Found or Briefed."},
+        "checks": {
+          "type": "array", "maxItems": 3, "description": "One line per insight, in the insights' order: ok where the post meets it, warn with the fix where it misses.",
+          "items": {"type": "object", "additionalProperties": false, "required": ["status", "text"],
+                    "properties": {"status": {"$ref": "#/$defs/status"}, "text": {"$ref": "#/$defs/text140"}}}
+        }
       }
     },
     "verdict": {
@@ -297,6 +309,74 @@
       "type": "object", "additionalProperties": false, "required": ["when", "what"],
       "properties": {"when": {"$ref": "#/$defs/text40"}, "what": {"$ref": "#/$defs/text200"}, "who": {"$ref": "#/$defs/text60"}}
     },
+    "beat": {
+      "type": "object", "additionalProperties": false, "required": ["name", "time", "seconds", "text"],
+      "properties": {
+        "name": {"$ref": "#/$defs/text40", "description": "The beat, as Hook or End card."},
+        "time": {"$ref": "#/$defs/text40", "description": "Its timecodes in the post, as 0:00 to 0:03, or +2s for an end card."},
+        "seconds": {"type": "number", "minimum": 0.1, "maximum": 120},
+        "text": {"$ref": "#/$defs/text140", "description": "What happens in the beat, in one line."},
+        "image": {"type": "string", "maxLength": 400000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$", "description": "A real frame from the post at this timecode."},
+        "alt": {"$ref": "#/$defs/text140", "description": "What the frame shows. Required with an image."},
+        "insert": {"$ref": "#/$defs/text140", "description": "Where the footage comes from when the post has none for this beat."},
+        "end": {"type": "boolean", "description": "The end card, the last beat."}
+      }
+    },
+    "storyboard": {
+      "type": "object", "additionalProperties": false, "required": ["title", "account", "href", "length", "scanned", "beats"],
+      "properties": {
+        "title": {"$ref": "#/$defs/text90", "description": "The cut, as Cut 1: 14 seconds from @makerjune's unboxing."},
+        "account": {"$ref": "#/$defs/account"},
+        "href": {"$ref": "#/$defs/link", "description": "The post it is cut from, one of sections.posts."},
+        "badge": {"$ref": "#/$defs/text40", "description": "The rank of the post it is cut from, as F1."},
+        "length": {"type": "number", "minimum": 1, "maximum": 120, "description": "The cut's length in seconds; the beats add up to it."},
+        "scanned": {"type": "boolean", "description": "true once a 1-second frame scan confirms every timecode. Until then the cut shows Draft timecodes."},
+        "meta": {"$ref": "#/$defs/text200", "description": "The hook line, date, pattern, and the tests the cut runs in."},
+        "beats": {"type": "array", "minItems": 2, "maxItems": 8, "items": {"$ref": "#/$defs/beat"}},
+        "notes": {"type": "array", "maxItems": 8, "description": "The edit notes, every fix from the post's checks among them.", "items": {"$ref": "#/$defs/text200"}}
+      }
+    },
+    "storyboards": {
+      "type": "object", "additionalProperties": false, "required": ["cuts"],
+      "properties": {
+        "structure": {
+          "type": "array", "minItems": 2, "maxItems": 8, "description": "The beats every cut shares, shown once above the cuts.",
+          "items": {"type": "object", "additionalProperties": false, "required": ["name", "time", "seconds"],
+                    "properties": {"name": {"$ref": "#/$defs/text40"}, "time": {"$ref": "#/$defs/text40"},
+                                   "seconds": {"type": "number", "minimum": 0.1, "maximum": 120}, "end": {"type": "boolean"}}}
+        },
+        "specs": {"type": "array", "maxItems": 6, "description": "The specs every cut shares: format, captions, timecode tolerance.", "items": {"$ref": "#/$defs/text140"}},
+        "cuts": {"type": "array", "minItems": 1, "maxItems": 12, "items": {"$ref": "#/$defs/storyboard"}}
+      }
+    },
+    "tests": {
+      "type": "object", "additionalProperties": false, "required": ["runs", "rows", "measures"],
+      "properties": {
+        "runs": {"$ref": "#/$defs/text40", "description": "How long each test runs before its call, as 7 days."},
+        "rows": {
+          "type": "array", "minItems": 1, "maxItems": 8,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["name", "variable", "cuts", "measure", "hypothesis", "scale", "fix", "stop"],
+            "properties": {
+              "name": {"$ref": "#/$defs/text40", "description": "The test's letter, as A."},
+              "variable": {"$ref": "#/$defs/text140", "description": "The one variable it changes."},
+              "cuts": {"$ref": "#/$defs/text80", "description": "The cuts or creators in it."},
+              "measure": {"$ref": "#/$defs/text60", "description": "What it is judged on, defined in measures."},
+              "hypothesis": {"$ref": "#/$defs/text200"},
+              "scale": {"$ref": "#/$defs/text140", "description": "The threshold that scales it."},
+              "fix": {"$ref": "#/$defs/text140", "description": "The range that fixes it, and the fix."},
+              "stop": {"$ref": "#/$defs/text140", "description": "The threshold that stops it."}
+            }
+          }
+        },
+        "measures": {
+          "type": "array", "minItems": 1, "maxItems": 6, "description": "Each measure the tests are judged on, defined once.",
+          "items": {"type": "object", "additionalProperties": false, "required": ["name", "means"],
+                    "properties": {"name": {"$ref": "#/$defs/text60"}, "means": {"$ref": "#/$defs/text200"}}}
+        }
+      }
+    },
     "sections": {
       "type": "object", "additionalProperties": false,
       "description": "The typed sections a template may add. page-templates.json says which each template needs and allows.",
@@ -305,7 +385,9 @@
         "creators": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"$ref": "#/$defs/creator"}},
         "posts": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/post"}},
         "verdict": {"$ref": "#/$defs/verdict"},
-        "steps": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/step"}}
+        "steps": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/step"}},
+        "storyboards": {"$ref": "#/$defs/storyboards"},
+        "tests": {"$ref": "#/$defs/tests"}
       }
     },
     "theme": {

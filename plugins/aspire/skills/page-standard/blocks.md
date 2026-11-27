@@ -1121,8 +1121,8 @@ the example lacked, so the rebuilt page passes a check the example did not.
 | Section menu | Page layout |
 | Footer notes and source line | The flow's footer and `artifact-standard.md` |
 
-**P1, which creator posts to run as ads and how to cut them** (plan; paid social and creative read
-it)
+**P1, which creator posts to run as ads and how to cut them** (shortlist; paid social and creative
+read it)
 
 | Example element | Block |
 | --------------- | ----- |

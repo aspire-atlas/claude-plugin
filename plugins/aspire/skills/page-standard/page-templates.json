@@ -3,7 +3,8 @@
   "description": "The six page templates. Each keeps one page order and adds the typed sections it needs. templates.md explains them; page-fill.md renders them. A length budget in screens covers the page from the top to the end of its decisions; the page check (R10) measures it.",
   "order": ["title", "answer", "insights", "actions", "decisions", "evidence", "method", "gaps", "drafts", "footer"],
   "screen": {"width": 1280, "height": 800},
-  "slots": {"kpis": "answer", "verdict": "answer", "steps": "actions", "creators": "evidence", "posts": "evidence"},
+  "slots": {"kpis": "answer", "verdict": "answer", "steps": "actions", "creators": "evidence", "posts": "evidence",
+            "storyboards": "evidence", "tests": "evidence"},
   "templates": {
     "readout": {
       "name": "Readout",
@@ -18,8 +19,8 @@
       "for": "Ranked creators or posts, each with a verdict and its reason.",
       "needsOne": ["creators", "posts"],
       "needs": [],
-      "allows": ["kpis", "creators", "posts"],
-      "length": {"default": {"screens": null, "growsWith": ["sections.creators", "sections.posts"]}},
+      "allows": ["kpis", "creators", "posts", "storyboards", "tests"],
+      "length": {"default": {"screens": null, "growsWith": ["sections.creators", "sections.posts", "sections.storyboards", "sections.tests"]}},
       "agents": ["creator-discovery", "creator-vetting", "ad-reuse", "camera-screen"]
     },
     "verdict": {

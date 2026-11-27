@@ -37,7 +37,7 @@ the skeleton and the blocks alone.
 | I4 | Plan | The influencer manager | Creator brief, campaign mode |
 | O1 | Readout | The social team | Weekly insights report, or the profile analyst for one account |
 | O3 | Readout, split | Marketing leadership | Market signal, leadership page |
-| P1 | Plan | Paid social, then creative | Ad reuse |
+| P1 | Shortlist | Paid social, then creative | Ad reuse |
 <!-- /examples -->
 
 ## Contents

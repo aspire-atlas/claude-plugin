@@ -47,6 +47,8 @@ VERDICTS = {"yes": ("pb-ok", "Yes", "To contact"), "maybe": ("pb-warn", "Maybe",
             "no": ("pb-bad", "No", "Left out")}
 CONFIDENCE = {"high": "pb-ok", "medium": "pb-warn", "low": "pb-bad"}
 CHECK_WORDS = {"ok": "Pass", "warn": "Fix", "bad": "Fail", "flat": "Not checked"}
+# A post's line per insight keeps its symbol in the text, so it reads without color.
+CHECK_MARKS = {"ok": "\u2713", "warn": "+", "bad": "\u2717", "flat": "Not checked"}
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 # Record ids the reader never sees: uuids and prefixed ids. Tool names come from page-check.md's TOOLS.
 INTERNAL = (re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", re.I),
@@ -203,10 +205,38 @@ def rules(data, templates, tools, phrases):
             if len(series) > CHART_SERIES:
                 errs.append(("chart-series", "insights[%d].chart" % i,
                              "a chart has at most %d segment labels, one color each" % CHART_SERIES))
+    post_links = {p["href"] for p in sec.get("posts", [])}
+    boards = sec.get("storyboards", {})
+    structure = boards.get("structure", [])
+    for j, b in enumerate(structure[:-1]):
+        if b.get("end"):
+            errs.append(("storyboard", "sections.storyboards.structure[%d].end" % j, "only the last beat is the end card"))
+    for i, cut in enumerate(boards.get("cuts", [])):
+        path = "sections.storyboards.cuts[%d]" % i
+        total = sum(b["seconds"] for b in cut["beats"])
+        if abs(total - cut["length"]) > 0.05:
+            errs.append(("storyboard", path + ".beats", "the beats add up to %s seconds, not the cut's %s" % (num(total), num(cut["length"]))))
+        if cut["href"] not in post_links:
+            errs.append(("storyboard", path + ".href", "the post it is cut from is one of sections.posts, whose card shows its metrics"))
+        for j, b in enumerate(cut["beats"]):
+            where = "%s.beats[%d]" % (path, j)
+            if "image" in b and "insert" in b:
+                errs.append(("storyboard", where, "a beat shows a frame from the post or an insert tile, never both"))
+            if "image" in b and "alt" not in b:
+                errs.append(("storyboard", where + ".alt", "a frame says what it shows"))
+            if b.get("end") and j != len(cut["beats"]) - 1:
+                errs.append(("storyboard", where + ".end", "only the last beat is the end card"))
+    tests = sec.get("tests")
+    if tests:
+        defined = {m["name"].strip().lower() for m in tests["measures"]}
+        for i, row in enumerate(tests["rows"]):
+            if row["measure"].strip().lower() not in defined:
+                errs.append(("test-measures", "sections.tests.rows[%d].measure" % i, "%s is not defined in sections.tests.measures" % row["measure"]))
     weights = data.get("method", {}).get("weights")
     if weights and sum(w["percent"] for w in weights) != 100:
         errs.append(("method-weights", "method.weights", "the weights add up to 100"))
-    for path, items in (("sections.creators", sec.get("creators", [])), ("sections.posts", sec.get("posts", []))):
+    for path, items in (("sections.creators", sec.get("creators", [])), ("sections.posts", sec.get("posts", [])),
+                        ("sections.storyboards.cuts", boards.get("cuts", []))):
         for i, item in enumerate(items):
             if item["account"] not in data["scope"]["accounts"]:
                 errs.append(("scope-accounts", "%s[%d].account" % (path, i), "%s is not in scope.accounts" % item["account"]))
@@ -588,17 +618,74 @@ def post(p):
             if key == "views" and "usual" in p:
                 shown += " (%s)" % e(p["usual"])
             stats.append('<span data-metric="%s">%s</span>' % (key, shown))
-    body = ['<p><a href="%s">%s on %s</a> <span class="pb-muted">%s</span></p>' % (e(p["href"]), e(name), network, e(p["postedAt"]))]
+    badge = (chip(p["badge"]) + " ") if "badge" in p else ""
+    body = ['<p>%s<a href="%s">%s on %s</a> <span class="pb-muted">%s</span></p>' % (badge, e(p["href"]), e(name), network, e(p["postedAt"]))]
+    if "score" in p:
+        sc = p["score"]
+        body.append('<p class="pb-stats"><span>%s <b>%d</b> out of 100</span></p>' % (e(sc["label"]), sc["value"]))
     if stats:
         body.append('<p class="pb-stats">%s</p>' % "".join(stats))
     body += ['<p class="pb-na">%s not available: %s</p>' % (dict(METRICS)[k], e(v)) for k, v in missing.items()]
     if "why" in p:
         body.append("<p>%s</p>" % e(p["why"]))
+    if p.get("checks"):
+        body.append('<ul class="pb-checks">%s</ul>' % "".join(
+            "<li>%s %s</li>" % (chip(CHECK_MARKS[c["status"]], "pb-" + c["status"]), e(c["text"])) for c in p["checks"]))
     if "quote" in p:
         body.append("<p data-quoted>&quot;%s&quot;</p>" % e(p["quote"]))
     img = ('<img src="%s" alt="%s" width="96" height="171">' % (p["image"], e(p.get("alt", "")))) if "image" in p else ""
     return ('<article class="pb-card pb-post" data-block="post" data-account="%s" data-post="%s"%s>%s<div class="pb-post-body">%s</div></article>'
             % (e(p["account"]), e(p["href"]), attr, img, "".join(body)))
+
+def flex(seconds):
+    return "%g" % seconds
+
+def beats_bar(beats, tall):
+    spans = "".join('<span%s style="flex:%s">%s</span>' % (' class="pb-end"' if b.get("end") else "", flex(b["seconds"]),
+                                                         ("%s, %s" % (e(b["name"]), e(b["time"]))) if tall else "") for b in beats)
+    said = ", ".join(num(b["seconds"]) for b in beats)
+    return ('<div class="pb-bar%s" role="img" aria-label="Beats: %s seconds">%s</div>'
+            % (" pb-bar-tall" if tall else "", e(said), spans))
+
+def board(cut):
+    name, network = handle(cut["account"])
+    frames = []
+    for b in cut["beats"]:
+        if "image" in b:
+            shot = '<img src="%s" alt="%s" width="132" height="235" decoding="async" loading="lazy">' % (b["image"], e(b["alt"]))
+        else:
+            shot = '<span class="pb-insert">%s</span>' % e(b.get("insert", "No frame at this time"))
+        frames.append('<li class="pb-frame">%s<span class="pb-tc">%s</span><span><b>%s.</b> %s</span></li>'
+                      % (shot, e(b["time"]), e(b["name"]), e(b["text"])))
+    draft = "" if cut["scanned"] else " " + chip("Draft timecodes", "pb-warn")
+    badge = (chip(cut["badge"]) + " ") if "badge" in cut else ""
+    meta = (' <span class="pb-muted">%s</span>' % e(cut["meta"])) if "meta" in cut else ""
+    notes = ('<ul class="pb-notes">%s</ul>' % "".join("<li>%s</li>" % e(n) for n in cut["notes"])) if cut.get("notes") else ""
+    return ('<article class="pb-card pb-board" data-account="%s" data-block="storyboard" data-scanned="%s">'
+            '<h4 class="pb-h">%s%s%s</h4><p><a href="%s">%s on %s</a>%s</p><ol class="pb-beats">%s</ol>%s%s</article>'
+            % (e(cut["account"]), "yes" if cut["scanned"] else "no", badge, e(cut["title"]), draft,
+               e(cut["href"]), e(name), network, meta, "".join(frames), beats_bar(cut["beats"], False), notes))
+
+def storyboards(sb):
+    parts = ['<h3 class="pb-h">How to cut them</h3>']
+    if sb.get("structure"):
+        parts.append(beats_bar(sb["structure"], True))
+    if sb.get("specs"):
+        parts.append('<div class="pb-grid">%s</div>' % "".join('<article class="pb-card"><p>%s</p></article>' % e(x) for x in sb["specs"]))
+    parts += [board(c) for c in sb["cuts"]]
+    return '<div class="pf-part" data-block="storyboards">%s</div>' % "".join(parts)
+
+def test_plan(t):
+    rows = "".join(
+        '<tr><td data-label="Test" class="pb-rank">%s</td><td data-label="One variable">%s</td><td data-label="Cuts">%s</td>'
+        '<td data-label="Judged on">%s</td><td data-label="Hypothesis">%s</td><td data-label="Rule after %s">%s %s<br>%s %s<br>%s %s</td></tr>'
+        % (e(r["name"]), e(r["variable"]), e(r["cuts"]), e(r["measure"]), e(r["hypothesis"]), e(t["runs"]),
+           chip("Scale", "pb-ok"), e(r["scale"]), chip("Fix", "pb-warn"), e(r["fix"]), chip("Stop", "pb-bad"), e(r["stop"]))
+        for r in t["rows"])
+    means = "".join('<p class="pb-muted">%s: %s</p>' % (e(m["name"]), e(m["means"])) for m in t["measures"])
+    return ('<section class="pb-card" data-block="test-plan"><h3 class="pb-h">How to test it</h3><table class="pb-table"><thead><tr>'
+            '<th>Test</th><th>One variable</th><th>Cuts</th><th>Judged on</th><th>Hypothesis</th><th>Rule after %s</th></tr></thead>'
+            '<tbody>%s</tbody></table>%s</section>' % (e(t["runs"]), rows, means))
 
 def evidence(data):
     sec, out = data.get("sections", {}), []
@@ -610,8 +697,18 @@ def evidence(data):
                 out.append('<h3 class="pb-h" id="%s">%s</h3><div class="pb-grid">%s</div>' % (k, e(group_name(data, k)), "".join(creator(c) for c in group)))
     elif creators:
         out.append('<div class="pb-grid">%s</div>' % "".join(creator(c) for c in creators))
-    if sec.get("posts"):
-        out.append('<div class="pb-grid">%s</div>' % "".join(post(p) for p in sec["posts"]))
+    posts = sec.get("posts", [])
+    groups = []
+    for p in posts:
+        if p.get("group") not in groups:
+            groups.append(p.get("group"))
+    for g in groups:
+        head = '<h3 class="pb-h">%s</h3>' % e(g) if g else ""
+        out.append('%s<div class="pb-grid">%s</div>' % (head, "".join(post(p) for p in posts if p.get("group") == g)))
+    if "storyboards" in sec:
+        out.append(storyboards(sec["storyboards"]))
+    if "tests" in sec:
+        out.append(test_plan(sec["tests"]))
     if data.get("evidence"):
         items = "".join('<li data-source="%s">%s %s</li>' % (e(v["source"]), ('<a href="%s">%s</a>' % (e(v["href"]), e(v["text"]))) if "href" in v else e(v["text"]), source_chip(v["source"]))
                         for v in data["evidence"])
