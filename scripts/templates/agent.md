@@ -96,7 +96,6 @@ If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), 
 
 {{PACKET_BLOCK}}
 
-
 ## Audit trail
 
 After everything else in your output, end with the audit trail block defined in

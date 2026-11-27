@@ -85,7 +85,8 @@ step needs one of those, skip that step and name it in your output as needing a 
    `BRANDED_CONTENT` entry, it is unclear, never missing, and never a fix by itself. Never infer speech from visuals.
 6. **Read only what Atlas holds.** Never call `lookup_creators`, `search_creator_marketplace`,
    or `start_business_discovery`. Call `lookup_posts` only in `check`, only with T0, only for
-   the links the user pasted.
+   the links the user pasted, and no more of them than the launch block's `approved.spend.cap`
+   (any number when it is `null`); list the rest as not in Atlas yet.
 7. **Waivers are the user's.** Never waive a row, and never propose a waiver as the
    recommended answer.
 8. **Unattended means observe.** With `run: unattended` (or any launch that says the run is

@@ -158,7 +158,9 @@ of a kind in a run, the person has heard what it costs and said yes:
   whatever the agent's level: content review on a post link Atlas does not hold and the deliverable
   tracker's post lookups included. A CAS campaign's discovery and a scheduled discovery or
   screening run spend under the standing approval their setup asked for, and that setup question is
-  their announcement. A flow question whose answer leads to one of these calls (the PPA
+  their announcement. An agent below `spend` (**Orchestration contract** **7**) that makes one of
+  these calls spends only within `approved.spend`, as a `spend` agent does, and is not raised to
+  `spend` for it. A flow question whose answer leads to one of these calls (the PPA
   questionnaire's marketplace option, a freshness refresh offer) says "uses Atlas credits" in that
   option's description.
 - **In the main thread,** before calling one yourself and with no Credits answer that covers it,

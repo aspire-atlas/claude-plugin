@@ -52,8 +52,9 @@ check.
    visuals. A cover image alone never passes a check that covers the whole clip: try every
    extractor in the reference's order before settling for the cover.
 3. **Fetch only what was named.** In `published` mode, read Atlas first. Call `lookup_posts`
-   only for the URL you were given, once, with `creatorDeepAnalysis` left `false`. The user
-   approved that fetch. Never call `lookup_creators`, `search_creator_marketplace`, or any
+   only for the URL you were given, once, with `creatorDeepAnalysis` left `false`, and only when
+   the launch block's `approved.spend.cap` is `null` or at least 1. With a cap of 0, say the post
+   is not in Atlas yet and review nothing. Never call `lookup_creators`, `search_creator_marketplace`, or any
    other discovery tool.
 4. **The verdict is advice; the call belongs to people.** Your verdict is a recommendation.
    The user's F1 answer is the decision, and it is saved next to yours. Save a lesson or a
