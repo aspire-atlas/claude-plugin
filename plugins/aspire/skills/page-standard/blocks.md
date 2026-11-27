@@ -201,7 +201,7 @@ The default tokens name the Atlas fonts. A page that keeps them loads them befor
 .pb-details dt{color:var(--muted)}
 .pb-details dd{margin:0;overflow-wrap:anywhere}
 .pb-thumbs{display:flex;gap:6px}
-.pb-thumbs a{flex:1 1 0;max-width:96px}
+.pb-thumbs a{flex:0 0 80px;max-width:80px}
 .pb-thumbs img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:calc(var(--radius,10px) - 4px);background:var(--bg)}
 .pb-stats{display:flex;flex-wrap:wrap;gap:4px 12px;font:.84rem var(--font-mono);color:var(--muted)}
 .pb-stats b{color:var(--text);font-weight:600}

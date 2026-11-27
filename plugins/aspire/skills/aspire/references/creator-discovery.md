@@ -391,10 +391,18 @@ mark and the footer (**Artifact standard**). What goes in each field:
     rejects come to more, fold in this order until they fit: the rejected creators, then the
     active list, then the lowest-ranked pool candidates. Each fold is one `evidence` line under
     200 characters: its label, the count, the number range for pool candidates ("#101 to #134"),
-    up to five handles (fewer when long handles would pass 200), and "+N more".
-  - On a lanes page (**Creator-ads mode**), each lane gets a share of the pool's cards in
-    proportion to its target, and each lane folds its own lowest-ranked candidates onto its own
-    `evidence` line, named by lane. Numbers stay the same, so a folded candidate keeps its number.
+    up to five handles (fewer when long handles would pass 200), "+N more", and, for pool
+    candidates, that the full list is in the chat reply.
+  - On a lanes page (**Creator-ads mode**), split the pool's cards across lanes in proportion to
+    their targets: give each lane the floor of its share, then hand the slots left over to the
+    lanes with the largest remainders, so the shares add up to exactly the cards available. Cap
+    each lane at the candidates it holds and pass any slot it can't use to the lanes that still
+    fold. Each lane folds its own lowest-ranked candidates, and all lanes' folds share one
+    `evidence` line ("Folded: Lane A #41 to #60, Lane B #95 to #120, full list in the chat
+    reply"). Numbers stay the same, so a folded candidate keeps its number.
+  - `evidence` holds at most ten lines. When the folds and **Since last run** come to more,
+    merge **Since last run** into one line ("Since last run: 12 added, 3 up, 2 down, 1 dormant,
+    4 decided").
   - `figures` always carry the full counts, and each lane's tile its full "{undecided} of
     {target}"; the tally under the answer counts only the cards shown. The run's output lists
     every folded pool candidate with its number (see the agent's output format), so each one can
@@ -513,7 +521,8 @@ For "Fill the shortlist" or "Show the current shortlist", launch `atlas-creator-
 `profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
-working). Relay its summary, the page link, and the numbered range the user can decide against.
+working). Relay its summary, the page link, the numbered range the user can decide against, and the
+agent's `Folded:` list when there is one, so every folded candidate's number reaches the user.
 Name the top candidates added this run in text, with their shortlist numbers and fit scores.
 Then offer each item on the agent's "Proposed criteria changes" line through its own Destructive
 tools confirmation (`supersede_calibration` on `campaign:{slug}-criteria`, gate

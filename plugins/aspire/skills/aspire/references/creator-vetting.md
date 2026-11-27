@@ -1006,9 +1006,9 @@ What goes in each field:
 - **`evidence`** holds at most ten lines of up to 200 characters, so each kind of evidence is one
   line that counts and names up to five handles across the line (fewer when long handles would
   pass 200), then "+N more" (the full list goes in the run summary), never one line per creator:
-  - the safety summary: the categories with a Flag or Fail and their counts, then up to five
-    handles across the whole line and "+N more" ("Alcohol 2, Profanity 4: @a, @b, @c, @d, @e
-    +1 more");
+  - the safety summary: each category with a Flag or Fail and its counts by kind, then up to five
+    distinct handles across the whole line and "+N more", where N counts the distinct handles
+    left ("Alcohol 2 flags, Profanity 1 fail, 3 flags: @a, @b, @c, @d, @e +1 more");
   - the handles not vetted, with their count and reasons in one line (a handle that could not be
     resolved is a Can't vet card instead);
   - the other brands named in the product posts (see the second insight);

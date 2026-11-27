@@ -314,8 +314,9 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
   artifact limit is 16MB). Over 8MB, in this order: two thumbnails per creator card instead
   of three; `post` cards past the first five as `thumb`; drop images from collapsed or
   secondary sections (rejected lists, passed checks); then rerun with `--quality=80`; then one
-  thumbnail per creator card; then no thumbnails past card 60. Never drop the image of a post
-  that is the subject of the page (the post under review, a top post).
+  thumbnail per creator card; then no thumbnails past card 60 (on a lanes page, past the first
+  60% of each lane's cards, so no lane loses all of its thumbnails). Never drop the image of a
+  post that is the subject of the page (the post under review, a top post).
 - A page filled from data (`skills/page-standard/templates.md`) draws card thumbnails in an 80 px
   square, so embed them as `thumb@80x80`, not at the 120 px default.
 - The snippet's output is large. Redirect it to a file in the scratch folder (`python3

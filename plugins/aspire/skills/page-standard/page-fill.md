@@ -65,7 +65,7 @@ PAGE_LIMIT = 10_000_000
 IMAGE_LIMIT = 8_000_000
 CUT_ORDER = ("cut to two thumbnails per creator card, then post images past the first five to thumbnails, "
              "then images in secondary sections, then embed again at quality 80, then one thumbnail per card, "
-             "then no thumbnails past card 60")
+             "then no thumbnails past card 60 (on a lanes page, past the first 60% of each lane's cards)")
 FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "glossary.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
