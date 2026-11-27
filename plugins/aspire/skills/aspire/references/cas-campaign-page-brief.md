@@ -902,7 +902,7 @@ Importing a brief fills the same parts through this table, with `source` `file` 
 
 Casting for every round, from one shared pool. The pool is what `atlas-creator-discovery` and
 `atlas-creator-vetting` write in creator-ads mode, unchanged: one discovery finding per creator
-for the campaign (`creator-discovery-{profile}-{slug}` prefix, `detail.lane`), the newest vetting
+for the campaign (`creator-discovery-{profile}-{slug}-{date}` records, `detail.lane`), the newest vetting
 finding for that creator and lane when the lane was screened, and the creator's newest `roster`
 finding per round once they have one. Nobody adds a creator from a sheet. Each creator shows once,
 with a chip per round they are in.

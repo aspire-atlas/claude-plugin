@@ -70,9 +70,9 @@ metrics to a row, never drop one.
    campaign is named; otherwise the defaults.
 2. The creators: the pasted handles, or, for a campaign, `search_insights` with `prefix` on
    `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}-`, newest first, paged.
-   Discovery adds the run's date, so keep only records whose `runKey` is that prefix followed by a
-   date and nothing else (`creator-discovery-{profile}-{slug}-{YYYY-MM-DD}`): the prefix also
-   matches a longer slug. Good: for `spring`, keep `...-spring-2026-11-20`. Bad: keep
+   Keep only records whose `runKey` is that prefix followed by a date and nothing else
+   (`creator-discovery-{profile}-{slug}-{YYYY-MM-DD}`), as **Creator discovery**, **State written
+   to Atlas** reads its pool: the prefix also matches a longer slug. Good: for `spring`, keep `...-spring-2026-11-20`. Bad: keep
    `...-spring-teachers-2026-11-20`, or drop every record because none is exactly the prefix. The newest record per `entityId` wins (**Creator
    discovery**, **State written to Atlas**). Then keep the creators whose newest record is an
    `action_item` (undecided); for a discovery campaign's shortlist, also keep `went_well`
@@ -158,7 +158,7 @@ every creator it would change at the next read (**In a CAS campaign**, **Who is 
 ## The output
 
 Per handle: `{handle, network, score | null, speech, toCamera, explainer, analysedPosts,
-totalAnalysed, weights, minPosts, maxPosts, scoredAt}`. `scoredAt` is the UTC time of the read.
+totalAnalysed, weights, minPosts, maxPosts, scoredAt}`. `scoredAt` is the UTC time Atlas was read for these shares.
 A handle Atlas holds no analysed video for is under the minimum like any other: it returns
 `analysedPosts` 0, every share and `score` `null`, and shows "Not enough analysed posts" with the
 note "No analysed videos in Atlas", never a 0%. It stays on the slate. Good: "@handle: Not enough
@@ -175,9 +175,11 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
   score (under the minimum when saved), and one whose `analysedPosts` is under the current
   `maxPosts` while its `totalAnalysed` is higher (`maxPosts` was raised). A stored read whose
   `analysedPosts` is over the current `maxPosts` (`maxPosts` was lowered) is read again too, so
-  every read on the slate covers the same number of videos. Any other creator whose
-  stored read gives another score under the current weights or minimum is re-scored from it,
-  with no new read. When the newest version has no read but an older version of the same
+  no read on the slate covers more than the current `maxPosts`. A `maxPosts` change that would
+  not change the read reads nothing again: 30 of 30 analysed videos, with `maxPosts` going from
+  100 to 150, stays as it is. Any other creator whose stored read was saved under other settings
+  (other `weights`, `minPosts` or `maxPosts`, or none stored) is re-scored from it, with no new
+  read, and saved with the current settings, so the stored settings are always the ones in force. When the newest version has no read but an older version of the same
   `entityId` has one, that read is carried forward (re-scored, or read again, by the same rules)
   instead of reading again.
 - **What is saved.** For each read, a new version of that discovery finding. Just before
@@ -193,7 +195,9 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
   was saved under. A re-read or re-score is saved only when it differs from the stored read in
   `analysedPosts`, `totalAnalysed`, a share, the score or a setting; an unchanged one is not saved
   again. Good: a creator with 0 analysed videos, read again with 0, keeps its one version. Bad: a
-  new identical version on every row 4 run. `idempotencyKey`
+  new identical version on every row 4 run. `scoredAt` is when the stored shares were read from
+  Atlas: a re-score keeps it, and an unchanged re-read keeps the earlier one, which the result
+  reports too. `idempotencyKey`
   `camera-screen-{entityId}-{writtenAt}`, the UTC time of the save, so a re-score is never
   dropped as a duplicate. The newest version still wins, so the read stays on the finding for the
   campaign page, `get_cas_selection` and the match score to read.

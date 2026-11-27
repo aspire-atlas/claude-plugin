@@ -1068,7 +1068,7 @@ discovery pool, with the lane as the criteria source. This is step 12's two paid
 persona fit, and paid track record. Everything above applies, with these changes.
 
 **Criteria source.** `campaign:{slug}-lane-{lane}` plus `campaign:{slug}-criteria`. The list
-is the lane's undecided candidates from discovery (`creator-discovery-{profile}-{slug}` prefix,
+is the lane's undecided candidates from discovery (`creator-discovery-{profile}-{slug}-{date}` records,
 `detail.lane`); the list name is "{campaign}: {lane}" and its slug `{slug}-{lane}`. R1 and R2
 are answered by the launch. R3 is skipped: the campaign's saved cadence approves lookups for its
 lanes (SKILL.md, **Guardrails**). R4 is answered by the CAS Run picker. R5 is skipped, and no

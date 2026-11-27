@@ -58,8 +58,8 @@ Read these before starting:
    lists, one post at a time. Before you score, check that each share's matching and non-matching
    posts add up to `analysedPosts`. Score per "Score and settings".
    **With `job` `cas-screen`**, follow "In a CAS campaign" instead of steps 5 to 7: read only the
-   lane's undecided creators with no read yet, read again a stored read with a `null` score or a
-   changed `maxPosts`, re-score stored reads the current settings change, and save each changed read as a
+   lane's undecided creators with no read yet, read again a stored read with a `null` score, or one a raised or lowered
+   `maxPosts` would change (the flow reference's **Who is read**), re-score stored reads saved under other settings, and save each changed read as a
    new version of the newest discovery finding, read again just before the save, when `approved`
    and `save` both carry the saves (otherwise return them as `proposals`), publish nothing, and return the reads in the result packet.
 5. **Check freshness** per page-standard's Data freshness rule
