@@ -45,7 +45,8 @@ approvals to deliver and to run discovery unattended.
 
 Ask the run question, then launch `atlas-creator-discovery` (run mode `interactive`, `job`
 `discover` or `view`, campaign slug, `recipient`). Relay the summary, page link, numbered range,
-and the top new candidates by name, in text (cards only on request). Recording decisions stays in the main thread:
+the top new candidates by name, and the agent's `Folded:` list when there is one, in text (cards
+only on request). Recording decisions stays in the main thread:
 one confirmation naming the rejected handles, then `append_insights`. Ask every question exactly
 as worded in the reference, at most four per call (**Guardrails**); the batch and decision
 confirmations confirm writes, S8 sends.
@@ -398,8 +399,10 @@ mark and the footer (**Artifact standard**). What goes in each field:
     lanes with the largest remainders, so the shares add up to exactly the cards available. Cap
     each lane at the candidates it holds and pass any slot it can't use to the lanes that still
     fold. Each lane folds its own lowest-ranked candidates, and all lanes' folds share one
-    `evidence` line ("Folded: Lane A #41 to #60, Lane B #95 to #120, full list in the chat
-    reply"). Numbers stay the same, so a folded candidate keeps its number.
+    `evidence` line under 200 characters ("Folded: Lane A #41 to #60, Lane B #95 to #120, full
+    list in the chat reply"). When naming each lane would pass 200, give counts only ("Folded:
+    5 lanes, 143 candidates, full list in the chat reply"). Numbers stay the same, so a folded
+    candidate keeps its number.
   - `evidence` holds at most ten lines. When the folds and **Since last run** come to more,
     merge **Since last run** into one line ("Since last run: 12 added, 3 up, 2 down, 1 dormant,
     4 decided").

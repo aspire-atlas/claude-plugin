@@ -95,7 +95,8 @@ the host draws it (`get_cas_selection`, `get_cas_rates`, `get_cas_briefs`, `get_
 message and runs here with its own confirmation; widgets never write.
 
 - `atlas-creator-discovery` (rows 2, 3): run mode `interactive`, `campaign_type` `creator-ads`,
-  the campaign slug, the lane, `recipient` `campaign`.
+  the campaign slug, the lane, `recipient` `campaign`. Relay its result as **Creator discovery**,
+  **Run** says, including the agent's `Folded:` list when there is one.
 - `atlas-camera-screen` (row 4): `job` `cas-screen`, the slug, the lane and `save`.
 - `atlas-creator-vetting` (row 4): the lane's pool, the lane as criteria, `recipient`
   `campaign` then `brand`.
