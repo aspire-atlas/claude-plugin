@@ -79,14 +79,14 @@ sending. The call holds up to four questions, in this order:
 2. **Scope**, header "Scope". Channels and dates, default "Instagram and TikTok, last 90 days
    (Recommended)", then "Instagram only", "TikTok only"; handles or post links go in the free text
    field. Skip it when the flow sets its own window or the ask gave one.
-3. **Credit cap**, header "Credits", only when the agent's level is `spend` (**7**) and this run
-   will spend: the one place a run's cost is stated. "This {work}, and each uses Atlas credits
+3. **Credit cap**, header "Credits", only when this run may make a call that uses credits
+   (**Quick mode**, section 5): the one place a run's cost is stated. "This {work}, and each uses Atlas credits
    ({balance} left). Cap it at {n} {unit}?{note}" Options: "Cap at {n} {unit} (Recommended)", the
    unit's none option, and "No cap", from the agent's spend unit:
 
    | Unit | Agents | `{work}` | `{n}` | `{note}` | None option |
    | ---- | ------ | -------- | ----- | -------- | ----------- |
-   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | `""` (empty) | "Fetch none, use what Atlas holds" |
+   | `fetches` | Every other agent | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | `""` (empty) | "Fetch none, use what Atlas holds" |
    | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it | " The handle lookups behind scoring also use credits and are not capped." | "Add none, re-score the shortlist" |
 
    Accounts behind their pace are not in `{n}`: their refresh is offered on its own (**Page
@@ -327,7 +327,7 @@ from a message that carries it (**11**).
   (`atlas-creator-vetting-20261029t140312-a3f9`); never made up. A relaunch of the same run (a
   `record` pass, the next mode, a storyline redraft, the build) keeps it. With no shell, leave it
   out; the agent takes the one `report_checkpoint` returns for `started`.
-- `depth`, `budget`, stopping a run, and the close-out's credits line: **Quick mode**.
+- `depth`, `budget`, and stopping a run: **Quick mode**.
 - `run` is `interactive` or `unattended`; `scope` is what the setup reply settled, or the flow's own
   window, without what the flow does not use.
 - `approved`, by level: `write` is the Save answer from the setup reply or the storyline call
@@ -525,7 +525,8 @@ whether to work with @handle and what it would cost. The page is here: {link}. B
 published, I moved the answer to the top. One check still fails: the page cannot say how she does
 on TikTok, because no TikTok account is linked. Two saves are waiting for your yes." Count the
 English read's Must fixes applied ("Three wording fixes were applied.") and name any not applied.
-Then ask the approvals (**7**) and questions, and offer `next` when named.
+End with the credits line (**Quick mode**, section 5). Then ask the approvals (**7**) and
+questions, and offer `next` when named.
 
 A repeat run opens with what changed, from the page's lead ("Since 12 Nov, two of the three steps
 are done and saves are up by half."). After an interactive run that published a page, keep the
@@ -534,10 +535,10 @@ the two open steps, so the next run will ask about them."), or that nothing was 
 
 ## 11. The block every agent carries
 
-Every agent file carries two passages verbatim: the packet block, under `## Orchestration
-contract`, and the checkpoint paragraph, right after its step paragraph. They live in
-`skills/aspire/agent-block.md`, which no run loads; copy them from there, and change their
-wording only there. `scripts/check-orchestration.sh` fails when an agent's copy differs.
+Every agent file carries three passages verbatim: the run depth block, first, the packet block,
+and the checkpoint paragraph. `skills/aspire/agent-block.md`, which no run loads, holds them and
+says where each goes; copy them from there, and change them only there.
+`scripts/check-orchestration.sh` fails when a copy differs.
 
 ## 12. Cards after a search reply
 

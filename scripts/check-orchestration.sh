@@ -14,7 +14,7 @@
 #   - every agent carries the checkpoint paragraph (section 11, kept in skills/aspire/agent-block.md)
 #     exactly once, verbatim
 #   - every agent carries the run depth block (skills/aspire/agent-block.md) verbatim, under
-#     '## Run depth and limits'
+#     '## Run depth and limits', its first section
 #   - every agent has exactly one row in references/quick-mode.md section 6 (personas), with
 #     personas from influencer, paid, and organic, and the agents marked quick there are exactly the
 #     ones its section 1 lists
@@ -83,6 +83,8 @@ for p in $(plugin_names); do
     [ "$mine" = "$canon" ] || err "$p: $name's Orchestration contract block differs from the one in skills/aspire/agent-block.md"
     mineb=$(awk '/^## Run depth and limits$/{f=1;next} f&&/^## /{f=0} f' "$f" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}')
     [ "$mineb" = "$budget" ] || err "$p: $name's '## Run depth and limits' block is missing or differs from the one in skills/aspire/agent-block.md"
+    first=$(awk 'NR>1&&/^---$/{f=1;next} f&&NF{print;exit}' "$f")
+    [ "$first" = "## Run depth and limits" ] || err "$p: $name's first section after the frontmatter is '$first'; want '## Run depth and limits'"
     n=$(awk -F'|' -v a="$name" '$1==a' <<<"$personas" | wc -l | tr -d ' ')
     [ "$n" = 1 ] || err "$p: $name has $n rows in the personas table (quick-mode.md, section 6); want 1"
     n=$(grep -cxF -- "$ckpt" "$f" || true)

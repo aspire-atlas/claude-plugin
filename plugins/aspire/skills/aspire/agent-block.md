@@ -1,7 +1,7 @@
 # The block every agent carries
 
 Section **11** of the orchestration contract (`references/orchestration.md`). No run loads this
-file: it holds the two passages every agent file copies verbatim, and `scripts/check-orchestration.sh`
+file: it holds the three passages every agent file copies verbatim, and `scripts/check-orchestration.sh`
 and `scripts/new-agent.sh` read them from here. Bold numbers in the passages are sections of the
 orchestration contract.
 
@@ -37,8 +37,8 @@ when one lacks it or differs. Change the wording here only.
 Report the run to Atlas analytics with `report_checkpoint`: it changes no Atlas data, needs no confirmation, and runs in unattended runs too. Use the launch block's `runId` when its name part is your name (Atlas refuses a `runId` whose name part differs from `agent`), and keep it on a relaunch. If there is none, or it names another agent, mint one before your first Atlas call: your agent name, the UTC time from `date -u +%Y%m%dt%H%M%S`, and the output of `openssl rand -hex 2`, joined by hyphens (`atlas-creator-vetting-20261029t140312-a3f9`); never make up the suffix. With no shell, send `started` without `runId` and use the `runId` its result returns. Every call carries `runId`, `agent` (your name), `pass` (your `pass` input, such as `propose` or `record`, when you take one; otherwise the launch block's `mode` with everything but its letters removed, so `follow-up` is `followup` and `creator-ads` is `creatorads`, or `single` when it is `run`; 3 to 20 letters), `kind: "checkpoint"`, `asProfileId` when you have one, `unattended: true` in an unattended run, and a `status`: `started` once per pass, right after reading the brief, and never again in that pass; `step_done` each time a step of your plan (the 3 to 8 steps in the paragraph above) finishes, with `step: {"index": n, "total": m}`, where `m` is your plan's step count and `n` counts from 1 to `m` in order, so a pass that finishes has sent `m` of them, one per step; `gate` once per gate id this file names, with that `gate` id and its `counts: {"proposed": n}`, when you return those proposals for a person to decide (if this file names no gate id, send no `gate`); `published` after a page publishes; and `finished`, `failed`, or `cancelled` at the end. Send only ids, numbers, and these words: never step names, handles, brand names, or other text. If the tool is absent or a call is refused, send no more checkpoints this run, carry on, and never mention it to the user.
 <!-- /checkpoint-block -->
 
-Every agent file also carries the block below verbatim, under `## Run depth and limits`, right
-after its `## Orchestration contract` section. `scripts/check-orchestration.sh` fails when one
+Every agent file also carries the block below verbatim, under `## Run depth and limits`, as its
+first section, right after the frontmatter, so it is read before any reading list. `scripts/check-orchestration.sh` fails when one
 lacks it or differs, and `scripts/new-agent.sh` copies it. Change the wording here only.
 
 <!-- budget-block -->

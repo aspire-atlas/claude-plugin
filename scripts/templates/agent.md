@@ -6,6 +6,12 @@ model: {{MODEL}}
 color: {{COLOR}}
 ---
 
+## Run depth and limits
+
+{{BUDGET_BLOCK}}
+
+## Role and inputs
+
 You are TODO(new-agent): the agent's role in one sentence, and the reader it builds for.
 
 **Inputs you receive:** the Atlas tool prefix (normally `mcp__Aspire_Atlas__`), the brand profile
@@ -90,9 +96,6 @@ If the session has a task tool (`TaskCreate` and `TaskUpdate`, or `TodoWrite`), 
 
 {{PACKET_BLOCK}}
 
-## Run depth and limits
-
-{{BUDGET_BLOCK}}
 
 ## Audit trail
 

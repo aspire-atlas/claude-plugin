@@ -22,7 +22,8 @@ of this skill; `SKILL.md`'s **Sections** index names its file.
 Each row says what the quick answer holds, what the full run adds, and the setup items that would
 help most, in order. The agent names the first one the brand does not have yet, and none when it
 has them all. A quick run never needs that setup: with none saved, it works from the brand's
-summary and brand red lines (`get_brand_context`; **Atlas tools**, Calibration kinds) and says so in one line.
+summary and brand red lines (`get_brand_context`; **Atlas tools**, Calibration kinds) and says so
+in one line.
 
 | Agent | The quick answer | The full run adds | Setup that helps most |
 | ----- | ---------------- | ----------------- | --------------------- |
@@ -30,13 +31,13 @@ summary and brand red lines (`get_brand_context`; **Atlas tools**, Calibration k
 | `atlas-creator-vetting` | Approve, Maybe, or Reject for up to 12 named handles Atlas holds, one reason each; handles it does not hold are listed as not checked | Every handle fetched and vetted, a full brand safety review, a page, saved recommendations | Saved vetting criteria; brand red lines |
 | `atlas-creator-profile` | One creator: the fit call, followers, median views and engagement, the top post, any safety flag, and the fee when a rate card is saved | The full profile page: audience, top and lowest posts, sentiment, peers, fees per format | A fee rate card; a linked brand account |
 | `atlas-creator-brief` | An outline: three content pushes (format, angle, a target from the account's medians) and up to 6 held creators who could make them | The full brief page with deliverables, guardrails, priced creators, and a timeline | A linked brand account; a saved brand voice |
-| `atlas-ad-reuse` | Up to 12 held posts ranked on the hook signals Atlas already has, each with its format and why | Every post scored and tagged, a cut list with timestamps and rights status, a page | A linked Meta ad account; rights on record |
+| `atlas-ad-reuse` | Up to 12 held posts ranked on views against the author's followers and the author's hook rate, each with its format and why (extra fields: `author.followersCount`; creators `instagram.reelsHookRate`) | Every post scored and tagged, a cut list with timestamps and rights status, a page | A linked Meta ad account; rights on record |
 | `atlas-content-review` | Go or no-go on one held post against the brand's red lines and the brief named, with up to 5 issues | Every check with evidence, creator-ready edit notes, a page, saved review lessons | A saved content brief; review lessons |
 | `atlas-post-analysis` | One held post: reach and engagement against the account's median, brands on screen, and brand safety, from Atlas's analysis | A refetch, frame-by-frame timings, every profanity instance, reuse clearance, a page | Brand red lines; a linked brand account |
 | `atlas-content-library` | Up to 12 held posts cleared for ads, from the rights and deal usage on record, with their expiry | The whole library page with filters, the expiring and worth-requesting lists, alerts | Rights on record; a saved influencer program |
 | `atlas-market-signal` | Share of voice against up to 3 saved competitors over the last 30 days, and up to 6 comparison posts | Feature parity, friction, framing, the strongest openings, a page, delivery to Slack or email | Saved competitors; market signal setup |
 | `atlas-profile-analyst` | An account review: cadence, engagement against followers, the top 3 posts and what they share, one push for next week | Competitor benchmarks on rates, three dated pushes with targets, a page, saved insights | A linked Instagram or TikTok account; saved competitors |
-| `atlas-ppa-pitch` | An outline only: up to 3 persona lanes per product and up to 4 held creators per lane, with hook rate and median views | The 16:9 casting deck, variants, schedule, rights package, investment, and exports | The PPA questionnaire's products and budget; a linked Meta ad account |
+| `atlas-ppa-pitch` | An outline only: up to 3 persona lanes per product and up to 4 held creators per lane, with hook rate and median views (extra field: creators `instagram.reelsHookRate`) | The 16:9 casting deck, variants, schedule, rights package, investment, and exports | The PPA questionnaire's products and budget; a linked Meta ad account |
 
 An agent with no row here has no quick mode. A quick launch of one runs in full.
 
@@ -58,12 +59,14 @@ instruction to publish, save, or ask.
 3. **Fields.** Creators: `fields: ["username"]` (the card fields come back on every hit). Posts:
    `["externalId", "url", "postedAt", "mediaKind", "text", "likeCount", "commentCount",
    "viewCount", "author.username"]`, plus `analysis.brandSafety` or
-   `analysis.commercialAnalysis.featuredBrands` only when the row's answer needs it. `limit` 12 or
-   less, never 0 without `aggs`, and never a cursor: one page is the quick answer.
-4. **Budget.** At most `budget.calls` tool calls (8) and `budget.minutes` minutes (3). Every tool
-   call counts except `ToolSearch`, `report_checkpoint`, reading this file, and `date -u +%s` to
-   read the clock, which you do once at the start and once before each call after the fifth. At the
-   limit, make no more calls and answer from what you hold.
+   `analysis.commercialAnalysis.featuredBrands` only when the row's answer needs it, and any extra
+   field your row names. `limit` 12 or less, never 0 without `aggs`, and never a cursor: one page
+   is the quick answer.
+4. **Budget.** At most `budget.calls` tool calls (8) and `budget.minutes` minutes (3). Skip the
+   progress steps (no task list and no `aspire_step`). Every tool call counts except `ToolSearch`,
+   `report_checkpoint`, reading this file, and `date -u +%s` to read the clock, which you do once
+   at the start and once before each call after the fifth. At the limit, make no more calls and
+   answer from what you hold.
 5. **Answer in chat.** No page, no file, no saves. Open with the answer in one sentence, then up to
    12 compact cards, one per creator or post, in the order that matters for the ask:
 
@@ -88,11 +91,13 @@ instruction to publish, save, or ask.
 When `depth` is `full` (or left out), each pass of the run (a `propose`, `record`, `draft`,
 `build`, or single pass) stops at `budget.calls` tool calls (40) or `budget.minutes` minutes (15),
 whichever comes first, counted as in **2**, step 4, with the clock read at the start and every 10
-calls after it.
+calls after it. Here the count also leaves out reading this plugin's own files and the progress
+steps (the task list or `aspire_step`), so the limit counts the work, not the instructions.
 
-1. **At the limit, stop reading.** Make no new Atlas reads and start no new step. You may still
-   make up to 4 more calls to finish what you hold: build and publish the page, or return the
-   packet. Never start a fetch, a discovery search, or a save after the limit.
+1. **At the limit, stop reading.** Make no new Atlas call and start no new step of your plan. Then
+   build from what you hold: the page standard's build steps (writing the page, its checks, and
+   publishing) still run once, and so does the packet. Never start a fetch, a discovery search, or
+   a save after the limit.
 2. **Say it is partial.** A page you publish opens its lead with one sentence: "This is a partial
    result: the run stopped at its {40-call or 15-minute} limit before it read {what is missing}."
    The chat summary starts with the same sentence.
@@ -108,11 +113,15 @@ calls after it.
 
 - the person asks for a quick look, a first pass, or a fast answer, or types `/aspire:aspire
   quick {ask}`; or
-- it is the first agent run of this session and the flow has no `lastrun:` record, so the
-  person has not run it before. The setup reply's Heard line says "a quick first look in chat, about 3
+- it is the first agent run of this session and the flow has no `lastrun:` record, so the person
+  has not run it before. The setup reply's Heard line says "a quick first look in chat, about 3
   minutes" and offers "Run the full version instead" as its second option.
 
-Everything else, and every unattended run, is `full`.
+Everything else is `full`: every unattended run, onboarding's first insights (Phase 6), and any
+launch that carries an approval (a save, a send, a credits cap, or a refresh).
+
+Launch a quick run with `model` `sonnet` unless the person named a model for it, whatever
+**Model tiers** says, so it fits its 3 minutes.
 
 **A quick run needs no setup.** It skips the flow's Setup step and its own questions, except what
 the agent cannot run without: the handle, the list of handles, or the post link. The setup reply
@@ -122,10 +131,9 @@ you to approve nothing." `fullMinutes` is the full run's time estimate (**Orches
 contract** **2**).
 
 **The launch block.** Quick: `"depth": "quick", "budget": {"calls": 8, "minutes": 3,
-"fullMinutes": "{estimate}"}`. Full: `"depth": "full", "budget": {"calls": 40, "minutes": 15,
-"fullMinutes": null}`. Never raise a limit; a person who wants more answers the packet's "Run
-the rest" question, which launches a new pass with the same limits and what is missing as its
-scope.
+"fullMinutes": "{estimate}"}`. Full: `"depth": "full", "budget": {"calls": 40, "minutes": 15}`.
+Never raise a limit; a person who wants more answers the packet's "Run the rest" question,
+which launches a new pass with the same limits and what is missing as its scope.
 
 **After a quick run** relay its answer and its full-version offer as written, then ask with
 `AskUserQuestion`, header "Full run": "Run the full version?" Options "Run the full version
@@ -146,7 +154,11 @@ and `lookup_creators` or `lookup_posts` for a handle or post Atlas does not hold
 of a kind in a run, the person has heard what it costs and said yes:
 
 - **In a launch,** the Credits question (**Orchestration contract** **2**) is that yes, and the
-  agent never goes past its cap. A flow question whose answer leads to one of these calls (the PPA
+  agent never goes past its cap. It is asked for every run that may make one of these calls,
+  whatever the agent's level: content review on a post link Atlas does not hold and the deliverable
+  tracker's post lookups included. A CAS campaign's discovery and a scheduled discovery or
+  screening run spend under the standing approval their setup asked for, and that setup question is
+  their announcement. A flow question whose answer leads to one of these calls (the PPA
   questionnaire's marketplace option, a freshness refresh offer) says "uses Atlas credits" in that
   option's description.
 - **In the main thread,** before calling one yourself and with no Credits answer that covers it,
@@ -163,10 +175,11 @@ used: none." A quick run spends nothing and has no such line.
 
 ## 6. Personas
 
-Which of the three personas (**Orchestration contract** **1**, step 1: `influencer` is `influencer-manager`, `paid` is
-`paid-social-manager`, `organic` is `organic-social-manager`) each agent serves, and whether it
-has a quick mode (section 1). **List agents** shows the asker's agents first, and
-a first run offers a quick look from one of them. A persona never limits who may run an agent.
+Which of the three personas (**Orchestration contract** **1**, step 1: `influencer` is
+`influencer-manager`, `paid` is `paid-social-manager`, `organic` is `organic-social-manager`) each
+agent serves, and whether it has a quick mode (section 1). **List agents** shows the asker's agents
+first, and a first run offers a quick look from one of them. A persona never limits who may run an
+agent.
 
 | Agent | Personas | Quick mode |
 | ----- | -------- | ---------- |
