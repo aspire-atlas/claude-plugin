@@ -387,9 +387,13 @@ mark and the footer (**Artifact standard**). What goes in each field:
     to contact. Rank the pool by fit score inside its tier, with `group` "#{number} · {tier}"
     (`Added by team` for `manual`), and number it from 1 across the whole shortlist, stable for
     the run, because those numbers are what the user replies with.
-  - The page holds at most 60 cards. When the active list, pool, and rejects come to more, the
-    rejected creators become one `evidence` line with their count and handles, then the active
-    list does the same, so the whole pool always shows as cards.
+  - The page holds at most 100 cards, the pool's largest target. When the active list, pool, and
+    rejects come to more (a lanes campaign keeps one pool per lane on one page), fold in this
+    order until they fit: the rejected creators, then the active list, then the lowest-ranked
+    pool candidates past card 100, each as one `evidence` line with its count, up to five
+    handles, and "+N more". Numbers stay the same, so a folded candidate keeps its number.
+    `figures` always carry the full counts; the tally under the answer counts only the cards
+    shown.
   - `score` is the fit score (`label` "Fit"). `reason` names the strongest evidence (a lift as
     "3.0× usual views"). `checks` gives each check's mark. A Maybe's `settle` is the check that
     would decide it.
@@ -406,7 +410,8 @@ mark and the footer (**Artifact standard**). What goes in each field:
     before quality.
 - **`evidence`**: **Since last run**, one line each for added, re-scored up or down, went
   dormant, and decided. "No change" is a valid line.
-- **`method`**: the components and weights as `weights`, and at most six `notes`: the saved
+- **`method`**: the components and weights as `weights`, and at most six `notes` of up to 600
+  characters each: the saved
   criteria in plain words; the criteria map (each criterion's words, component, measure, and
   points at Met; the exclusions and the criteria posts can't show); the credit rules ("Met 1,
   Partly met ½, Not met 0; posts counted over each candidate's last 90 days, newest 50"); the

@@ -1,6 +1,7 @@
 {
   "version": 1,
   "template": "shortlist",
+  "groups": {"no": "Left out this time"},
   "example": true,
   "title": "Which creators should we contact for the holiday launch?",
   "answer": "Contact 3 of the 6 creators reviewed this week, before the launch on Dec 7.",

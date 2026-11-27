@@ -976,7 +976,8 @@ What goes in each field:
   loop**) is given in chat, never on the page.
 - **`sections.creators`**, one card per creator (**Creator card**, **Data: what fills each
   section**), ranked by fit score inside its verdict and numbered from 1 across the whole page in
-  the order shown, because those numbers are what the user replies with:
+  the order shown, because those numbers are what the user replies with. A run vets at most 100
+  creators and the page holds 100 cards, so every creator vetted is a card:
   - Approve is `verdict` `yes`, Maybe `maybe`, and Reject and Can't vet are `no`. `group` is
     "#{number}", then the audience when the criteria name audiences, then "Can't vet" for a
     creator too thin to check. A Maybe that only fills a gap has `reason` "Backup: take if
@@ -1002,10 +1003,11 @@ What goes in each field:
     card**, **Images**, page profile. A Reject or Can't vet card carries neither. On a large list
     cut thumbnails per card before quality. Visual check stills are not repeated on the page.
 - **`sections.posts`**: the example posts the insights name, linked, with their thumbnails.
-- **`evidence`** holds at most ten lines, so each kind of evidence is one line that counts and
-  names, never one line per creator:
-  - the safety summary: each category with a Flag or Fail, its count, and the handles ("Alcohol:
-    2 flags, @a, @b");
+- **`evidence`** holds at most ten lines of up to 200 characters, so each kind of evidence is one
+  line that counts and names up to five handles, then "+N more" (the full list goes in the run
+  summary), never one line per creator:
+  - the safety summary: the categories with a Flag or Fail, each with its count and handles
+    ("Alcohol: 2 flags, @a, @b");
   - the handles not vetted, with their count and reasons in one line (a handle that could not be
     resolved is a Can't vet card instead);
   - the other brands named in the product posts (see the second insight);
@@ -1014,7 +1016,8 @@ What goes in each field:
     with its reason), and one line saying the reads are approximate: "the agent looked at frames
     from up to three videos per creator. Confirm by eye before you rely on one", with the
     definition used and, for a free-text check, that it is less reliable and why.
-- **`method`**: the fit score's components and weights as `weights`, and at most six `notes`:
+- **`method`**: the fit score's components and weights as `weights`, and at most six `notes` of up
+  to 600 characters each:
   1. what we look for in a {product} creator: each check with the finding it comes from, and any
      check tagged "Brief" and why;
   2. the criteria map and the credit rules ("Met 1, Partly met ½, Not met 0; posts counted over

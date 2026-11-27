@@ -133,7 +133,8 @@ answer, plan steps follow the actions, and creators and posts are the evidence.
 | Plan | Dated steps toward one goal | `steps` | `creators`, `kpis` |
 | Dashboard | A standing page that tracks a program, its money, or its content | `kpis` | `creators`, `posts`, `steps` |
 
-A Shortlist groups its creators by verdict and shows the tally under the answer. The groups are
+A Shortlist groups its creators by verdict and shows the tally under the answer. The tally counts
+the cards on the page; `figures` give any counts that include creators folded into `evidence`. The groups are
 named To contact, Maybes, and Left out; a page whose groups mean something else (a standing pool,
 for example) names them in `groups`.
 
