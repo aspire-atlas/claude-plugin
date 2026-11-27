@@ -45,7 +45,8 @@ approvals to deliver and to run discovery unattended.
 
 Ask the run question, then launch `atlas-creator-discovery` (run mode `interactive`, `job`
 `discover` or `view`, campaign slug, `recipient`). Relay the summary, page link, numbered range,
-and the top new candidates by name, in text (cards only on request). Recording decisions stays in the main thread:
+the top new candidates by name, and the agent's `Folded:` list when there is one, in text (cards
+only on request). Recording decisions stays in the main thread:
 one confirmation naming the rejected handles, then `append_insights`. Ask every question exactly
 as worded in the reference, at most four per call (**Guardrails**); the batch and decision
 confirmations confirm writes, S8 sends.
@@ -142,7 +143,7 @@ actions**). These carry `tier` `manual` and `source` `creator card`.
 - Added as a candidate (`action_item`, undecided): the shortlist shows them in their own
   group, **Added by the team**, before tier 1, because a person chose them. The next run
   scores them like any other undecided candidate and never drops them for being unscored.
-  Until then they have no `fitScore`: no fit ring, a "Not scored yet" note in `{DETAILS}`, and
+  Until then they have no `fitScore`: no `score`, a "Not scored yet" line in `details`, and
   they sort after the scored ones in their group. They are numbered with everyone else.
 - A candidate the campaign already rejected cannot be added as a candidate, only accepted.
 
@@ -193,7 +194,7 @@ refilling the shortlist with creators like the ones already delivering.
 3. Read marketplace results through `search_creators` once they land (1 to 3 minutes after
    each network's job completes, per **Creator brief**, **Atlas quirks**).
    Record `source` `lookalike of @{seed}` and `detail.seed` on each candidate; the card's
-   `{DETAILS}` names the seed with the source, per the card's **Badges** rule. A lookalike is scored like any other candidate: resemblance earns
+   the card's `details` name the seed with the source, per the card's **Badges** rule. A lookalike is scored like any other candidate: resemblance earns
    no points of its own.
 
 **Marketplace search.** Follow **Creator brief**, **Atlas quirks**, Marketplace search, for
@@ -359,58 +360,82 @@ One page per campaign, republished to the same path every run so the link stays 
 the working list behind question **I1** ("Which creators should we contact for this launch, and
 why?"). The page that answers I1 is the vetting slate built from this pool
 (**Creator vetting**, **The page**), so the result packet's `next` names the vetting agent
-whenever undecided candidates are ready to vet. Build this page from the page blocks
-(`skills/page-standard/blocks.md`). Sections in order:
+whenever undecided candidates are ready to vet.
 
-1. **Header** (3.1, 3.2): brand, campaign name, network chips with the creators found per
-   platform, pool counts (undecided / accepted / rejected against target), run timestamp, a
-   "Prepared for" chip fed by `recipient` (**Recipient lens**), and the animated mark at the
-   top right.
-2. **Answer** (3.3), written last: where the pool stands and what to do with it ("50 in the
-   pool, 12 new this run. Vet the top 20 next."), then **Decisions** (3.5): the candidates to
-   accept or reject, by number, and each proposed change to the criteria with the finding behind
-   it, or "Nothing needs approval" when the pool holds no new candidates and there is no
-   proposal.
-   Then **Next steps** (3.6), its own section: which numbers to vet next and by when, and any
-   tier that ran dry with what would refill it.
-3. **What people are doing well with {product}**, **Where people are having challenges**, and
-   **What this means for picking creators** (3.4, three insight cards, each with its chart or
-   table as the vetting page has them), then **What we look for in a {product} creator**: the
-   checks with their finding tags, per **The findings behind the shortlist**.
-4. **Since last run**: added, re-scored up or down, went dormant, decided. One line each;
-   "no change" is a valid line.
-5. **Active list**: accepted creators as creator cards, so the working set is visible first.
-6. **Shortlist**: the undecided pool, grouped by tier, ranked by fit score inside it.
-   Numbered from 1 across the whole shortlist, stable for the run, because those numbers are
-   what the user replies with. Each candidate is a creator card (**Creator card**): the fit
-   score in the ring; flow chips `#{number}` and the tier (`Added by team` for `manual`), then
-   the card's own badges; safety flags in the brand safety tile and every other risk flag under
-   "Notes" in `{DETAILS}`, per the card's **Brand safety** rule; evidence posts first in the
-   thumbnails. `{DETAILS}` also holds each check's mark with the post or number behind it (a
-   lift as "3.0× usual views"), the points per criterion as `c1 Met 15 · c2 Partly 7.5 (2 of 31
-   posts)`, each count linked to its posts, as on the vetting card (**Scoring**), the
-   source, the contact route if known, and the estimated fee from the fee calculator
-   (**Fee calculator**, **Applying the rates**) on the campaign's platforms: "Est. fee {open} to {max},
-   target {target}" (marked "est. from engagement" when the calculator estimated the views), or nothing when it gives no price. The page footer carries the rate
-   label once.
-7. **Rejected this cycle**: collapsed list of handles with the reason recorded, so a
-   decision is auditable.
-8. **Criteria and scoring** (3.11): the saved criteria in plain words, the components and
-   weights, the criteria map as a table (each criterion's id, words, component, measure, and
-   points at Met; the exclusions and the criteria posts can't show listed apart; the components
-   on their defaults named, and the scaling when a component had no criterion), the credit rules
-   in one line ("Met 1, Partly met ½, Not met 0; posts counted over each candidate's last 90 days,
-   newest 50"), the map's date and whether this run reused or rebuilt it, and the platform counts
-   again, so a reader can see what "fit" meant. A creator-ads page shows the match score's
-   factors instead.
-9. **Footer**: sources, a note that images are a snapshot, "numbers come from Atlas as of {timestamp}", then the artifact-standard footnote. The mark and the footnote follow **Artifact standard**.
+The page uses the **Shortlist** template. Return its page data and fill it per
+`skills/page-standard/templates.md`; write no HTML. The template sets the order, the blocks, the
+mark and the footer (**Artifact standard**). What goes in each field:
 
-More than 12 candidates means a chart leads the shortlist: fit score by tier, or follower
-count against engagement rate with the pool plotted. Embed every image with the snippet in
-**Creator card**, **Images**, page profile, and keep the images under 8MB and the page under
-10MB. A large pool cuts thumbnails per card (then rejected-list images) before quality, per
-**Images**. Load `artifact-design`, and `dataviz`
-for any chart, before building. Apply the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**; without one, the design here stands. Title: "<Brand> Creator Discovery: <Campaign>".
+- **`title`** and **`answer`**: "<Brand> Creator Discovery: <Campaign>" is the page's file name;
+  the `title` is the I1 question for this campaign, and the `answer`, written last, is where the
+  pool stands and what to do with it ("50 in the pool, 12 new this run. Vet the top 20 next.").
+  `scope.reader` comes from `recipient` (**Recipient lens**), `scope.question` is `I1`, and
+  `scope.platforms` gives the posts read on each platform.
+- **`figures`**: the pool counts against the target: undecided, accepted, and rejected.
+- **`insights`**: what people are doing well with {product}, where they are having challenges,
+  and what this means for picking creators, per **The findings behind the shortlist**. With more
+  than 12 candidates the first insight's chart is the fit score by tier.
+- **`actions`**: which numbers to vet next and by when (`job` `creator-vetting`), and any tier
+  that ran dry with what would refill it (`job` `creator-discovery`).
+- **`decisions`**: the candidates to accept or reject, by number, and each proposed change to the
+  criteria with the finding behind it. Empty when the pool holds no new candidates and there is
+  no proposal.
+- **`sections.creators`**, one card per creator (**Creator card**, **Data: what fills each
+  section**, for what each part holds):
+  - Accepted creators are `verdict` `yes`, the undecided pool `maybe`, and this cycle's rejected
+    creators `no` with the recorded reason. The page's `groups` names them `{"yes": "Active list",
+    "maybe": "Shortlist", "no": "Rejected this cycle"}`, so accepted creators never read as ones
+    to contact. Rank the pool by fit score inside its tier, with `group` "#{number} · {tier}"
+    (`Added by team` for `manual`), and number it from 1 across the whole shortlist, stable for
+    the run, because those numbers are what the user replies with.
+  - The page holds at most 100 cards, the pool's largest target. When the active list, pool, and
+    rejects come to more, fold in this order until they fit: the rejected creators, then the
+    active list, then the lowest-ranked pool candidates. Each fold is one `evidence` line under
+    200 characters: its label, the count, the number range for pool candidates ("#101 to #134"),
+    up to five handles (fewer when long handles would pass 200), "+N more", and, for pool
+    candidates, that the full list is in the chat reply.
+  - On a lanes page (**Creator-ads mode**), split the pool's cards across lanes in proportion to
+    their targets: give each lane the floor of its share, then hand the slots left over to the
+    lanes with the largest remainders, so the shares add up to exactly the cards available. Cap
+    each lane at the candidates it holds and pass any slot it can't use to the lanes that still
+    fold. Each lane folds its own lowest-ranked candidates, and all lanes' folds share one
+    `evidence` line under 200 characters ("Folded: Lane A #41 to #60, Lane B #95 to #120, full
+    list in the chat reply"). When naming each lane would pass 200, give counts only ("Folded:
+    5 lanes, 143 candidates, full list in the chat reply"). Numbers stay the same, so a folded
+    candidate keeps its number.
+  - `evidence` holds at most ten lines. When the folds and **Since last run** come to more,
+    merge **Since last run** into one line ("Since last run: 12 added, 3 up, 2 down, 1 dormant,
+    4 decided").
+  - `figures` always carry the full counts, and each lane's tile its full "{undecided} of
+    {target}"; the tally under the answer counts only the cards shown. The run's output lists
+    every folded pool candidate with its number (see the agent's output format), so each one can
+    still be decided.
+  - `score` is the fit score (`label` "Fit"). `reason` names the strongest evidence (a lift as
+    "3.0× usual views"). `checks` gives each check's mark. A Maybe's `settle` is the check that
+    would decide it.
+  - `stats` holds followers, median views, and engagement rate.
+  - `details` holds the brand safety line and every other risk flag (per the card's **Brand
+    safety** rule), the points per criterion as `c1 Met 15 · c2 Partly 7.5 (2 of 31 posts)`, the
+    contact route if known, and the estimated fee from the fee calculator (**Fee calculator**,
+    **Applying the rates**) on the campaign's platforms as "{open} to {max}, target {target}"
+    (marked "est. from engagement" when the calculator estimated the views). Leave the fee out
+    when the calculator gives no price.
+  - `image` and `thumbs`: the profile picture and up to three posts, evidence posts first,
+    embedded per **Creator card**, **Images**, page profile, thumbnails as `thumb@80x80`. A rejected creator carries neither.
+    Keep the images under 8MB and the page under 10MB; a large pool cuts thumbnails per card
+    before quality.
+- **`evidence`**: **Since last run**, one line each for added, re-scored up or down, went
+  dormant, and decided. "No change" is a valid line.
+- **`method`**: the components and weights as `weights`, and at most six `notes` of up to 600
+  characters each: the saved
+  criteria in plain words; the criteria map (each criterion's words, component, measure, and
+  points at Met; the exclusions and the criteria posts can't show); the credit rules ("Met 1,
+  Partly met ½, Not met 0; posts counted over each candidate's last 90 days, newest 50"); the
+  map's date and whether this run reused or rebuilt it; and the creators found per platform. A
+  creator-ads page gives the match score's factors in place of the criteria map.
+- **`drafts`**: the vetting run on the top numbers, waiting on the user's pick.
+- **`footer`**: the rate label once in `notes` when a fee shows, and that images are a snapshot.
+- **`theme`**: the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**.
 
 ## Decisions
 
@@ -499,7 +524,8 @@ For "Fill the shortlist" or "Show the current shortlist", launch `atlas-creator-
 `profile_id`, `profile_slug`, the campaign slug, the brand handles and networks, run mode
 `interactive`, `job` (`view` for "Show the current shortlist", else `discover`), and `recipient`
 (SKILL.md, **Reading the ask**; `growth` when the ask is for more creators like the ones
-working). Relay its summary, the page link, and the numbered range the user can decide against.
+working). Relay its summary, the page link, the numbered range the user can decide against, and the
+agent's `Folded:` list when there is one, so every folded candidate's number reaches the user.
 Name the top candidates added this run in text, with their shortlist numbers and fit scores.
 Then offer each item on the agent's "Proposed criteria changes" line through its own Destructive
 tools confirmation (`supersede_calibration` on `campaign:{slug}-criteria`, gate
@@ -594,8 +620,9 @@ Everything above applies, with these changes:
   though risk flags stay unscored elsewhere. The rubric in **Scoring** above is for other
   campaigns.
 - **Recommendation passes** fill each lane from Meta's own rankings, per the block below.
-- **Ad figures on every card**, in `{DETAILS}` and in `detail.adFigures`, drawn per
-  **Creator card**, **Creator-ads details**. Write `detail.adFigures` with exactly these keys,
+- **Ad figures on every card**, in the card's `stats` (the rates and the Meta counts) and `details`
+  (past paid partners, talks to camera, partnership readiness, category, contact route, and Meta
+  recommends), and in `detail.adFigures`, worded per **Creator card**, **Creator-ads details**. Write `detail.adFigures` with exactly these keys,
   each a number, list or string as Atlas returned it, and leave out a key Atlas holds nothing
   for: `hookRate`, `reelsInteractionRate`, `pastPaidPartners` (the names), `partnershipReadiness`
   ("Ready", "Partly" or "Not yet"), `isPaidPartnershipMessagesEnabled`, `views`, `interactions`,
@@ -631,10 +658,10 @@ Everything above applies, with these changes:
   figure Atlas does not hold shows "Not in Atlas", never a guess. Atlas gives no period for
   views or interactions, so never call them "30-day" or "lifetime". TikTok cards carry one
   plain line: "Hook rate is not available on TikTok."
-- **The page groups by lane.** The shortlist section becomes one group per lane, in the order
-  the lanes were saved, each headed with the lane name, persona, and "{undecided} of {target}".
-  Inside a lane, tiers and fit score sort as above. Numbering still runs from 1 across the whole
-  page. Title "<Brand> Creator Discovery: <Campaign>" stays.
+- **The page groups by lane.** Each card's `group` is "{lane} · #{number}", the cards follow the
+  order the lanes were saved, and each lane's persona and "{undecided} of {target}" is a
+  `sections.kpis` tile. Inside a lane, tiers and fit score sort as above. Numbering still runs
+  from 1 across the whole page. The file name "<Brand> Creator Discovery: <Campaign>" stays.
 - **Decisions come from Gate 2.** The main thread writes the verdicts when the client's slate
   decisions close Gate 2 (**CAS campaign**, **Gate 2**). The agent still writes only undecided
   findings.

@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "template": "shortlist",
+  "example": true,
+  "title": "Which creators should we contact for the holiday launch?",
+  "answer": "Contact 3 of the 6 creators reviewed this week, before the launch on Dec 7.",
+  "takeaway": "The 3 get 2.4 times the views of creators their size and passed every brand safety check.",
+  "scope": {
+    "reader": "the influencer manager",
+    "brand": "Brightside Toys",
+    "range": "Aug 24 to Nov 22, 2026",
+    "question": "I1",
+    "accounts": ["instagram:brightsidetoys", "tiktok:brightsidetoys", "instagram:buildwithmaya", "tiktok:dadbuildsit", "instagram:tinytinkerers", "instagram:makerjune", "tiktok:playroomreviews", "instagram:craftycornerkids"],
+    "platforms": [
+      {"network": "instagram", "posts": 214},
+      {"network": "tiktok", "posts": 131},
+      {"network": "youtube", "posts": 0, "note": "Connecting it would add long-form reviews."}
+    ]
+  },
+  "figures": [
+    {"label": "Creators reviewed", "value": 6, "comparison": "from a pool of 41 that fit the brief", "status": "flat", "source": "Atlas"},
+    {"label": "To contact", "value": 3, "comparison": "the brief asked for 3 to 5", "status": "ok", "source": "Our read"}
+  ],
+  "insights": [
+    {
+      "text": "Parents who build on camera beat every other kind of creator for this brief.",
+      "evidence": "The 3 to contact all film builds with their children.",
+      "comparison": "2.4 times the views of creators their size",
+      "so": "Brief all 3 on a build video first. Fees may rise in December.",
+      "source": "Atlas",
+      "chart": {
+        "title": "Median views per post",
+        "bars": [
+          {"label": "Build creators", "segments": [{"label": "Views", "value": 41000}]},
+          {"label": "Same size", "segments": [{"label": "Views", "value": 17000}]}
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {"rank": 1, "verb": "Send", "object": "first messages to the 3 creators to contact", "owner": "Influencer manager", "due": "2026-11-25", "effect": "2 or more replies by Dec 1", "job": "creator-outreach", "cost": {"kind": "none", "line": "No spend, time only"}, "source": "Our read", "first": true},
+    {"rank": 2, "verb": "Ask", "object": "@makerjune whether her competitor deal ends in November", "owner": "Influencer manager", "due": "2026-11-26", "effect": "Settles the one Maybe", "job": "creator-vetting", "cost": {"kind": "none", "line": "No spend, time only"}, "source": "Atlas"}
+  ],
+  "decisions": [
+    {"text": "Approve the 3 creators for outreach", "approver": "the influencer manager", "by": "2026-11-24", "then": "Atlas drafts the 3 first messages.", "cost": {"kind": "none", "line": "Cost: no spend. The fees are the next decision."}}
+  ],
+  "evidence": [],
+  "gaps": ["Fees: the fee calculator has no rate card yet, so no fee is shown."],
+  "confidence": {"level": "high", "why": "Each creator has 12 or more recent posts in Atlas, read this week."},
+  "sources": ["Creators and posts Atlas holds for the brief, Aug 24 to Nov 22, 2026", "The brand's saved vetting criteria"],
+  "method": {
+    "weights": [
+      {"label": "Fit with the brief", "percent": 40},
+      {"label": "Views against creators of the same size", "percent": 30},
+      {"label": "Brand safety", "percent": 30}
+    ]
+  },
+  "drafts": [{"draft": "First messages to the 3 creators", "waitsOn": "After you approve the 3"}],
+  "sections": {
+    "creators": [
+      {"account": "instagram:buildwithmaya", "href": "https://www.instagram.com/buildwithmaya/", "verdict": "yes", "reason": "Builds with her twins every week and her views run 2.8 times creators her size.", "checks": "fit, audience, brand safety", "stats": [{"label": "Followers", "value": "48,200", "source": "Atlas"}, {"label": "Median views", "value": "52,100", "source": "Atlas"}], "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR4nGM48TgbK2IYWhIAQRSFgTrfLFkAAAAASUVORK5CYII=", "alt": "Profile picture of buildwithmaya", "score": {"label": "Fit", "value": 86}, "details": [{"label": "Brand safety", "value": "Clear on all 12 categories in her last 50 posts.", "source": "Atlas"}, {"label": "Contact", "value": "Email in her profile.", "source": "Atlas"}], "thumbs": [{"href": "https://www.instagram.com/reel/EXAMPLE/", "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAIAAABLKsIUAAAAE0lEQVR4nGOQC4jChRhG5Qa9HABVvnCBlCdxqQAAAABJRU5ErkJggg==", "alt": "A build video with her twins"}]},
+      {"account": "tiktok:dadbuildsit", "href": "https://www.tiktok.com/@dadbuildsit", "verdict": "yes", "reason": "Step-by-step builds with steady comments from parents.", "details": [{"label": "Paid record", "value": "Two paid partnerships this year.", "source": "Meta Ads"}], "checks": "fit, audience, brand safety", "stats": [{"label": "Followers", "value": "91,000", "source": "Atlas"}, {"label": "Median views", "value": "38,400", "source": "Atlas"}]},
+      {"account": "instagram:tinytinkerers", "href": "https://www.instagram.com/tinytinkerers/", "verdict": "yes", "reason": "Classroom builds that teachers share, with no brand safety flags.", "checks": "fit, audience, brand safety", "stats": [{"label": "Followers", "value": "27,600", "source": "Atlas"}]},
+      {"account": "instagram:makerjune", "href": "https://www.instagram.com/makerjune/", "verdict": "maybe", "reason": "Strong fit and safe, but 2 of her last 30 posts were paid posts for a competitor.", "checks": "fit, audience, brand safety, competitor deals", "settle": "Does her competitor deal end in November?"},
+      {"account": "tiktok:playroomreviews", "href": "https://www.tiktok.com/@playroomreviews", "verdict": "no", "reason": "Reviews many toy brands a week, so a post would get lost.", "checks": "fit"},
+      {"account": "instagram:craftycornerkids", "href": "https://www.instagram.com/craftycornerkids/", "verdict": "no", "reason": "Views fell by half over the last 3 months.", "checks": "fit, audience"}
+    ],
+    "posts": [
+      {
+        "href": "https://www.instagram.com/reel/EXAMPLE3/",
+        "account": "instagram:buildwithmaya",
+        "postedAt": "Nov 14, 2026, 6:30 PM ET",
+        "metrics": {"views": 61200, "likes": 3880, "comments": 204, "engagement": 66.7},
+        "usual": "1.2x her usual",
+        "why": "The twins build a castle set in one take.",
+        "quote": "This playset is a game changer for rainy days."
+      }
+    ]
+  },
+  "footer": {
+    "updated": "2026-11-23T14:05Z",
+    "freshness": [
+      {"account": "instagram:brightsidetoys", "newest": "2026-11-22", "fetched": "2026-11-23"},
+      {"account": "tiktok:brightsidetoys", "newest": "2026-11-21", "fetched": "2026-11-23"},
+      {"account": "instagram:buildwithmaya", "newest": "2026-11-20", "fetched": "2026-11-22"},
+      {"account": "tiktok:dadbuildsit", "newest": "2026-11-21", "fetched": "2026-11-22"},
+      {"account": "instagram:tinytinkerers", "newest": "2026-11-19", "fetched": "2026-11-22"},
+      {"account": "instagram:makerjune", "newest": "2026-11-18", "fetched": "2026-11-22"},
+      {"account": "tiktok:playroomreviews", "newest": "2026-11-22", "fetched": "2026-11-22"},
+      {"account": "instagram:craftycornerkids", "newest": "2026-11-02", "fetched": "2026-11-22"}
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas. Not for any decision. Internal use only. Not for public publishing."
+  }
+}

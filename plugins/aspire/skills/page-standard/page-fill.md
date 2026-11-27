@@ -59,6 +59,13 @@ NOT_READER = frozenset(("version", "template", "length", "account", "accounts", 
 CHART_SERIES = 6
 # No figure reaches a quadrillion; the bound keeps every number a float can hold exactly.
 NUMBER_BOUND = 10 ** 15
+# A published page stays under 10MB (creator-card.md, Images, Budgets), well inside the Artifact limit.
+PAGE_LIMIT = 10_000_000
+# Images stay under 8MB of data URIs, cut in creator-card.md's order (Images, Budgets).
+IMAGE_LIMIT = 8_000_000
+CUT_ORDER = ("cut to two thumbnails per creator card, then post images past the first five to thumbnails, "
+             "then images in secondary sections, then embed again at quality 80, then one thumbnail per card, "
+             "then no thumbnails past card 60 (on a lanes page, past the first 60% of each lane's cards)")
 FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "glossary.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
@@ -155,6 +162,8 @@ def rules(data, templates, tools, phrases):
         errs.append(("length", "length", "a %s page sets it to %s" % (tpl["name"], " or ".join(lengths))))
     if not lengths and "length" in data:
         errs.append(("length", "length", "only a page with more than one length budget sets it"))
+    if "groups" in data and data["template"] != "shortlist":
+        errs.append(("groups", "groups", "only a Shortlist names its verdict groups"))
     ranks = [a["rank"] for a in data["actions"]]
     for i in range(1, len(ranks)):
         if ranks[i] <= ranks[i - 1]:
@@ -166,6 +175,7 @@ def rules(data, templates, tools, phrases):
     cited += [("sections.kpis[%d]" % i, k) for i, k in enumerate(sec.get("kpis", []))]
     for i, c in enumerate(sec.get("creators", [])):
         cited += [("sections.creators[%d].stats[%d]" % (i, j), s) for j, s in enumerate(c.get("stats", []))]
+        cited += [("sections.creators[%d].details[%d]" % (i, j), x) for j, x in enumerate(c.get("details", []))]
     for path, item in cited:
         if "source" in item and item["source"] not in labels:
             errs.append(("source-label", path + ".source", "is not Atlas, Brand memory, Web, You, Our read, or a tool in scope.tools"))
@@ -439,7 +449,7 @@ def answer(data):
         counts = [(k, n) for k, n in counts if n]
         label = ", ".join("%d %s" % (n, VERDICTS[k][1].lower()) for k, n in counts)
         bar = "".join('<span class="%s" style="flex:%d"></span>' % (VERDICTS[k][0], n) for k, n in counts)
-        links = "".join('<li><a href="#%s"><b class="pb-num">%d</b> %s</a></li>' % (k, n, VERDICTS[k][2].lower()) for k, n in counts)
+        links = "".join('<li><a href="#%s"><b class="pb-num">%d</b> %s</a></li>' % (k, n, e(group_name(data, k).lower())) for k, n in counts)
         parts.append('<div class="pb-tally"><div class="pb-bar" role="img" aria-label="%s">%s</div><ul>%s</ul></div>' % (label, bar, links))
     out = ['<header class="pb-answer" data-block="answer">%s</header>' % "".join(parts)]
     if "verdict" in sec:
@@ -528,24 +538,43 @@ def decisions(data, year):
     return ('<section class="pb-card pb-decisions" data-page="decisions" data-block="decisions">'
             '<h2 class="pb-h">Decisions for you</h2><ol>%s</ol></section>' % "".join(items))
 
+def group_name(data, verdict):
+    return data.get("groups", {}).get(verdict, VERDICTS[verdict][2])
+
 def creator(c):
     name, network = handle(c["account"])
     cls, word, _ = VERDICTS[c["verdict"]]
     stats = "".join('<span>%s <b>%s</b>%s</span>' % (e(s["label"]), e(s["value"]), (" (%s)" % e(s["source"])) if "source" in s else "")
                     for s in c.get("stats", []))
-    parts = ['<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span>%s</p>'
-             % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "",
-                (" " + chip(c["group"])) if "group" in c else "")]
+    head = []
+    if "image" in c:
+        head.append('<img class="pb-avatar" src="%s" alt="%s" width="56" height="56" decoding="async" loading="lazy">' % (c["image"], e(c.get("alt", "Profile picture of " + name))))
+    head.append('<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span>%s</p>'
+                % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "",
+                   (" " + chip(c["group"])) if "group" in c else ""))
+    if "score" in c:
+        sc = c["score"]
+        head.append('<span class="pb-ring" style="--v:%d" role="img" aria-label="%s %d out of 100"><b>%d</b><span>%s</span></span>'
+                    % (sc["value"], e(sc["label"]), sc["value"], sc["value"], e(sc["label"])))
+    parts = ['<div class="pb-creator-head">%s</div>' % "".join(head)]
     parts.append('<div class="pb-verdict" data-block="creator" data-verdict="%s" data-account="%s"><p>%s %s</p>'
                  % (c["verdict"], e(c["account"]), chip(word, cls), e(c["reason"])))
     if "checks" in c:
         parts.append('<p class="pb-muted">Checks reached: %s</p>' % e(c["checks"]))
     if stats:
         parts.append('<p class="pb-stats">%s</p>' % stats)
+    if c.get("details"):
+        parts.append('<dl class="pb-details">%s</dl>' % "".join(
+            '<dt>%s</dt><dd>%s%s</dd>' % (e(x["label"]), e(x["value"]), (" " + source_chip(x["source"])) if "source" in x else "")
+            for x in c["details"]))
     if "settle" in c:
         parts.append("<p><b>To settle it:</b> %s</p>" % e(c["settle"]))
     parts.append("</div>")
-    return '<article class="pb-card">%s</article>' % "".join(parts)
+    if c.get("thumbs"):
+        parts.append('<div class="pb-thumbs">%s</div>' % "".join(
+            '<a href="%s"><img src="%s" alt="%s" width="80" height="80" decoding="async" loading="lazy"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
+            for t in c["thumbs"]))
+    return '<article class="pb-card pb-creator">%s</article>' % "".join(parts)
 
 def post(p):
     name, network = handle(p["account"])
@@ -578,7 +607,7 @@ def evidence(data):
         for k in VERDICTS:
             group = [c for c in creators if c["verdict"] == k]
             if group:
-                out.append('<h3 class="pb-h" id="%s">%s</h3><div class="pb-grid">%s</div>' % (k, VERDICTS[k][2], "".join(creator(c) for c in group)))
+                out.append('<h3 class="pb-h" id="%s">%s</h3><div class="pb-grid">%s</div>' % (k, e(group_name(data, k)), "".join(creator(c) for c in group)))
     elif creators:
         out.append('<div class="pb-grid">%s</div>' % "".join(creator(c) for c in creators))
     if sec.get("posts"):
@@ -716,14 +745,19 @@ def main(argv):
         print(json.dumps({"rule": rule, "path": where.lstrip("$."), "message": message}))
     if errs:
         return 1
-    if "--check" in argv:
-        print(json.dumps({"ok": True, "template": data["template"]}))
-        return 0
     try:
-        print(page(data, path.parent))
+        html_page = page(data, path.parent)
     except (OSError, ValueError, AttributeError) as err:
         print(json.dumps({"rule": "read", "path": str(err), "message": "a file beside the page data lacks the part the page needs"}))
         return 2
+    images = sum(len(m) for m in re.findall(r'src="(data:image/[^"]*)"', html_page))
+    if images > IMAGE_LIMIT or len(html_page) > PAGE_LIMIT:
+        print(json.dumps({"rule": "page-size", "path": "sections", "message": "the images are %d characters (at most %d) and the page %d (at most %d); %s" % (images, IMAGE_LIMIT, len(html_page), PAGE_LIMIT, CUT_ORDER)}))
+        return 1
+    if "--check" in argv:
+        print(json.dumps({"ok": True, "template": data["template"]}))
+        return 0
+    print(html_page)
     return 0
 
 sys.exit(main(sys.argv[1:]))
