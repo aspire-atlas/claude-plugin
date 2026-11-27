@@ -59,7 +59,7 @@ Read these before starting:
    posts add up to `analysedPosts`. Score per "Score and settings".
    **With `job` `cas-screen`**, follow "In a CAS campaign" instead of steps 5 to 7: read only the
    lane's undecided creators with no read yet, read again a stored read with a `null` score or a
-   raised `maxPosts`, re-score stored reads the current settings change, and save each read as a
+   changed `maxPosts`, re-score stored reads the current settings change, and save each changed read as a
    new version of the newest discovery finding, read again just before the save, when `approved`
    and `save` both carry the saves (otherwise return them as `proposals`), publish nothing, and return the reads in the result packet.
 5. **Check freshness** per page-standard's Data freshness rule
@@ -76,8 +76,7 @@ Read these before starting:
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4, step 0b, and the
    `storyline.md` it names): build that bullet with what the data
    shows, name the change in the page check's `gaps`, and never swap in a storyline the person did
-   not confirm. An unattended run asks nothing and states the storyline at the
-   top of the page and in the delivery message.
+   not confirm.
 7. **Build and publish** through the page-standard build loop
    (`${CLAUDE_PLUGIN_ROOT}/skills/page-standard/SKILL.md`, section 4): draft from the blocks, run the
    self-check, then the two reviews, each by a separate reviewer that sees only the rendered page,

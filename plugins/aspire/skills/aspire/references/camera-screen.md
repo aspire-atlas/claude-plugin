@@ -69,9 +69,11 @@ metrics to a row, never drop one.
 1. The settings (**Score and settings**): `get_brand_context` for `campaign:{slug}-cas` when a
    campaign is named; otherwise the defaults.
 2. The creators: the pasted handles, or, for a campaign, `search_insights` with `prefix` on
-   `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}`, newest first, paged.
-   Keep only records whose `runKey` is exactly that, since the prefix also matches a longer slug
-   (`spring` matches `spring-teachers`). The newest record per `entityId` wins (**Creator
+   `detail.account_review.runKey` = `creator-discovery-{profile}-{slug}-`, newest first, paged.
+   Discovery adds the run's date, so keep only records whose `runKey` is that prefix followed by a
+   date and nothing else (`creator-discovery-{profile}-{slug}-{YYYY-MM-DD}`): the prefix also
+   matches a longer slug. Good: for `spring`, keep `...-spring-2026-11-20`. Bad: keep
+   `...-spring-teachers-2026-11-20`, or drop every record because none is exactly the prefix. The newest record per `entityId` wins (**Creator
    discovery**, **State written to Atlas**). Then keep the creators whose newest record is an
    `action_item` (undecided); for a discovery campaign's shortlist, also keep `went_well`
    (accepted), since those are the creators the team kept. With a lane (CS4, or `lane` from row
@@ -150,7 +152,7 @@ Good: "@handle: not enough analysed posts (newest 12 of 12 analysed videos), spe
 With a campaign named, the settings come from `match.talksToCamera {weights, minPosts, maxPosts}`
 on `campaign:{slug}-cas`; a missing or out-of-range setting uses its default, and the result says
 which defaults it used. With none, the defaults. Changing the weights or the minimum re-scores
-from the stored shares and `analysedPosts` with no new read. A raised `maxPosts` reads again
+from the stored shares and `analysedPosts` with no new read. A changed `maxPosts` reads again
 every creator it would change at the next read (**In a CAS campaign**, **Who is read**).
 
 ## The output
@@ -171,7 +173,9 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
   `detail.adFigures.talksToCamera` yet. A creator added by a refill (row 3) is read the next time
   row 4 runs. Two stored reads are read again, since Atlas may hold more now: one with a `null`
   score (under the minimum when saved), and one whose `analysedPosts` is under the current
-  `maxPosts` while its `totalAnalysed` is higher (`maxPosts` was raised). Any other creator whose
+  `maxPosts` while its `totalAnalysed` is higher (`maxPosts` was raised). A stored read whose
+  `analysedPosts` is over the current `maxPosts` (`maxPosts` was lowered) is read again too, so
+  every read on the slate covers the same number of videos. Any other creator whose
   stored read gives another score under the current weights or minimum is re-scored from it,
   with no new read. When the newest version has no read but an older version of the same
   `entityId` has one, that read is carried forward (re-scored, or read again, by the same rules)
@@ -185,7 +189,11 @@ Launched from row 4 with `job` `cas-screen`, the campaign slug, the lane and `sa
   goes under the finding's own `runKey`, with its role, kind, priority, `schema`, `entityKind`,
   `entityId` and summary, and its `detail` unchanged except
   `detail.adFigures.talksToCamera = {score, speech, toCamera, explainer, analysedPosts,
-  totalAnalysed, weights, scoredAt}`. `idempotencyKey`
+  totalAnalysed, weights, minPosts, maxPosts, scoredAt}`, so a stored `null` says which minimum it
+  was saved under. A re-read or re-score is saved only when it differs from the stored read in
+  `analysedPosts`, `totalAnalysed`, a share, the score or a setting; an unchanged one is not saved
+  again. Good: a creator with 0 analysed videos, read again with 0, keeps its one version. Bad: a
+  new identical version on every row 4 run. `idempotencyKey`
   `camera-screen-{entityId}-{writtenAt}`, the UTC time of the save, so a re-score is never
   dropped as a duplicate. The newest version still wins, so the read stays on the finding for the
   campaign page, `get_cas_selection` and the match score to read.
