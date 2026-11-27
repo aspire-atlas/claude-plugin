@@ -388,12 +388,17 @@ mark and the footer (**Artifact standard**). What goes in each field:
     (`Added by team` for `manual`), and number it from 1 across the whole shortlist, stable for
     the run, because those numbers are what the user replies with.
   - The page holds at most 100 cards, the pool's largest target. When the active list, pool, and
-    rejects come to more (a lanes campaign keeps one pool per lane on one page), fold in this
-    order until they fit: the rejected creators, then the active list, then the lowest-ranked
-    pool candidates past card 100, each as one `evidence` line with its count, up to five
-    handles, and "+N more". Numbers stay the same, so a folded candidate keeps its number.
-    `figures` always carry the full counts; the tally under the answer counts only the cards
-    shown.
+    rejects come to more, fold in this order until they fit: the rejected creators, then the
+    active list, then the lowest-ranked pool candidates. Each fold is one `evidence` line under
+    200 characters: its label, the count, the number range for pool candidates ("#101 to #134"),
+    up to five handles (fewer when long handles would pass 200), and "+N more".
+  - On a lanes page (**Creator-ads mode**), each lane gets a share of the pool's cards in
+    proportion to its target, and each lane folds its own lowest-ranked candidates onto its own
+    `evidence` line, named by lane. Numbers stay the same, so a folded candidate keeps its number.
+  - `figures` always carry the full counts, and each lane's tile its full "{undecided} of
+    {target}"; the tally under the answer counts only the cards shown. The run's output lists
+    every folded pool candidate with its number (see the agent's output format), so each one can
+    still be decided.
   - `score` is the fit score (`label` "Fit"). `reason` names the strongest evidence (a lift as
     "3.0× usual views"). `checks` gives each check's mark. A Maybe's `settle` is the check that
     would decide it.
@@ -405,7 +410,7 @@ mark and the footer (**Artifact standard**). What goes in each field:
     (marked "est. from engagement" when the calculator estimated the views). Leave the fee out
     when the calculator gives no price.
   - `image` and `thumbs`: the profile picture and up to three posts, evidence posts first,
-    embedded per **Creator card**, **Images**, page profile. A rejected creator carries neither.
+    embedded per **Creator card**, **Images**, page profile, thumbnails as `thumb@80x80`. A rejected creator carries neither.
     Keep the images under 8MB and the page under 10MB; a large pool cuts thumbnails per card
     before quality.
 - **`evidence`**: **Since last run**, one line each for added, re-scored up or down, went

@@ -1000,14 +1000,15 @@ What goes in each field:
     when the calculator gives a fee (**Fee calculator**, **How a fee is calculated**). Never show
     a return the run did not work out.
   - `image` and `thumbs`: the profile picture and three proof posts, embedded per **Creator
-    card**, **Images**, page profile. A Reject or Can't vet card carries neither. On a large list
+    card**, **Images**, page profile, thumbnails as `thumb@80x80`. A Reject or Can't vet card carries neither. On a large list
     cut thumbnails per card before quality. Visual check stills are not repeated on the page.
 - **`sections.posts`**: the example posts the insights name, linked, with their thumbnails.
 - **`evidence`** holds at most ten lines of up to 200 characters, so each kind of evidence is one
-  line that counts and names up to five handles, then "+N more" (the full list goes in the run
-  summary), never one line per creator:
-  - the safety summary: the categories with a Flag or Fail, each with its count and handles
-    ("Alcohol: 2 flags, @a, @b");
+  line that counts and names up to five handles across the line (fewer when long handles would
+  pass 200), then "+N more" (the full list goes in the run summary), never one line per creator:
+  - the safety summary: the categories with a Flag or Fail and their counts, then up to five
+    handles across the whole line and "+N more" ("Alcohol 2, Profanity 4: @a, @b, @c, @d, @e
+    +1 more");
   - the handles not vetted, with their count and reasons in one line (a handle that could not be
     resolved is a Can't vet card instead);
   - the other brands named in the product posts (see the second insight);

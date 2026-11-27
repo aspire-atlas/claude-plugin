@@ -166,6 +166,10 @@ the category read of paid partners belongs to vetting.
 - Interactive mode only: after the summary, a `creator-cards` block (creator card reference,
   **Agent hand-off**) for the top six candidates added this run, badged with their shortlist
   numbers. It does not count toward the word limit.
+- When the page folded pool candidates into `evidence` (the reference, **The living page**), a
+  `Folded:` list after the summary with every folded candidate as `#{number} @handle ({lane},
+  fit {score})`, so the user can decide on them by number. It does not count toward the word
+  limit.
 
 **Creator CSV.** When the main thread passes `csv: aspire-member`, also write the undecided pool as the shortlist page shows it as a CSV per `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/creator-csv.md` (read it first; **Which creators** sets the rows), and put its path and row count in your output. Without that input, write no CSV. Never in sample mode or an unattended run.
 
