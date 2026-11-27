@@ -335,7 +335,7 @@ count in 90 days" and the creator's lifts are not measured. A post's **lift** is
 by its author's usual ("3.6× usual views"). Work both out from the posts already read, never from a
 new search. A creator whose read was widened to 180 days had too few posts for a usual, so has none.
 The read stops at 50 posts, so for a creator who posts more than that in 90 days the usual covers
-their newest 50; the page's key says so.
+their newest 50; the page's method notes say so.
 
 ### 1. Brand fit (the fit score, out of 100)
 
@@ -606,13 +606,12 @@ screened, and the page and the run summary count them apart from the screened cr
 **The evidence frame.** For Seen, the clearest full-size frame that shows it. For Not seen, the
 frame that shows the most of the scene the subject would be in (for a dog, the room or walk where
 pets appear), so the reader can judge the miss. Each carries the post's permalink and the timestamp
-("Reel of 14 Oct, 0:07"). The page embeds it once, in the visual check section, in a 160 px wide
-box, so the file is 320 px wide (twice the box, as **Creator card**, **Images**, sizes page
-images); the card and the table link to it. Atlas keeps only the link and the time, never the
+("Reel of 14 Oct, 0:07"). The page shows no stills: the creator's card names the post and the
+timestamp in its `details`, linked to the post. Atlas keeps only the link and the time, never the
 image.
 
 **It never decides the call.** The visual check adds no points to the fit score and changes no
-recommendation. It shows in the checks table, on each card, and in its own section of the page, and
+recommendation. It shows on each card's `details` and as one tally line in the page's `evidence`, and
 a Seen or Not seen at Low confidence is listed in Decisions for a person to confirm. When no frame
 extractor ran, Decisions carries one line instead ("No video frames were read, only covers; install
 ffmpeg to read them") rather than one entry per creator. When the brief makes the subject a must,
@@ -948,14 +947,15 @@ What goes in each field:
   thing that decided the most rejects, or the strongest finding behind the checks.
 - **`figures`**: the counts to contact, Maybe, and left out, each against the number asked for or
   the list's size, and each `comparison` naming the top reasons behind that verdict ("14 outside
-  the US, 4 competitor deals").
+  the US, 4 competitor deals"). When any creator is Can't vet, `sections.kpis` gets a "Can't vet"
+  tile with its count against the left-out count, so a thin creator is never read as a reject.
 - **`insights`**, from **The findings behind the checks**:
   1. **What people are doing well with {product}**: the claim, and its chart, the median lift by
      what the post does, one bar per label ("{label} · {n} of {m}"). The "So:" line says which
      check it feeds.
   2. **Where people are having challenges**: the comment sentiment counts and each challenge,
      numbered, with its quoted, linked post as evidence. The other brands named in the product
-     posts, saved competitors marked apart, go in `evidence` with their counts.
+     posts, saved competitors marked apart, are one `evidence` line with their counts.
   3. **What this means for picking creators**: the reach finding and the supply finding. When the
      list is short of what was asked, this insight is the explanation, with the numbers.
 - **`actions`**, in order, each with its week as `due` and the creators it covers by number:
@@ -963,8 +963,8 @@ What goes in each field:
   when the list came up short, where a second search should look (`job` `creator-discovery`).
   When `visual_check_refused` is set, an on-screen check as a follow-up vetting run on the same
   list, with the reason. When the criteria name a launch date, `sections.kpis` gets one tile for
-  the weeks left to it, and `evidence` lists the launch clock: each dated milestone from offers
-  out to the first read of results, one line each. No stage gets a date the actions did not set.
+  the weeks left to it, and `evidence` has the launch clock: one line with each dated milestone
+  from offers out to the first read of results. No stage gets a date the actions did not set.
 - **`sections.kpis`**, when the criteria name audiences: one tile per audience with the creators
   to contact in it and their fees at target, against how many that audience needs when the
   criteria set it, naming any open slot ("sixth slot waits on a maybe").
@@ -1002,24 +1002,36 @@ What goes in each field:
     card**, **Images**, page profile. A Reject or Can't vet card carries neither. On a large list
     cut thumbnails per card before quality. Visual check stills are not repeated on the page.
 - **`sections.posts`**: the example posts the insights name, linked, with their thumbnails.
-- **`evidence`**: the safety summary, one line per creator with a Flag or Fail and its category;
-  the handles not vetted with the reason for each (a handle that could not be resolved is listed
-  once, as a Can't vet card); and, after a visual check, one line saying the reads are
-  approximate, "the agent looked at frames from up to three videos per creator. Confirm by eye
-  before you rely on one", the definition used, and for a free-text check that it is less
-  reliable and why.
-- **`method`**: the fit score's components and weights as `weights`, and as `notes`: what we look
-  for in a {product} creator (each check with the finding it comes from, any check tagged "Brief"
-  and why), the criteria map, the credit rules ("Met 1, Partly met ½, Not met 0; posts counted
-  over the posts read"), the recommendation order and thresholds, the hard rejects, every saved
-  call or lesson that changed a verdict, how a lift is worked out (the post's views divided by
-  the creator's 90-day median, at most 50 newest posts) and the view floor, and, after a visual
-  check, how the videos were picked, the frames per video, the frame extractor that ran, and the
-  confidence rule.
-- **`gaps`**: creators Atlas could not read, networks not covered, data a verdict would firm up
-  with (for example, audience demographics), how small each finding's groups are ("lifts rest on
-  2 to 9 posts each"), and after a visual check the creators it couldn't check and why, or
-  "covers only" when no frame extractor was installed.
+- **`evidence`** holds at most ten lines, so each kind of evidence is one line that counts and
+  names, never one line per creator:
+  - the safety summary: each category with a Flag or Fail, its count, and the handles ("Alcohol:
+    2 flags, @a, @b");
+  - the handles not vetted, with their count and reasons in one line (a handle that could not be
+    resolved is a Can't vet card instead);
+  - the other brands named in the product posts (see the second insight);
+  - the launch clock, one line with each dated milestone (see `actions`);
+  - after a visual check, one tally line (Seen, Not seen, and Can't check counts, each Can't check
+    with its reason), and one line saying the reads are approximate: "the agent looked at frames
+    from up to three videos per creator. Confirm by eye before you rely on one", with the
+    definition used and, for a free-text check, that it is less reliable and why.
+- **`method`**: the fit score's components and weights as `weights`, and at most six `notes`:
+  1. what we look for in a {product} creator: each check with the finding it comes from, and any
+     check tagged "Brief" and why;
+  2. the criteria map and the credit rules ("Met 1, Partly met ½, Not met 0; posts counted over
+     the posts read");
+  3. the recommendation order and thresholds, and the hard rejects;
+  4. every saved call or lesson that changed a verdict, by count and handle;
+  5. how a lift is worked out (the post's views divided by the creator's 90-day median, at most 50
+     newest posts), the view floor, and that a creator who posts more than 50 times in 90 days
+     has a usual from their newest 50;
+  6. after a visual check, how the videos were picked, the frames per video, the frame extractor
+     that ran, and the confidence rule.
+- **`gaps`**: at most three lines, the three that would change the most verdicts, each "{gap}:
+  {what connecting or reading it would add}". Pick from creators Atlas could not read, networks
+  not covered, data a verdict would firm up with (for example, audience demographics), how small
+  each finding's groups are ("lifts rest on 2 to 9 posts each"), and, after a visual check, the
+  creators it couldn't check or "covers only" when no frame extractor was installed. The rest go
+  in the run summary for the main thread.
 - **`drafts`**: first messages to the approvals, offers at the fee calculator's open rate, and the
   questions to the Maybes.
 - **`footer`**: the fee rate label once in `notes`, and that images are a snapshot.

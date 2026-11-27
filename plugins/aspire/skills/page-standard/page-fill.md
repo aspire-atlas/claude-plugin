@@ -157,6 +157,8 @@ def rules(data, templates, tools, phrases):
         errs.append(("length", "length", "a %s page sets it to %s" % (tpl["name"], " or ".join(lengths))))
     if not lengths and "length" in data:
         errs.append(("length", "length", "only a page with more than one length budget sets it"))
+    if "groups" in data and data["template"] != "shortlist":
+        errs.append(("groups", "groups", "only a Shortlist names its verdict groups"))
     ranks = [a["rank"] for a in data["actions"]]
     for i in range(1, len(ranks)):
         if ranks[i] <= ranks[i - 1]:
@@ -442,7 +444,7 @@ def answer(data):
         counts = [(k, n) for k, n in counts if n]
         label = ", ".join("%d %s" % (n, VERDICTS[k][1].lower()) for k, n in counts)
         bar = "".join('<span class="%s" style="flex:%d"></span>' % (VERDICTS[k][0], n) for k, n in counts)
-        links = "".join('<li><a href="#%s"><b class="pb-num">%d</b> %s</a></li>' % (k, n, VERDICTS[k][2].lower()) for k, n in counts)
+        links = "".join('<li><a href="#%s"><b class="pb-num">%d</b> %s</a></li>' % (k, n, e(group_name(data, k).lower())) for k, n in counts)
         parts.append('<div class="pb-tally"><div class="pb-bar" role="img" aria-label="%s">%s</div><ul>%s</ul></div>' % (label, bar, links))
     out = ['<header class="pb-answer" data-block="answer">%s</header>' % "".join(parts)]
     if "verdict" in sec:
@@ -531,6 +533,9 @@ def decisions(data, year):
     return ('<section class="pb-card pb-decisions" data-page="decisions" data-block="decisions">'
             '<h2 class="pb-h">Decisions for you</h2><ol>%s</ol></section>' % "".join(items))
 
+def group_name(data, verdict):
+    return data.get("groups", {}).get(verdict, VERDICTS[verdict][2])
+
 def creator(c):
     name, network = handle(c["account"])
     cls, word, _ = VERDICTS[c["verdict"]]
@@ -538,7 +543,7 @@ def creator(c):
                     for s in c.get("stats", []))
     head = []
     if "image" in c:
-        head.append('<img class="pb-avatar" src="%s" alt="%s" width="56" height="56">' % (c["image"], e(c.get("alt", "Profile picture of " + name))))
+        head.append('<img class="pb-avatar" src="%s" alt="%s" width="56" height="56" decoding="async" loading="lazy">' % (c["image"], e(c.get("alt", "Profile picture of " + name))))
     head.append('<p><a href="%s">%s</a> <span class="pb-muted">on %s%s</span>%s</p>'
                 % (e(c["href"]), e(name), network, (", " + '<span data-quoted>%s</span>' % e(c["name"])) if "name" in c else "",
                    (" " + chip(c["group"])) if "group" in c else ""))
@@ -562,7 +567,7 @@ def creator(c):
     parts.append("</div>")
     if c.get("thumbs"):
         parts.append('<div class="pb-thumbs">%s</div>' % "".join(
-            '<a href="%s"><img src="%s" alt="%s" width="80" height="80"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
+            '<a href="%s"><img src="%s" alt="%s" width="80" height="80" decoding="async" loading="lazy"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
             for t in c["thumbs"]))
     return '<article class="pb-card pb-creator">%s</article>' % "".join(parts)
 
@@ -597,7 +602,7 @@ def evidence(data):
         for k in VERDICTS:
             group = [c for c in creators if c["verdict"] == k]
             if group:
-                out.append('<h3 class="pb-h" id="%s">%s</h3><div class="pb-grid">%s</div>' % (k, VERDICTS[k][2], "".join(creator(c) for c in group)))
+                out.append('<h3 class="pb-h" id="%s">%s</h3><div class="pb-grid">%s</div>' % (k, e(group_name(data, k)), "".join(creator(c) for c in group)))
     elif creators:
         out.append('<div class="pb-grid">%s</div>' % "".join(creator(c) for c in creators))
     if sec.get("posts"):

@@ -370,8 +370,7 @@ mark and the footer (**Artifact standard**). What goes in each field:
   pool stands and what to do with it ("50 in the pool, 12 new this run. Vet the top 20 next.").
   `scope.reader` comes from `recipient` (**Recipient lens**), `scope.question` is `I1`, and
   `scope.platforms` gives the posts read on each platform.
-- **`figures`**: the pool counts against the target: undecided, accepted, and rejected. The
-  creators found per platform go in `method.notes`.
+- **`figures`**: the pool counts against the target: undecided, accepted, and rejected.
 - **`insights`**: what people are doing well with {product}, where they are having challenges,
   and what this means for picking creators, per **The findings behind the shortlist**. With more
   than 12 candidates the first insight's chart is the fit score by tier.
@@ -382,11 +381,15 @@ mark and the footer (**Artifact standard**). What goes in each field:
   no proposal.
 - **`sections.creators`**, one card per creator (**Creator card**, **Data: what fills each
   section**, for what each part holds):
-  - Accepted creators are `verdict` `yes` with `group` "Active". The undecided pool is `verdict`
-    `maybe`, ranked by fit score inside its tier, with `group` "#{number} · {tier}" (`Added by
-    team` for `manual`). This cycle's rejected creators are `verdict` `no` with the recorded
-    reason. Number the undecided pool from 1 across the whole shortlist, stable for the run,
-    because those numbers are what the user replies with.
+  - Accepted creators are `verdict` `yes`, the undecided pool `maybe`, and this cycle's rejected
+    creators `no` with the recorded reason. The page's `groups` names them `{"yes": "Active list",
+    "maybe": "Shortlist", "no": "Rejected this cycle"}`, so accepted creators never read as ones
+    to contact. Rank the pool by fit score inside its tier, with `group` "#{number} · {tier}"
+    (`Added by team` for `manual`), and number it from 1 across the whole shortlist, stable for
+    the run, because those numbers are what the user replies with.
+  - The page holds at most 60 cards. When the active list, pool, and rejects come to more, the
+    rejected creators become one `evidence` line with their count and handles, then the active
+    list does the same, so the whole pool always shows as cards.
   - `score` is the fit score (`label` "Fit"). `reason` names the strongest evidence (a lift as
     "3.0× usual views"). `checks` gives each check's mark. A Maybe's `settle` is the check that
     would decide it.
@@ -403,12 +406,12 @@ mark and the footer (**Artifact standard**). What goes in each field:
     before quality.
 - **`evidence`**: **Since last run**, one line each for added, re-scored up or down, went
   dormant, and decided. "No change" is a valid line.
-- **`method`**: the components and weights as `weights`, and as `notes` the saved criteria in
-  plain words, the criteria map (each criterion's words, component, measure, and points at Met;
-  the exclusions and the criteria posts can't show), the credit rules ("Met 1, Partly met ½, Not
-  met 0; posts counted over each candidate's last 90 days, newest 50"), and the map's date and
-  whether this run reused or rebuilt it. A creator-ads page gives the match score's factors
-  instead.
+- **`method`**: the components and weights as `weights`, and at most six `notes`: the saved
+  criteria in plain words; the criteria map (each criterion's words, component, measure, and
+  points at Met; the exclusions and the criteria posts can't show); the credit rules ("Met 1,
+  Partly met ½, Not met 0; posts counted over each candidate's last 90 days, newest 50"); the
+  map's date and whether this run reused or rebuilt it; and the creators found per platform. A
+  creator-ads page gives the match score's factors in place of the criteria map.
 - **`drafts`**: the vetting run on the top numbers, waiting on the user's pick.
 - **`footer`**: the rate label once in `notes` when a fee shows, and that images are a snapshot.
 - **`theme`**: the saved brand theme (`theme:brand`) per **Theme**, **Applying the theme**.

@@ -59,6 +59,7 @@ brand snapshot report where the two overlap: `title`, `answer`, `figures` with a
 | `method` | Optional. The scoring `weights`, adding up to 100, and short `notes` on how it was worked out |
 | `drafts` | Optional. What Atlas can draft next, each with what it `waitsOn` |
 | `sections` | The typed sections a template adds (below) |
+| `groups` | Optional, Shortlist only. Its own names for the yes, maybe, and no groups, shown in the group headings and the tally |
 | `theme` | Optional. A saved brand theme's token rules (`css`) and its fonts link (`fontsHref`), from `theme.md` |
 | `footer` | When the numbers were read (`updated`), one `freshness` entry per cited account, any `notes`, and the `source` line word for word as `artifact-standard.md` sets it for this page |
 
@@ -95,6 +96,7 @@ The fill script checks these after the shape. Each problem it prints names its r
 
 - `template-sections`: the typed sections the template needs are there, and none it does not allow.
 - `length`: a Readout sets `length`; no other template does.
+- `groups`: only a Shortlist names its verdict groups.
 - `action-ranks`: ranks are unique and ascending.
 - `source-label`: every source is one of the labels above.
 - `dates`: every date is a real date, `footer.updated` a real date and time.
@@ -130,7 +132,9 @@ answer, plan steps follow the actions, and creators and posts are the evidence.
 | Plan | Dated steps toward one goal | `steps` | `creators`, `kpis` |
 | Dashboard | A standing page that tracks a program, its money, or its content | `kpis` | `creators`, `posts`, `steps` |
 
-A Shortlist groups its creators by verdict and shows the tally under the answer.
+A Shortlist groups its creators by verdict and shows the tally under the answer. The groups are
+named To contact, Maybes, and Left out; a page whose groups mean something else (a standing pool,
+for example) names them in `groups`.
 
 ## 5. Length budgets
 
