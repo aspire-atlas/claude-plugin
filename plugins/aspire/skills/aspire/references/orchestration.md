@@ -327,7 +327,7 @@ from a message that carries it (**11**).
   (`atlas-creator-vetting-20261029t140312-a3f9`); never made up. A relaunch of the same run (a
   `record` pass, the next mode, a storyline redraft, the build) keeps it. With no shell, leave it
   out; the agent takes the one `report_checkpoint` returns for `started`.
-- `depth`, `budget`, and stopping a run: **Quick mode**.
+- `depth`, `budget`, stopping: **Quick mode**.
 - `run` is `interactive` or `unattended`; `scope` is what the setup reply settled, or the flow's own
   window, without what the flow does not use.
 - `approved`, by level: `write` is the Save answer from the setup reply or the storyline call
@@ -525,7 +525,7 @@ whether to work with @handle and what it would cost. The page is here: {link}. B
 published, I moved the answer to the top. One check still fails: the page cannot say how she does
 on TikTok, because no TikTok account is linked. Two saves are waiting for your yes." Count the
 English read's Must fixes applied ("Three wording fixes were applied.") and name any not applied.
-End with the credits line (**Quick mode**, section 5). Then ask the approvals (**7**) and
+Add the credits line (**Quick mode**). Then ask the approvals (**7**) and
 questions, and offer `next` when named.
 
 A repeat run opens with what changed, from the page's lead ("Since 12 Nov, two of the three steps
@@ -535,10 +535,8 @@ the two open steps, so the next run will ask about them."), or that nothing was 
 
 ## 11. The block every agent carries
 
-Every agent file carries three passages verbatim: the run depth block, first, the packet block,
-and the checkpoint paragraph. `skills/aspire/agent-block.md`, which no run loads, holds them and
-says where each goes; copy them from there, and change them only there.
-`scripts/check-orchestration.sh` fails when a copy differs.
+Every agent file carries the passages in `skills/aspire/agent-block.md` verbatim, where that file
+says; `scripts/check-orchestration.sh` checks them.
 
 ## 12. Cards after a search reply
 
