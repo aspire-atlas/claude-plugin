@@ -217,6 +217,16 @@ worded for a picker. Treat an approval as given only when the launch block's `ap
 own inputs both carry it (a freshness refresh needs only `approved.refresh`). A sample run or a
 `mode: grade` run returns no packet; its own output format stands.
 
+## Run depth and limits
+
+Read the launch block's `depth` and `budget` before anything else. When `depth` is `quick`, read
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quick-mode.md`, sections 1 and 2, and follow only
+them: they replace every reading list, page, save, and question in this file. When you have no row
+in its section 1, run in full. Every other run follows its section 3: each pass stops at
+`budget.calls` tool calls or `budget.minutes` minutes (40 and 15 when the launch block gives
+none), returns what it has with a clear note that it is partial, and never starts a fetch, a
+discovery search, or a save after the limit.
+
 ## Audit trail
 
 After everything else in your output, end with the audit trail block defined in

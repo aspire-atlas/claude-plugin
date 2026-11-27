@@ -15,7 +15,8 @@
 #     Agents menu hand-off table
 #   - plugins/aspire/README.md's agent table
 #   - the agents panel: plugins/aspire-mod/hooks/roster.ts and a placeholder costume in costumes.ts
-#   - orchestration.md section 7's permission level table
+#   - orchestration.md section 7's permission level table, and quick-mode.md section 6's personas
+#     table (all three personas, no quick mode, to narrow by hand)
 #   - scripts/eval/questions.json's "agents" map, with "approved": null
 # Every line a person fills in carries TODO(new-agent). The checks pass on the scaffold as written;
 # the judgment review flags each TODO(new-agent) until it is filled. CONTRIBUTING.md "Adding an agent"
@@ -58,6 +59,7 @@ REFS = f"{P}/skills/aspire/references"
 SKILL = f"{P}/skills/aspire/SKILL.md"
 README = f"{P}/README.md"
 ORCH = f"{REFS}/orchestration.md"
+QUICK = f"{REFS}/quick-mode.md"
 BLOCK = f"{P}/skills/aspire/agent-block.md"
 MENU = f"{REFS}/agents-menu.md"
 STD = f"{REFS}/artifact-standard.md"
@@ -295,6 +297,8 @@ if remove:
     changes[README] = "\n".join(l for l in lines if not l.startswith(f"| Agent {row}"))
     lines = read(ORCH).split("\n")
     changes[ORCH] = "\n".join(l for l in lines if not l.startswith(row))
+    lines = read(QUICK).split("\n")
+    changes[QUICK] = "\n".join(l for l in lines if not l.startswith(row))
     lines = read(ROSTER).split("\n")
     changes[ROSTER] = "\n".join(l for l in lines if f"type: 'aspire:{agent}'," not in l)
     lines = read(COSTUMES).split("\n")
@@ -379,6 +383,7 @@ else:
         "ARTIFACT_BLOCK": between(read(STD), "<!-- agent-block -->", "<!-- /agent-block -->", STD),
         "PACKET_BLOCK": between(read(BLOCK), "<!-- packet-block -->", "<!-- /packet-block -->", BLOCK),
         "CHECKPOINT_BLOCK": between(read(BLOCK), "<!-- checkpoint-block -->", "<!-- /checkpoint-block -->", BLOCK),
+        "BUDGET_BLOCK": between(read(BLOCK), "<!-- budget-block -->", "<!-- /budget-block -->", BLOCK),
         "ASK_ROWS": "\n".join(["| Code | Question |", "| ---- | -------- |"]
                               + [f"| {c} | {known[c][0]} |" for c in codes]),
         "METRIC_ROWS": "\n".join(f"| {c} | {kinds[c]} | {MARK}: the metrics this flow adds, or \"None\" |" for c in codes),
@@ -425,6 +430,16 @@ else:
     at = next((i for i, m in names if m and m.group(1) > agent), end)
     lines.insert(at, f"| `{agent}` | {permission} | {level_note} |")
     changes[ORCH] = "\n".join(lines)
+
+    # quick-mode.md section 6: the agent's personas row, in name order, with no quick mode.
+    # It starts with all three personas; narrow them to the ones the agent serves.
+    lines = read(QUICK).split("\n")
+    head = heading_index(lines, r"^\| Agent \| Personas \| Quick mode \|", QUICK)
+    end = table_end(lines, head)
+    names = [(i, re.match(r"^\| `(atlas-[a-z-]+)`", lines[i])) for i in range(head + 2, end)]
+    at = next((i for i, m in names if m and m.group(1) > agent), end)
+    lines.insert(at, f"| `{agent}` | influencer, paid, organic | no |")
+    changes[QUICK] = "\n".join(lines)
 
     # The agents panel: a roster card in its group and a placeholder costume after the agent costumes.
     lines = read(ROSTER).split("\n")

@@ -308,6 +308,7 @@ from a message that carries it (**11**).
 ```launch
 {"from": "/aspire:aspire", "runId": "{agent}-{UTC time as YYYYMMDDtHHMMSS}-{4 hex}",
  "agent": "{agent name}", "mode": "{mode, or run}", "run": "interactive",
+ "depth": "full", "budget": {"calls": 40, "minutes": 15},
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
  "scope": {"channels": ["instagram", "tiktok"], "from": "{YYYY-MM-DD}", "to": "{YYYY-MM-DD}"},
@@ -326,6 +327,7 @@ from a message that carries it (**11**).
   (`atlas-creator-vetting-20261029t140312-a3f9`); never made up. A relaunch of the same run (a
   `record` pass, the next mode, a storyline redraft, the build) keeps it. With no shell, leave it
   out; the agent takes the one `report_checkpoint` returns for `started`.
+- `depth`, `budget`, stopping a run, and the close-out's credits line: **Quick mode**.
 - `run` is `interactive` or `unattended`; `scope` is what the setup reply settled, or the flow's own
   window, without what the flow does not use.
 - `approved`, by level: `write` is the Save answer from the setup reply or the storyline call
@@ -372,6 +374,7 @@ thread acts on.
                 "options": ["{2 to 4 complete answers, the first recommended}"]}],
  "next": {"agent": "{agent name}", "why": "{one line}"},
  "cost": {"credits": null, "unit": "fetches", "used": 0, "minutes": 12},
+ "budget": {"depth": "full", "calls": 23, "stopped": null},
  "coverage": [{"channel": "instagram", "posts": 48}, {"channel": "tiktok", "posts": 0,
                "missing": "not linked"}],
  "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]},
@@ -539,6 +542,5 @@ wording only there. `scripts/check-orchestration.sh` fails when an agent's copy 
 ## 12. Cards after a search reply
 
 Before a main-thread reply that lists creators, posts, or ads, whichever flow made it, and when
-the person asks for cards or says how they want them, read **Cards after a search reply**: the
-saved choice (`preferences.cards` on the person's own record, read in step 2 of **1**), the offer
-line, "show cards", and saving the choice. Agents never apply it.
+the person asks for cards or says how they want them, read **Cards after a search reply**. Agents
+never apply it.
