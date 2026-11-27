@@ -112,7 +112,11 @@ distinct labels and a large account has hundreds, so label totals undercount. Go
 speech 62% (31 of the newest 50 videos read)". Bad: "@handle: speech 18%", from an aggregation
 that counted only the 100 most common audio labels.
 
-Classify each post. A label matches when, lowercased, it contains any word on its list:
+Classify each post. A label matches when, lowercased, it contains any entry on its list. An
+entry of two words ("direct address", "talking head", "to camera") matches only as that whole
+phrase, never word by word: keep each list as written, never split it on spaces. Good: "direct
+address to camera" counts as speech. Bad: "Clear, direct audio with external microphone"
+counted as speech because it contains "direct".
 
 | Share | Read from | Matches | Never counts |
 | ----- | --------- | ------- | ------------ |
