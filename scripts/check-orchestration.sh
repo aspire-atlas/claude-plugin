@@ -13,6 +13,11 @@
 #     carry the spend unit the Credits table (section 2) names
 #   - every agent carries the checkpoint paragraph (section 11, kept in skills/aspire/agent-block.md)
 #     exactly once, verbatim
+#   - every agent carries the run depth block (skills/aspire/agent-block.md) verbatim, under
+#     '## Run depth and limits', its first section
+#   - every agent has exactly one row in references/quick-mode.md section 6 (personas), with
+#     personas from influencer, paid, and organic, and the agents marked quick there are exactly the
+#     ones its section 1 lists
 # What an agent actually returns at run time is not checked here; this keeps the instructions in step.
 #
 #   scripts/check-orchestration.sh
@@ -37,6 +42,23 @@ section() { awk -v n="$1" '$0 ~ "^## "n"\\. "{f=1;next} f&&/^## /{f=0} f' "$REF"
 ckpt=$(awk '/<!-- checkpoint-block -->/{f=1;next} /<!-- \/checkpoint-block -->/{f=0} f' "$BLOCK" | sed '/^$/d')
 [ "$(wc -l <<<"$ckpt" | tr -d ' ')" = 1 ] && [ -n "$ckpt" ] || err "$BLOCK has no one-line <!-- checkpoint-block --> section"
 
+budget=$(awk '/<!-- budget-block -->/{f=1;next} /<!-- \/budget-block -->/{f=0} f' "$BLOCK" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+[ -n "$budget" ] || err "$BLOCK has no <!-- budget-block --> section"
+
+QUICK=$P/skills/aspire/references/quick-mode.md
+[ -f "$QUICK" ] || err "$QUICK is missing"
+personas=$(awk '/^## 6\. /{f=1;next} f&&/^## /{f=0} f' "$QUICK" 2>/dev/null | grep -oE '^\| `atlas-[a-z-]+` \| [a-z, ]+ \| (yes|no) \|' | sed -E 's/^\| `(atlas-[a-z-]+)` \| ([a-z, ]+) \| (yes|no) \|$/\1|\2|\3/' || true)
+[ -n "$personas" ] || err "$QUICK section 6 has no personas table"
+quick_listed=$(awk '/^## 1\. /{f=1;next} f&&/^## /{f=0} f' "$QUICK" 2>/dev/null | grep -oE '^\| `atlas-[a-z-]+` \|' | grep -oE 'atlas-[a-z-]+' | sort -u || true)
+quick_marked=$(awk -F'|' '$3=="yes"{print $1}' <<<"$personas" | sort -u)
+[ "$quick_listed" = "$quick_marked" ] || err "the agents quick-mode.md section 1 lists ($(echo $quick_listed)) differ from the ones section 6 marks quick ($(echo $quick_marked))"
+while IFS='|' read -r a ps q; do
+  [ -n "$a" ] || continue
+  for x in ${ps//,/ }; do
+    case "$x" in influencer | paid | organic) ;; *) err "$a: persona '$x' is not influencer, paid, or organic" ;; esac
+  done
+done <<<"$personas"
+
 canon=$(awk '/<!-- packet-block -->/{f=1;next} /<!-- \/packet-block -->/{f=0} f' "$BLOCK" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
 [ -n "$canon" ] || err "$BLOCK has no <!-- packet-block --> section"
 
@@ -59,6 +81,12 @@ for p in $(plugin_names); do
     mine=$(awk '/^## Orchestration contract$/{f=1;next} f&&/^## /{f=0} f' "$f" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}')
     [ -n "$mine" ] || { err "$p: $name has no '## Orchestration contract' section (copy the block from skills/aspire/agent-block.md)"; continue; }
     [ "$mine" = "$canon" ] || err "$p: $name's Orchestration contract block differs from the one in skills/aspire/agent-block.md"
+    mineb=$(awk '/^## Run depth and limits$/{f=1;next} f&&/^## /{f=0} f' "$f" | sed -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+    [ "$mineb" = "$budget" ] || err "$p: $name's '## Run depth and limits' block is missing or differs from the one in skills/aspire/agent-block.md"
+    first=$(awk 'NR>1&&/^---$/{f=1;next} f&&NF{print;exit}' "$f")
+    [ "$first" = "## Run depth and limits" ] || err "$p: $name's first section after the frontmatter is '$first'; want '## Run depth and limits'"
+    n=$(awk -F'|' -v a="$name" '$1==a' <<<"$personas" | wc -l | tr -d ' ')
+    [ "$n" = 1 ] || err "$p: $name has $n rows in the personas table (quick-mode.md, section 6); want 1"
     n=$(grep -cxF -- "$ckpt" "$f" || true)
     [ "$n" = 1 ] || err "$p: $name carries the checkpoint paragraph $n times; want it once, verbatim from skills/aspire/agent-block.md"
     grep -q '`report_checkpoint`' "$f" || err "$p: $name does not load report_checkpoint"
@@ -108,9 +136,10 @@ import json, re, sys
 text = open(sys.argv[1]).read()
 want = {
     "result-packet": ["runId", "agent", "question", "reader", "page", "findings", "proposals",
-                      "questions", "next", "cost", "coverage", "selfCheck", "storyline", "openItems"],
-    "launch": ["from", "runId", "agent", "mode", "run", "question", "persona", "reader",
-               "shortcut", "scope", "approved", "examples", "storyline", "since"],
+                      "questions", "next", "cost", "budget", "coverage", "selfCheck", "storyline",
+                      "openItems"],
+    "launch": ["from", "runId", "agent", "mode", "run", "depth", "budget", "question", "persona",
+               "reader", "shortcut", "scope", "approved", "examples", "storyline", "since"],
 }
 bad = 0
 # The spend units are the Unit column of the Credits table in section 2.
@@ -144,5 +173,5 @@ for tag, keys in want.items():
 sys.exit(bad)
 PY
 
-[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and has a permission level; routes and shortcuts resolve"
+[ "$fail" -eq 0 ] && echo "OK   every agent carries the orchestration contract and the run depth block, has a permission level and personas; routes and shortcuts resolve"
 exit "$fail"

@@ -6,6 +6,18 @@ model: sonnet
 color: cyan
 ---
 
+## Run depth and limits
+
+Read the launch block's `depth` and `budget` before anything else. When `depth` is `quick`, read
+`${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/quick-mode.md`, sections 1 and 2, and follow only
+them: they replace every reading list, page, save, and question in this file. When you have no row
+in its section 1, run in full. Every other run follows its section 3: each pass stops at
+`budget.calls` tool calls or `budget.minutes` minutes (40 and 15 when the launch block gives
+none), returns what it has with a clear note that it is partial, and never starts a fetch, a
+discovery search, or a save after the limit.
+
+## Role and inputs
+
 You read how much each creator talks on camera from the post analysis Atlas holds, for the team
 casting a creator ad campaign.
 

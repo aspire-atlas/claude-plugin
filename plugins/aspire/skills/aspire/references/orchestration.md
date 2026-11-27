@@ -79,14 +79,14 @@ sending. The call holds up to four questions, in this order:
 2. **Scope**, header "Scope". Channels and dates, default "Instagram and TikTok, last 90 days
    (Recommended)", then "Instagram only", "TikTok only"; handles or post links go in the free text
    field. Skip it when the flow sets its own window or the ask gave one.
-3. **Credit cap**, header "Credits", only when the agent's level is `spend` (**7**) and this run
-   will spend: the one place a run's cost is stated. "This {work}, and each uses Atlas credits
+3. **Credit cap**, header "Credits", only when this run may make a call that uses credits
+   (**Quick mode**, section 5): the one place a run's cost is stated. "This {work}, and each uses Atlas credits
    ({balance} left). Cap it at {n} {unit}?{note}" Options: "Cap at {n} {unit} (Recommended)", the
    unit's none option, and "No cap", from the agent's spend unit:
 
    | Unit | Agents | `{work}` | `{n}` | `{note}` | None option |
    | ---- | ------ | -------- | ----- | -------- | ----------- |
-   | `fetches` | Every `spend` agent but `atlas-creator-discovery` | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | `""` (empty) | "Fetch none, use what Atlas holds" |
+   | `fetches` | Every other agent | "fetches {n} handles or posts Atlas does not hold" | The handles or posts the run needs that Atlas does not hold | `""` (empty) | "Fetch none, use what Atlas holds" |
    | `candidates` | `atlas-creator-discovery` | "finds up to {n} new candidates to fill the {campaign} shortlist to {target}" | The pool target (`campaign:{slug}-pool`) minus the candidates already undecided in it | " The handle lookups behind scoring also use credits and are not capped." | "Add none, re-score the shortlist" |
 
    Accounts behind their pace are not in `{n}`: their refresh is offered on its own (**Page
@@ -308,6 +308,7 @@ from a message that carries it (**11**).
 ```launch
 {"from": "/aspire:aspire", "runId": "{agent}-{UTC time as YYYYMMDDtHHMMSS}-{4 hex}",
  "agent": "{agent name}", "mode": "{mode, or run}", "run": "interactive",
+ "depth": "full", "budget": {"calls": 40, "minutes": 15},
  "question": "{code from 3, or null}", "persona": "{persona, or unknown}",
  "reader": "{primary lens}", "shortcut": "{shortcut, or null}",
  "scope": {"channels": ["instagram", "tiktok"], "from": "{YYYY-MM-DD}", "to": "{YYYY-MM-DD}"},
@@ -326,6 +327,7 @@ from a message that carries it (**11**).
   (`atlas-creator-vetting-20261029t140312-a3f9`); never made up. A relaunch of the same run (a
   `record` pass, the next mode, a storyline redraft, the build) keeps it. With no shell, leave it
   out; the agent takes the one `report_checkpoint` returns for `started`.
+- `depth`, `budget`, stopping: **Quick mode**.
 - `run` is `interactive` or `unattended`; `scope` is what the setup reply settled, or the flow's own
   window, without what the flow does not use.
 - `approved`, by level: `write` is the Save answer from the setup reply or the storyline call
@@ -372,6 +374,7 @@ thread acts on.
                 "options": ["{2 to 4 complete answers, the first recommended}"]}],
  "next": {"agent": "{agent name}", "why": "{one line}"},
  "cost": {"credits": null, "unit": "fetches", "used": 0, "minutes": 12},
+ "budget": {"depth": "full", "calls": 23, "stopped": null},
  "coverage": [{"channel": "instagram", "posts": 48}, {"channel": "tiktok", "posts": 0,
                "missing": "not linked"}],
  "selfCheck": {"fixed": ["{check} {name}"], "stillFailing": ["{check} {name}: {why}"]},
@@ -522,7 +525,8 @@ whether to work with @handle and what it would cost. The page is here: {link}. B
 published, I moved the answer to the top. One check still fails: the page cannot say how she does
 on TikTok, because no TikTok account is linked. Two saves are waiting for your yes." Count the
 English read's Must fixes applied ("Three wording fixes were applied.") and name any not applied.
-Then ask the approvals (**7**) and questions, and offer `next` when named.
+Add the credits line (**Quick mode**). Then ask the approvals (**7**) and
+questions, and offer `next` when named.
 
 A repeat run opens with what changed, from the page's lead ("Since 12 Nov, two of the three steps
 are done and saves are up by half."). After an interactive run that published a page, keep the
@@ -531,14 +535,11 @@ the two open steps, so the next run will ask about them."), or that nothing was 
 
 ## 11. The block every agent carries
 
-Every agent file carries two passages verbatim: the packet block, under `## Orchestration
-contract`, and the checkpoint paragraph, right after its step paragraph. They live in
-`skills/aspire/agent-block.md`, which no run loads; copy them from there, and change their
-wording only there. `scripts/check-orchestration.sh` fails when an agent's copy differs.
+Every agent file carries the passages in `skills/aspire/agent-block.md` verbatim, where that file
+says; `scripts/check-orchestration.sh` checks them.
 
 ## 12. Cards after a search reply
 
 Before a main-thread reply that lists creators, posts, or ads, whichever flow made it, and when
-the person asks for cards or says how they want them, read **Cards after a search reply**: the
-saved choice (`preferences.cards` on the person's own record, read in step 2 of **1**), the offer
-line, "show cards", and saving the choice. Agents never apply it.
+the person asks for cards or says how they want them, read **Cards after a search reply**. Agents
+never apply it.

@@ -16,9 +16,12 @@ time so it never goes stale; never recite it from memory.
 2. For each file, read the frontmatter with `Read`. Take `name`, the first sentence of
    `description` (stop at the first period; ignore any `<example>` blocks), and the quoted
    "Trigger on ..." phrases when the description has them.
-3. Reply with one bullet per agent, sorted by name, in this shape:
+3. Reply with one bullet per agent, the asker's persona's agents first (**Quick mode**,
+   section 6; with the persona unknown, all together), each group sorted by name, in this
+   shape:
    `**aspire:{name}**: {first sentence}` followed on the same line by "Trigger: {phrases}".
-   Skip the trigger part when the description has none.
+   Skip the trigger part when the description has none. Add " · quick look in chat" to an
+   agent with a quick mode there.
 4. Then ask with `AskUserQuestion`, one question, header "Agent": "Which one do you want to
    run?" One option per agent, in the same order as the bullets. Label is the agent name
    without the `aspire:` prefix; description is what it produces in one line plus what it
