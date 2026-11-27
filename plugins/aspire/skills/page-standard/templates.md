@@ -154,7 +154,7 @@ Readout's Leadership lens, the competitive brief), still fits its argument on th
 | Template | Agents |
 | -------- | ------ |
 | Readout | daily-insights-report, weekly-insights-report, market-signal, quarterly-signal, profile-analyst |
-| Shortlist | creator-discovery, creator-vetting, ad-reuse |
+| Shortlist | creator-discovery, creator-vetting, ad-reuse, camera-screen |
 | Verdict | content-review, post-analysis, quality-review |
 | Profile | creator-profile |
 | Plan | creator-brief, shops, creator-outreach, creator-negotiation, cas-creative-review |

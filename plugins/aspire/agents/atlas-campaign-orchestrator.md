@@ -70,7 +70,7 @@ dispatch sources it names: `program.md` (**1**, **3**), `program-dashboard.md` (
    identity per record type. Then the brand-wide library's `asset` and `page` findings
    (`content-library-{profile}`). For each CAS campaign, the `cas-campaign-{profile}-{slug}`
    prefix the same way. For each discovery campaign, the newest run on
-   `creator-discovery-{profile}-{slug}`. When `reports` is true, the newest finding on each of
+   `creator-discovery-{profile}-{slug}-{YYYY-MM-DD}` (the prefix plus a date only, so a longer slug's runs never count). When `reports` is true, the newest finding on each of
    `readout-daily-`, `readout-weekly-`, `market-signal-`, `quarterly-signal-`, `onboarding-`, and
    `account-review-{profile}-own`, plus open push items. Then the orchestrator's own prefix for
    the newest `plan`, the packets, and the executions.
