@@ -1,0 +1,9 @@
+{"rows": 3, "parts": [{"part": 1, "rows": 3, "bytes": 386}], "decisions": {"Approve": 1, "Maybe": 1, "Reject": 1, "none": 0}, "guarded": 2, "no_email": 3, "shared_email": []}
+== part 1
+<BOM>email,First Name,Last Name,Instagram,YouTube,TikTok,Pinterest,Groups,Projects,Owners,Tags,Vetting<CRLF>
+,"'=HYPERLINK(""http://x"")","Line one line two, with a comma and ""quotes""",zoe,,,,Pets US|@Top,,,Atlas|Brand Safety: 2 Flags (Profanity Alcohol)|Vetting: Maybe|Spring Launch,Maybe<CRLF>
+,Zoë,Müller-Ñúñez,,,zoe.tt,,,,'+owner@example.com,Atlas|Brand Safe,Approve<CRLF>
+,,,,,,,,,,,Reject<CRLF>
+== part 2, past the plan
+{"error": "there is no part 2; the plan has 1"}
+exit 1

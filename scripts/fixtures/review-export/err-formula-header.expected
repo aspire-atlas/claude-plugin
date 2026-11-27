@@ -1,0 +1,2 @@
+{"error": "vetting-column.txt names '=HYPERLINK(\"x\") Vetting', which a spreadsheet would read as a formula"}
+exit 1

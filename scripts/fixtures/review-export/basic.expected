@@ -1,0 +1,9 @@
+{"rows": 3, "parts": [{"part": 1, "rows": 3, "bytes": 345}], "decisions": {"Approve": 1, "Maybe": 0, "Reject": 1, "none": 1}, "guarded": 0, "no_email": 1, "shared_email": []}
+== part 1
+<BOM>email,First Name,Last Name,Instagram,YouTube,TikTok,Pinterest,Groups,Projects,Owners,Tags,Pup Chow Spring Seeding Vetting<CRLF>
+maya@example.com,Maya,Reyes,maya.walks.dogs,,mayawalks,,,,,Atlas|Brand Safe,Approve<CRLF>
+,Sam,,sam_and_biscuit,,,,,,,Atlas|Brand Safety: 1 Flag (Profanity),Reject<CRLF>
+lee@example.com,,,,,,,,,,Atlas|Brand Safety: Not Checked,<CRLF>
+== part 2, past the plan
+{"error": "there is no part 2; the plan has 1"}
+exit 1

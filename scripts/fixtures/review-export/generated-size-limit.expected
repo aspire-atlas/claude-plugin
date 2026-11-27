@@ -1,0 +1,1 @@
+{"rows": 3000, "parts": [{"part": 1, "rows": 2153, "bytes": 1999129}, {"part": 2, "rows": 847, "bytes": 786965}], "decisions": {"Approve": 0, "Maybe": 3000, "Reject": 0, "none": 0}, "guarded": 0, "no_email": 3000, "shared_email": []}

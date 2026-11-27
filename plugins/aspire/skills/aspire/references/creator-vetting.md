@@ -494,10 +494,11 @@ a borderline match moves one criterion by one step, which the line-by-line view 
   crime and harmful acts; death, injury, and military conflict; online piracy; hate speech
   and aggression; obscenity and profanity; drugs, tobacco, vaping, and alcohol; spam and
   harmful content; terrorism; debated sensitive social issues; misinformation. Use
-  `analysis.brandSafety` as Atlas names the categories: a category rated anything but low risk
-  on one post is a Flag, on three or more posts a Fail. Add your own read of captions and
+  `analysis.brandSafety`, saving each category by its key there (`Flag: obscenity_profanity
+  Medium on 1 post`), never your own word: a category rated anything but low risk
+  on one post is a Flag, on three or more posts a Fail. Add your read of captions and
   transcripts; cite the post. Fewer than 3 analyzed posts: the category screen is "Can't
-  check" and says so.
+  check".
 - **Red lines.** Every brand red line (an applicant review run adds its own review's red lines
   from the launch), with its `action`:
   `block` fails the creator, `flag` flags it, `escalate` flags it and names the primary
@@ -510,8 +511,8 @@ a borderline match moves one criterion by one step, which the line-by-line view 
   mentions. A paid partnership with a competitor in the last 90 days is a Fail when
   `vetting:hard-rejects` lists it, or, in an applicant review run, the review's `reject:` line
   does; a Flag otherwise. A mention with no paid label is a note.
-- **Disclosure habits.** Posts that tag a brand with
-  `#ad`, `#sponsored`, or "paid partnership", against posts that read as paid without one. A
+- **Disclosure habits.** Posts tagging a brand with
+  `#ad`, `#sponsored`, or "paid partnership", against paid-looking posts without one. A
   paid post without disclosure is a Flag (a Fail when `vetting:hard-rejects` lists it, or, in an
   applicant review run, the review's `reject:` line does).
 - **Audience signals.** A negative comment share over 30% across analyzed posts is a Flag.
@@ -524,7 +525,7 @@ a borderline match moves one criterion by one step, which the line-by-line view 
   as long as the criterion asks for is a Pass. None in a shorter window is a Pass that says how much
   was checked ("checked 90 of 180 days"), never a plain Pass. Never points.
 - **Earlier verdicts.** `search_insights` for `brand_safety` role findings on the creator's
-  posts, and earlier content reviews of the creator (`content-review-{profile}` prefix,
+  posts, and their earlier content reviews (`content-review-{profile}` prefix,
   `detail.creator`). Cite them; never contradict one silently.
 
 ### 3. What the team already said
@@ -891,8 +892,8 @@ every finding of one run), `handle`, `network`, `name` (from the list, when give
 `recommendation`, `rule` (which rule of **The recommendation** decided it), `fitScore`,
 `fitBreakdown` (**How criteria become points**: `[{component, weight, points, basis: "criteria" |
 "default" | "not-available", reason, criteria: [{id, credit: 1 | 0.5 | 0 | null, points, count,
-evidence[]}]}]`, `credit` null for a criterion with no data), `safety` (`{category: result}` plus red line, scope, competitor, disclosure,
-and audience checks), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
+evidence[]}]}]`, `credit` null for a criterion with no data), `safety` (`{check: result}`;
+`categories`: `Pass (25 analyzed posts, all low risk)`), `redLineHits[]`, `hardRejectHits[]`, `riskFlags[]`, `calibrationsApplied[]`
 (the keys that shaped the call), `lessonsApplied[]`, `evidence[]`, `estFee` when the calculator
 gives one, `visualCheck` when the run had a visual check and it ran on the creator (left out for a
 "Not checked" creator and for a check on a person's appearance) (`{name, kind: "named" |

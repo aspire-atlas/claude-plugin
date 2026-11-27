@@ -1,0 +1,2 @@
+{"error": "vetting-column.txt names 'Tags', which is already a column"}
+exit 1

@@ -106,7 +106,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Meta Ads** | `references/meta-ads-tools.md` |
 | **Creator discovery** | `references/creator-discovery.md` |
 | **Creator vetting**; **Applicant review** (a campaign's applicant screening setup); **Applicant screening** (the review Sheet read, a review's vetting run, scheduled screening); **Applicant CSV snippet** (reading an uploaded CSV) | `references/creator-vetting.md`; `references/applicant-review.md`; `references/applicant-screening.md`; `references/applicant-csv.md` |
-| **Creator CSV** | `references/creator-csv.md` |
+| **Creator CSV**; **Review export snippet** | `references/creator-csv.md`; `references/review-export.md` |
 | **Orchestrator** | `references/orchestrator.md` |
 | **Influencer program** (Program setup, Program manager, Drafts) | `references/program.md` |
 | **Creator outreach** | `references/outreach.md` |

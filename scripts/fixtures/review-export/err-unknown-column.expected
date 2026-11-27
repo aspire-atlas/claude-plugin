@@ -1,0 +1,2 @@
+{"error": "rows-1.jsonl line 1: unknown column 'Fit score'"}
+exit 1
