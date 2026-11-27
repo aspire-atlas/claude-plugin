@@ -1,5 +1,5 @@
 ---
-number: 32
+number: 33
 name: Camera screen
 team: 2 Creator supply
 personas: Influencer Manager
