@@ -539,7 +539,7 @@ Creator Selection:
 | Filter by product, decision, city and tier, search and sort | Creator Selection; the toolbar, or a column header on Table | 1 |
 | Switch between Table and Cards | Creator Selection; **View** | 1 |
 | See each match score and why | Creator Selection, then the score's ring on a row or card (**The match score**) | 2 |
-| See competitor conflicts before deciding | Creator Selection; the band and competitor lines on each row or card | 1 |
+| See who works with a competitor before deciding | Creator Selection; the band and competitor Badges on each row or card | 1 |
 | Watch a creator's latest posts | Creator Selection, then a thumbnail or **Start review** (the creator viewer) | 2 |
 | See the concept and persona each creator maps to | Creator Selection; the Concept column or the card's chips | 1 |
 | Change a creator's concept or persona | Creator Selection; the Concept and Persona Selects, agency only | 1 |

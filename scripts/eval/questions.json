@@ -777,7 +777,7 @@
           "id": "A4",
           "name": "Changed weights are named",
           "ticket": "ASP-5931",
-          "landed": false,
+          "landed": true,
           "passesWhen": "Where a campaign's weights differ from 45 / 35 / 20, the weights used are named beside the score.",
           "failsWhen": "A score worked out on changed weights has no mention of them.",
           "examples": [
