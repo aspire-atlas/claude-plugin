@@ -60,6 +60,7 @@ brand snapshot report where the two overlap: `title`, `answer`, `figures` with a
 | `method` | Optional. The scoring `weights`, adding up to 100, and short `notes` on how it was worked out |
 | `drafts` | Optional. What Atlas can draft next, each with what it `waitsOn` |
 | `sections` | The typed sections a template adds (below) |
+| `groups` | Optional, Shortlist only. Its own names for the yes, maybe, and no groups, shown in the group headings and the tally |
 | `theme` | Optional. A saved brand theme's token rules (`css`) and its fonts link (`fontsHref`), from `theme.md` |
 | `footer` | When the numbers were read (`updated`), one `freshness` entry per cited account, any `notes`, and the `source` line word for word as `artifact-standard.md` sets it for this page |
 
@@ -82,7 +83,7 @@ by its name without the `atlas-` prefix. The page shows it in plain words.
 | Section | What it holds | Block |
 | ------- | ------------- | ----- |
 | `kpis` | Up to twelve more KPI tiles, shape as `figures` | 3.24 |
-| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to three stats, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it | 3.7 |
+| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to twelve `stats`, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it. The creator card's own parts are optional: the profile picture (`image`, embedded per `creator-card.md`, **Images**), the `score` ring (a fit or match score out of 100), up to twelve labelled `details` (brand safety, notes, points per criterion, contact route, fee), and up to three post `thumbs` | 3.7 |
 | `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, and an optional quote | 3.8 |
 | `verdict` | The `call`, its `status`, the `reason`, and the `checks` behind it | 3.25 |
 | `steps` | Dated plan steps: `when`, `what`, and `who` | 3.17 |
@@ -96,6 +97,7 @@ The fill script checks these after the shape. Each problem it prints names its r
 
 - `template-sections`: the typed sections the template needs are there, and none it does not allow.
 - `length`: a Readout sets `length`; no other template does.
+- `groups`: only a Shortlist names its verdict groups.
 - `action-ranks`: ranks are unique and ascending.
 - `source-label`: every source is one of the labels above.
 - `dates`: every date is a real date, `footer.updated` a real date and time.
@@ -111,6 +113,8 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `shared-page`: a page whose source line says "Shared with" lists no gaps and no freshness notes. It still shows its confidence.
 - `banned-phrase`: no phrase on the banned-phrase list (`glossary.md`, section 2) in any field the reader sees.
 - `no-internal-names`: no Atlas tool name (the page check's list, alone or inside a prefixed name) or record id in any field the reader sees, `scope.tools` included.
+- `page-size`: the page's images are at most 8,000,000 characters of data URIs and the printed page at most
+  10,000,000, the budgets in `creator-card.md`, **Images**, **Budgets**; the message gives that section's cut order.
 - `theme`: the theme holds token rules only: custom-property declarations in plain or `@media` rules, with no `<`, backslash, `url(` or `image-set(`.
 
 ## 4. The six templates
@@ -130,7 +134,10 @@ answer, plan steps follow the actions, and creators and posts are the evidence.
 | Plan | Dated steps toward one goal | `steps` | `creators`, `kpis` |
 | Dashboard | A standing page that tracks a program, its money, or its content | `kpis` | `creators`, `posts`, `steps` |
 
-A Shortlist groups its creators by verdict and shows the tally under the answer.
+A Shortlist groups its creators by verdict and shows the tally under the answer. The tally counts
+the cards on the page; `figures` give any counts that include creators folded into `evidence`. The groups are
+named To contact, Maybes, and Left out; a page whose groups mean something else (a standing pool,
+for example) names them in `groups`.
 
 ## 5. Length budgets
 

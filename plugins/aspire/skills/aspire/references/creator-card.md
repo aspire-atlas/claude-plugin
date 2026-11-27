@@ -313,9 +313,12 @@ and `cssHeight` (half of them). Use them so the browser never stretches the imag
 - Published page: all images under 8MB of data URIs and the whole page under 10MB (the
   artifact limit is 16MB). Over 8MB, in this order: two thumbnails per creator card instead
   of three; `post` cards past the first five as `thumb`; drop images from collapsed or
-  secondary sections (rejected lists, passed checks); then rerun with `--quality=80`. Never
-  drop the image of a post that is the subject of the page (the post under review, a top
-  post).
+  secondary sections (rejected lists, passed checks); then rerun with `--quality=80`; then one
+  thumbnail per creator card; then no thumbnails past card 60 (on a lanes page, past the first
+  60% of each lane's cards, so no lane loses all of its thumbnails). Never drop the image of a
+  post that is the subject of the page (the post under review, a top post).
+- A page filled from data (`skills/page-standard/templates.md`) draws card thumbnails in an 80 px
+  square, so embed them as `thumb@80x80`, not at the 120 px default.
 - The snippet's output is large. Redirect it to a file in the scratch folder (`python3
   embed_media.py … > media.jsonl`), read only the small fields (`ok`, `format`, `width`,
   `height`, `cssWidth`, `cssHeight`, `native`, `bytes`), and put each `dataUri` into the page
