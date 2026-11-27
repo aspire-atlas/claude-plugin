@@ -64,7 +64,7 @@ grep -qF 'Not for public publishing.' "$STD" || err "the standard lost its audie
 for f in ad-reuse affiliate cas-campaign content-library content-review content-sourcing creator-brief creator-card \
   creator-discovery creator-profile creator-vetting deliverable-tracker fulfillment market-signal negotiation \
   orchestrator outreach post-analysis ppa-pitch program program-dashboard program-ledger quality-review quarterly-signal \
-  readout roster-manager shops first-run agents/decision-audit agents/sample-artifact; do
+  readout roster-manager shops camera-screen first-run agents/decision-audit agents/sample-artifact; do
   [ -f "$R/$f.md" ] || { err "$R/$f.md is missing"; continue; }
   grep -q '\*\*Artifact standard\*\*' "$R/$f.md" || err "$f.md does not point to the artifact standard (cite it as **Artifact standard**, which SKILL.md's Sections index resolves)"
 done

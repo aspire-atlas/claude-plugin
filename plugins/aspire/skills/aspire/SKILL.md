@@ -64,12 +64,12 @@ Text after the command is the argument. Route on it before anything else:
 | `org` (also `change organization`, `switch org`; the progress bar's title drafts it) | Run Phase 1, then **Organization pick**, The `org` argument. Change nothing in Atlas. |
 | `getting started` (also `help`, `get started`, `start`, `guide`, `starter guide`, `what can you do`, `how does this work`) | Show the Atlas Starter Guide per `references/first-run.md` (**7**, On request): publish the page, say its link in one line, then the **Sample artifacts** offer. Skip the phases and Phase 1. Never a text summary instead of the page, and never onboarding unless the user asks to set up. |
 | `sample` (also `sample {agent}`, `show me a sample`, `example`) | Run **Sample artifacts** (`references/samples.md`). No Atlas connection is needed, so skip the phases. |
-| `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Fee calculator**. Skip the other phases. |
-| `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Influencer program**. Skip the other phases. |
-| `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Orchestrator**. Skip the other phases. |
-| `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **CAS campaign**. Skip the other phases. |
-| `dashboard` (also `show the dashboard`, `my dashboard`, `where do we stand`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Organization dashboard**, on any organization. Skip the other phases. |
-| `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and pick the brand profile, then run **Shops**. Skip the other phases. |
+| `fee calculator` (also `fees`, `pricing`, `rate card`, `creator rates`) | Run Phase 1 and Phase 2 + 3 only (the connection and the brand profile), then **Fee calculator**; skip the other phases. |
+| `program` (also `influencer program`, `creator program`, `ambassador program`, `affiliate program`, `gifting program`) | Run Phase 1 and Phase 2 + 3 only (the connection and the brand profile), then **Influencer program**; skip the other phases. |
+| `next` (also `what's next`, `next actions`, `orchestrator`, and the hourly "Atlas next actions" task) | Run Phase 1 and Phase 2 + 3 only (the connection and the brand profile), then **Orchestrator**; skip the other phases. |
+| `cas campaign` (also `creator ad campaign`, `campaign manager`) | Run Phase 1 and Phase 2 + 3 only (the connection and the brand profile), then **CAS campaign**; skip the other phases. |
+| `dashboard` (also `show the dashboard`, `my dashboard`, `where do we stand`) | Run Phase 1 and Phase 2 + 3 only (the connection and the brand profile), then **Organization dashboard**, on any organization; skip the other phases. |
+| `shops` (also `shop`, `instagram shop`, `tiktok shop`) | Run Phase 1 and Phase 2 + 3 only (the connection and the brand profile), then **Shops**; skip the other phases. |
 | `quality review` (also `review this deck`, `audit this deck`, `review this page`, `is this ready to send`, `check this before I share it`) | Run **Quality review**. It needs no Atlas connection unless the user wants the work's Atlas figures re-checked, so skip the phases until then. |
 | `feedback` (also `product feedback`, `give feedback`, `report a problem`, `feature request`, `feedback on {link}`) | Run Phase 1 and Phase 2 + 3 only to confirm the connection and the organization, then run **Product feedback**, which hands feedback on a page or deck to **Quality review**. Skip the other phases. |
 | `polish` (also `improve my prompt`, `coach`, `tighten this prompt`) | Run **Prompt coach**. It needs no Atlas connection, so skip the phases until "Run it now" hands the rewritten ask to a flow. |
@@ -133,6 +133,7 @@ Other files, agents, and launch messages cite these sections as `SKILL.md` **{na
 | **Readouts** (its Schedule is the scheduling steps other flows follow) | `references/readout.md` |
 | **Market signal** | `references/market-signal.md` |
 | **Quarterly signal** | `references/quarterly-signal.md` |
+| **Camera screen** | `references/camera-screen.md` |
 | **CAS creative review** | `references/cas-creative-review.md` |
 | **Theme** (Setup, Applying) | `references/theme.md` |
 | **Fee calculator** (Setup, Applying) | `references/fees.md` |
@@ -178,6 +179,7 @@ Basic work (reading what Atlas holds, publishing a page, drafting a message) run
 | `atlas-program-ledger` | sonnet | Records and matches rows exactly, leaves doubtful ones unmatched, never pays |
 | `atlas-program-dashboard` | sonnet | Shows saved numbers against goals; acts on nothing |
 | `atlas-shops` | sonnet | A plan from held data; platform rules hedged and never stated without a source |
+| `atlas-camera-screen` | sonnet | Counts labels post by post and scores; judges nothing |
 | `atlas-cas-creative-review` | inherit | Judges cuts from video frames |
 
 Record the model in the decision log's launch line (**Decision audit**) as one clause ("on
