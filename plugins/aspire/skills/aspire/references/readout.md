@@ -295,7 +295,8 @@ sections 2 and 7). The template sets the layout; this sets what goes in each fie
   wording above.
 - `figures`: posts published, the lead metric, and followers with the delta since the last
   readout, each against its 28-day median or the last readout. `sections.kpis`: engagement,
-  engagement rate, and the other R4 metrics, each with its comparison.
+  engagement rate, and the other metrics the primary lens reads besides the lead metric, each
+  with its comparison.
 - `insights`: the storyline's bullets (three, or fewer per **Orchestration contract** **2**,
   **Fewer bullets**: an empty window or a bullet the person dropped), each with the posts,
   accounts, or views behind it as `evidence` and the 28-day median as `comparison`. The first may

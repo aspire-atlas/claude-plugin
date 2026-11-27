@@ -161,7 +161,7 @@ out and named in `gaps` or the chat summary. The brand's question picks the orde
 - `actions`: what the brand should do: sponsor, partner, reuse as posted or trimmed, or pass, each
   with its owner and cost; for the `performance` or `creative` lens, the ad reuse check from **Ad
   reuse** (the hook score and pattern in the action's `effect`, and each cut of the cut list as
-  its own evidence line with its timestamps, length, placement, and rights), advice that never
+  its own evidence line with its timestamps, length, placement, and rights, per `evidence` below), advice that never
   changes the safety verdict. `decisions`: the call the brand must make, in one short line ("Use
   as posted, trimmed, or pass, for {brand}'s risk tolerance"), with the fit by advertiser risk
   tolerance as three evidence lines (conservative, standard, permissive: the verticals each suits
@@ -169,15 +169,17 @@ out and named in `gaps` or the chat summary. The brand's question picks the orde
   note reads "Aspire read based on the scores and evidence above. Not an Atlas score."
 - `sections.posts`: the post itself, with its metrics, the caption as `quote`, and the people on
   screen and its format in `why`.
-- `evidence`: the brands in the video, one line per brand or group (paid sponsor, wardrobe, show
+- `evidence`, ten lines at most. The three risk-tolerance tiers come first, then, for the
+  `performance` or `creative` lens, the cuts (up to three; any more are counted in the last cut's
+  line). The rest are ranked for the brand's question into what is left: the brands in the video,
+  one line per brand or group (paid sponsor, wardrobe, show
   and founder brands, league and team marks, background) with its seconds on screen, its ranges,
   and whether it is legible, paid, or disclosed; the marks not counted; disagreements with
   Atlas's `featuredBrands`; comment sentiment when filled; the content scores (production,
   energy, authenticity, promotional intent) and the primary emotion and tone; and the account
   baseline (this post's rank on views, interaction rate, and comments per 1,000 likes, against
-  the account medians, with a warning when the held posts are far from its date). Ten lines at
-  most, ranked for the brand's question: the tenth counts the rest, and the chat summary lists
-  them.
+  the account medians, with a warning when the held posts are far from its date). The tenth line
+  counts what did not fit, and the chat summary lists it.
 - `method.notes`, six at most: the Aspire read label above, how brand and profanity timestamps
   were derived (frames, transcript, audio), how speakers were identified, how rates were computed
   with the counts each uses, and "Not a benchmark for {brand}" when the account is a different

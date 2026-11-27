@@ -34,14 +34,19 @@ given, name it in one line of the summary and stop that branch.
 `lookup_creators`, never ask a question, and write nothing to Atlas: skip step 8 and return the
 findings and pushes only, saying in the summary that nothing was saved.
 
+**Render-only runs** (`render_only: true`, the "chart it" relaunch after a review already ran)
+never call `lookup_creators` and write nothing to Atlas: skip step 3's lookup and step 8, read
+what Atlas holds, and build the page (step 10). The first run resolved the handle and saved the
+findings.
+
 **Process:**
 
 1. Load tools: `ToolSearch` with `select:` for `list_post_search_fields`, `search_posts`,
-   `search_creators`, `list_creator_search_fields`, `append_insights`, `report_checkpoint` under the given prefix. In mode
-   `handle`, also load `lookup_creators`.
+   `search_creators`, `list_creator_search_fields`, `append_insights` (not with `render_only: true`), `report_checkpoint` under the given prefix. In mode
+   `handle`, also load `lookup_creators` (not with `render_only: true`).
 2. Take field paths from `atlas-search.md`; call `list_post_search_fields` or `list_creator_search_fields`
    only for a path it does not list. Never guess a path.
-3. **Resolve the target and verify it is current (mode `handle` only).** Follow **Resolve** in
+3. **Resolve the target and verify it is current (mode `handle` only; not with `render_only: true`).** Follow **Resolve** in
    `${CLAUDE_PLUGIN_ROOT}/skills/aspire/references/account-resolution.md`. Never run a lookup in
    mode `own`: connected channels are indexed by Atlas directly. A handle that cannot be resolved
    stops the run without writing insights. Report the freshness it keeps in the summary.
@@ -78,7 +83,7 @@ findings and pushes only, saying in the summary that nothing was saved.
      `competitor` or `partner` record, which is a classification, not a benchmark, and framing why the
      account is or is not relevant to the brand's stated goal. Apply brand red line checks only to the
      brand's own accounts, and ignore every key starting `review:` (content review only), `program:` (influencer program only), `library:` (content library only), `orchestrator:` (the orchestrator only), `adreuse:` (ad reuse only), `applicantreview:` (one campaign's applicant screening only), or `lastrun:` (a flow's saved setup answers, never a rule).
-8. Interactive runs only: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
+8. Interactive runs only, not with `render_only: true`: write findings back with `append_insights`: one `runKey` for this run — mode `own`:
    `onboarding-{profile}-{date}` when `onboarding: true`, else `account-review-{profile}-own-{date}`;
    mode `handle`: `account-review-{profile}-{handle}-{date}` — role
    `account_review`, `schema` = network, `entityKind` = account (or post for post-level findings),
@@ -102,9 +107,7 @@ findings and pushes only, saying in the summary that nothing was saved.
    `creator-brief` when a push needs creators); `sections.posts` holds the top 3 and bottom 2
    posts, each with its `why`; `sections.kpis` holds each competitor's or peer's rates. Put a
    saved `theme:brand` in the data's `theme`, and publish the printed page with the Artifact tool,
-   title "{Brand or @handle} Account Review". With `render_only: true` (the "chart it" relaunch),
-   skip step 3's lookup and step 8's writes: the first run resolved the handle and saved the
-   findings, so this run only reads and renders. Without `page: true`, publish
+   title "{Brand or @handle} Account Review". A render-only run (above) gets here without a lookup or a write. Without `page: true`, publish
    nothing: the summary is the answer.
 
 **Output format (executive summary, under 250 words):**

@@ -78,7 +78,8 @@ gaps, and stop as for an unresolved handle when Atlas does not hold the account.
     publish the printed page with the Artifact tool, title "{Name or @handle} Creator Profile", republishing to the same
     file path for the same handle. No Artifact tool: save the page as a file and return its path, per
     `skills/page-standard/page-file.md`.
-12. Never invent data. A part with nothing behind it is left out and named in the method's notes.
+12. Never invent data. A part with nothing behind it is left out and named in one method note, counting
+    them when there are several.
 
 **Output format (under 200 words):**
 
