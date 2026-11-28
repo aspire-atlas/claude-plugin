@@ -32,6 +32,7 @@
       "properties": {"yes": {"$ref": "#/$defs/text40"}, "maybe": {"$ref": "#/$defs/text40"}, "no": {"$ref": "#/$defs/text40"}}
     },
     "theme": {"$ref": "#/$defs/theme"},
+    "live": {"$ref": "#/$defs/live"},
     "footer": {"$ref": "#/$defs/footer"}
   },
   "$defs": {
@@ -247,7 +248,8 @@
             }
           }
         },
-        "settle": {"$ref": "#/$defs/text200", "description": "The one question that would settle a Maybe."}
+        "settle": {"$ref": "#/$defs/text200", "description": "The one question that would settle a Maybe."},
+        "tags": {"$ref": "#/$defs/tags"}
       }
     },
     "post": {
@@ -256,6 +258,7 @@
         "href": {"$ref": "#/$defs/link"},
         "account": {"$ref": "#/$defs/account"},
         "postedAt": {"$ref": "#/$defs/text60", "description": "The post's own time with its time zone, as the page shows it."},
+        "tags": {"$ref": "#/$defs/tags"},
         "image": {"type": "string", "maxLength": 400000, "pattern": "^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$"},
         "alt": {"$ref": "#/$defs/text140"},
         "metrics": {
@@ -306,6 +309,115 @@
         "posts": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/post"}},
         "verdict": {"$ref": "#/$defs/verdict"},
         "steps": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/step"}}
+      }
+    },
+    "tags": {
+      "type": "array", "maxItems": 24, "description": "A card's values for the page's filters (live.filters), one entry per value.",
+      "items": {"type": "object", "additionalProperties": false, "required": ["facet", "value"],
+                "properties": {"facet": {"$ref": "#/$defs/liveKey"}, "value": {"$ref": "#/$defs/text40"}}}
+    },
+    "liveKey": {"type": "string", "maxLength": 40, "pattern": "^[A-Za-z][A-Za-z0-9_]*$", "description": "A field name or id the page uses in page data."},
+    "liveId": {"type": "string", "maxLength": 120, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$", "description": "A document id: one path segment."},
+    "livePath": {"type": "string", "maxLength": 200, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*(/[A-Za-z0-9][A-Za-z0-9_.-]*)+$", "description": "A page data document path: segments joined by slashes."},
+    "liveField": {"type": "string", "maxLength": 120, "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)*$", "description": "A field in a page data document; dots reach into nested fields."},
+    "live": {
+      "type": "object", "additionalProperties": false, "required": ["capabilities"],
+      "description": "The page's live parts (templates.md, section 8). Each renders a fallback first and lights up in the page when its capability answers.",
+      "properties": {
+        "capabilities": {"type": "object", "description": "The capability declaration the agent passes to the Artifact publish, exactly as passed. The fill checks each part's needs are in it."},
+        "team": {"$ref": "#/$defs/liveTeam"},
+        "form": {"$ref": "#/$defs/liveForm"},
+        "filters": {"$ref": "#/$defs/liveFilters"},
+        "approvals": {"$ref": "#/$defs/liveApprovals"}
+      }
+    },
+    "liveTeam": {
+      "type": "object", "additionalProperties": false,
+      "description": "Values only Editors read, from page data under team. Everyone else sees the fallback.",
+      "properties": {
+        "fallback": {"$ref": "#/$defs/text60", "description": "What a viewer without the team data sees in place of each value. Default: Team view."},
+        "tiles": {"type": "array", "maxItems": 12, "items": {
+          "type": "object", "additionalProperties": false, "required": ["label", "doc", "field", "comparison"],
+          "properties": {
+            "label": {"$ref": "#/$defs/text60"},
+            "doc": {"$ref": "#/$defs/livePath", "description": "The document under team, for example team/spend/USD."},
+            "field": {"$ref": "#/$defs/liveField"},
+            "comparison": {"$ref": "#/$defs/text140", "description": "What the value is set against, in words with no amount: every viewer sees it."},
+            "vsField": {"$ref": "#/$defs/liveField", "description": "A field in the same document whose value follows the comparison, for Editors."},
+            "source": {"$ref": "#/$defs/source"}
+          }}},
+        "tables": {"type": "array", "maxItems": 4, "items": {
+          "type": "object", "additionalProperties": false, "required": ["title", "doc", "field", "columns"],
+          "properties": {
+            "title": {"$ref": "#/$defs/text60"},
+            "doc": {"$ref": "#/$defs/livePath", "description": "The document under team, for example team/overdue."},
+            "field": {"$ref": "#/$defs/liveField", "description": "The field that holds the rows, a list of objects."},
+            "columns": {"type": "array", "minItems": 1, "maxItems": 6, "items": {
+              "type": "object", "additionalProperties": false, "required": ["label", "field"],
+              "properties": {"label": {"$ref": "#/$defs/text40"}, "field": {"$ref": "#/$defs/liveField"}}}},
+            "empty": {"$ref": "#/$defs/text120", "description": "What an Editor sees when the list is empty."}
+          }}}
+      }
+    },
+    "liveForm": {
+      "type": "object", "additionalProperties": false, "required": ["title", "collection", "fields", "rows"],
+      "description": "A form the team fills in, one row per item, each row saved as {collection}/{row id}. Viewers who cannot write see labels.",
+      "properties": {
+        "title": {"$ref": "#/$defs/text60"},
+        "note": {"$ref": "#/$defs/text200", "description": "A notice that always shows above the form."},
+        "collection": {"$ref": "#/$defs/liveKey"},
+        "fields": {"type": "array", "minItems": 1, "maxItems": 12, "items": {
+          "type": "object", "additionalProperties": false, "required": ["key", "label", "type"],
+          "properties": {
+            "key": {"$ref": "#/$defs/liveKey"},
+            "label": {"$ref": "#/$defs/text40"},
+            "type": {"enum": ["text", "select", "date"]},
+            "options": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/text60"}}
+          }}},
+        "rows": {"type": "array", "maxItems": 200, "items": {
+          "type": "object", "additionalProperties": false, "required": ["id", "label"],
+          "properties": {
+            "id": {"$ref": "#/$defs/liveId"},
+            "label": {"$ref": "#/$defs/text80"},
+            "values": {"type": "array", "maxItems": 12, "items": {
+              "type": "object", "additionalProperties": false, "required": ["key", "value"],
+              "properties": {"key": {"$ref": "#/$defs/liveKey"}, "value": {"$ref": "#/$defs/text200"}}}}
+          }}},
+        "empty": {"$ref": "#/$defs/text120", "description": "What the form shows with no rows."}
+      }
+    },
+    "liveFilters": {
+      "type": "object", "additionalProperties": false, "required": ["target", "facets"],
+      "description": "Filters over the creator or post cards, run in the page on the data embedded in it. Each card's values are its tags.",
+      "properties": {
+        "target": {"enum": ["creators", "posts"]},
+        "facets": {"type": "array", "minItems": 1, "maxItems": 8, "items": {
+          "type": "object", "additionalProperties": false, "required": ["key", "label"],
+          "properties": {"key": {"$ref": "#/$defs/liveKey"}, "label": {"$ref": "#/$defs/text40"}}}},
+        "search": {"type": "boolean", "description": "A text box over the cards' words."}
+      }
+    },
+    "liveApprovals": {
+      "type": "object", "additionalProperties": false, "required": ["collection", "items"],
+      "description": "Items an Editor decides on the page. Each decision is saved as {collection}/{their id}/actions/{item id}.",
+      "properties": {
+        "collection": {"$ref": "#/$defs/liveKey"},
+        "items": {"type": "array", "maxItems": 30, "items": {
+          "type": "object", "additionalProperties": false, "required": ["id", "text", "fingerprint"],
+          "properties": {
+            "id": {"$ref": "#/$defs/liveId"},
+            "text": {"$ref": "#/$defs/text200"},
+            "fingerprint": {"$ref": "#/$defs/liveId", "description": "Copied into the decision, so a later run can tell the item changed after it was decided."},
+            "held": {"$ref": "#/$defs/text140", "description": "Why it cannot be approved on the page. It shows as Do this in a session, with no controls."},
+            "questions": {"type": "array", "maxItems": 6, "items": {
+              "type": "object", "additionalProperties": false, "required": ["id", "text", "options"],
+              "properties": {
+                "id": {"$ref": "#/$defs/liveKey"},
+                "text": {"$ref": "#/$defs/text140"},
+                "options": {"type": "array", "minItems": 2, "maxItems": 6, "items": {"$ref": "#/$defs/text80"}},
+                "multi": {"type": "boolean"}
+              }}}
+          }}}
       }
     },
     "theme": {

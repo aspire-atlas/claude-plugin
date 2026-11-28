@@ -1,0 +1,466 @@
+{
+  "version": 1,
+  "template": "dashboard",
+  "example": true,
+  "title": "How is the fall ambassador program doing?",
+  "answer": "The program is on track for posts but behind on sales: chase 2 late posts and refresh the codes.",
+  "takeaway": "22 of 24 posts owed are live, but code sales are at 61% of the goal with 5 weeks left.",
+  "scope": {
+    "reader": "the influencer program lead",
+    "brand": "Brightside Toys",
+    "range": "Sep 1 to Nov 22, 2026",
+    "question": "I5",
+    "accounts": [
+      "instagram:brightsidetoys",
+      "tiktok:brightsidetoys",
+      "instagram:buildwithmaya",
+      "tiktok:dadbuildsit"
+    ],
+    "platforms": [
+      {
+        "network": "instagram",
+        "posts": 15
+      },
+      {
+        "network": "tiktok",
+        "posts": 7
+      },
+      {
+        "network": "youtube",
+        "posts": 0,
+        "note": "No ambassador posts there."
+      }
+    ],
+    "tools": [
+      "Shopify"
+    ]
+  },
+  "figures": [
+    {
+      "label": "Posts live",
+      "value": "22 of 24",
+      "comparison": "2 are past their due date",
+      "status": "warn",
+      "source": "Atlas"
+    },
+    {
+      "label": "Code sales",
+      "value": "USD 18,300",
+      "comparison": "61% of the USD 30,000 goal, with 5 weeks left",
+      "status": "bad",
+      "source": "Shopify"
+    },
+    {
+      "label": "Views on program posts",
+      "value": 684000,
+      "comparison": "1.3 times the creators' usual",
+      "status": "ok",
+      "source": "Atlas"
+    }
+  ],
+  "insights": [
+    {
+      "text": "Two creators drive most of the code sales.",
+      "evidence": "@buildwithmaya and @dadbuildsit made 71% of the USD 18,300.",
+      "comparison": "they hold 2 of the 8 roster spots",
+      "so": "Offer both a higher commission for December; check it against the budget first.",
+      "source": "Shopify",
+      "chart": {
+        "title": "Code sales by creator, in USD",
+        "bars": [
+          {
+            "label": "September",
+            "segments": [
+              {
+                "label": "Top two",
+                "value": 3900
+              },
+              {
+                "label": "Other six",
+                "value": 1700
+              }
+            ]
+          },
+          {
+            "label": "October",
+            "segments": [
+              {
+                "label": "Top two",
+                "value": 5200
+              },
+              {
+                "label": "Other six",
+                "value": 2100
+              }
+            ]
+          },
+          {
+            "label": "November",
+            "segments": [
+              {
+                "label": "Top two",
+                "value": 3900
+              },
+              {
+                "label": "Other six",
+                "value": 1500
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "rank": 1,
+      "verb": "Chase",
+      "object": "the 2 late posts from @tinytinkerers",
+      "owner": "Influencer program lead",
+      "due": "2026-11-25",
+      "effect": "24 of 24 posts live by Nov 30",
+      "job": "deliverable-tracker",
+      "cost": {
+        "kind": "none",
+        "line": "No spend, time only"
+      },
+      "source": "Atlas",
+      "first": true
+    },
+    {
+      "rank": 2,
+      "verb": "Refresh",
+      "object": "the discount codes with a December offer",
+      "owner": "Influencer program lead",
+      "due": "2026-12-01",
+      "effect": "Code sales back to USD 6,000 a month",
+      "job": "affiliate-manager",
+      "cost": {
+        "kind": "unpriced",
+        "line": "Cannot be priced: the December discount is not set yet; the program lead has it",
+        "missing": "the December discount",
+        "holder": "the program lead"
+      },
+      "source": "Shopify"
+    }
+  ],
+  "decisions": [
+    {
+      "text": "Raise the top two creators' commission from 10% to 15% for December",
+      "approver": "the influencer program lead",
+      "by": "2026-11-28",
+      "then": "Atlas drafts the new terms for both.",
+      "cost": {
+        "kind": "money",
+        "line": "Cost: about USD 600 more, 5% on the USD 12,000 the two sold in the last 2 months (estimate)."
+      }
+    }
+  ],
+  "evidence": [],
+  "gaps": [
+    "Returns: the store shows orders but not returns, so sales are before returns."
+  ],
+  "confidence": {
+    "level": "medium",
+    "why": "Sales come from the store; returns are not counted yet."
+  },
+  "sources": [
+    "Program records and posts Atlas holds, Sep 1 to Nov 22, 2026",
+    "Orders by discount code from the connected store"
+  ],
+  "drafts": [
+    {
+      "draft": "December terms for the top two creators",
+      "waitsOn": "After you approve the commission"
+    }
+  ],
+  "sections": {
+    "kpis": [
+      {
+        "label": "Creators on the roster",
+        "value": 8,
+        "comparison": "the goal was 8",
+        "status": "ok",
+        "source": "Atlas"
+      },
+      {
+        "label": "Budget spent",
+        "value": "USD 21,400",
+        "comparison": "71% of USD 30,000, on pace",
+        "status": "ok",
+        "source": "Our read"
+      },
+      {
+        "label": "Posts due in December",
+        "value": 16,
+        "comparison": "8 creators, 2 each",
+        "status": "flat",
+        "source": "Atlas"
+      }
+    ],
+    "posts": [
+      {
+        "href": "https://www.instagram.com/reel/EXAMPLE6/",
+        "account": "instagram:buildwithmaya",
+        "postedAt": "Nov 8, 2026, 6:15 PM ET",
+        "metrics": {
+          "views": 88300,
+          "likes": 5120,
+          "comments": 233
+        },
+        "usual": "1.7x her usual",
+        "why": "The program post with the most code sales: USD 2,400.",
+        "tags": [
+          {
+            "facet": "format",
+            "value": "Reel"
+          },
+          {
+            "facet": "network",
+            "value": "Instagram"
+          }
+        ]
+      },
+      {
+        "href": "https://www.tiktok.com/@dadbuildsit/video/EXAMPLE7",
+        "account": "tiktok:dadbuildsit",
+        "postedAt": "Nov 15, 2026, 7:30 PM ET",
+        "metrics": {
+          "views": 102400,
+          "likes": 6340,
+          "comments": 301
+        },
+        "usual": "2.7x his usual",
+        "why": "The most viewed program post.",
+        "tags": [
+          {
+            "facet": "format",
+            "value": "Video"
+          },
+          {
+            "facet": "network",
+            "value": "TikTok"
+          }
+        ]
+      }
+    ],
+    "steps": [
+      {
+        "when": "Nov 30",
+        "what": "Last 2 November posts due."
+      },
+      {
+        "when": "Dec 1",
+        "what": "December codes go live.",
+        "who": "Influencer program lead"
+      },
+      {
+        "when": "Dec 31",
+        "what": "Program ends. Final read on sales against the goal."
+      }
+    ]
+  },
+  "live": {
+    "capabilities": {
+      "db": {
+        "rules": [
+          {
+            "path": "",
+            "read": "interact",
+            "write": "owner"
+          },
+          {
+            "path": "team",
+            "read": "admin",
+            "write": "owner"
+          },
+          {
+            "path": "rows",
+            "read": "interact",
+            "write": "interact"
+          },
+          {
+            "path": "decisions",
+            "read": "interact",
+            "write": "owner"
+          },
+          {
+            "path": "decisions/{self}",
+            "write": "admin"
+          }
+        ]
+      },
+      "user": {}
+    },
+    "team": {
+      "tiles": [
+        {
+          "label": "Spent and committed",
+          "doc": "team/spend",
+          "field": "USD.committed",
+          "comparison": "against the program budget",
+          "vsField": "USD.budget",
+          "source": "Our read"
+        },
+        {
+          "label": "Commission owed",
+          "doc": "team/spend",
+          "field": "USD.owed",
+          "comparison": "due by the end of the month",
+          "source": "Shopify"
+        }
+      ],
+      "tables": [
+        {
+          "title": "Overdue payments",
+          "doc": "team/overdue",
+          "field": "lines",
+          "columns": [
+            {
+              "label": "Creator",
+              "field": "creator"
+            },
+            {
+              "label": "Amount",
+              "field": "amount"
+            },
+            {
+              "label": "Due",
+              "field": "due"
+            }
+          ],
+          "empty": "Nothing is overdue."
+        }
+      ]
+    },
+    "approvals": {
+      "collection": "decisions",
+      "items": [
+        {
+          "id": "renew-buildwithmaya",
+          "text": "Offer @buildwithmaya a December renewal at her current terms",
+          "fingerprint": "f-7c21",
+          "questions": [
+            {
+              "id": "channel",
+              "text": "How should the offer go out?",
+              "options": [
+                "Email draft",
+                "Instagram message draft"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "codes-december",
+          "text": "Create the December discount codes in the store",
+          "fingerprint": "f-1a09",
+          "held": "Placing store changes needs a session, so you can confirm each code."
+        }
+      ]
+    },
+    "form": {
+      "title": "Product orders",
+      "note": "For your team only. Everyone who can open this page sees what is entered here.",
+      "collection": "rows",
+      "fields": [
+        {
+          "key": "product",
+          "label": "Product",
+          "type": "select",
+          "options": [
+            "Marble run kit",
+            "Castle builder set"
+          ]
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "select",
+          "options": [
+            "To request",
+            "Requested",
+            "Ordered",
+            "Shipped",
+            "Delivered"
+          ]
+        },
+        {
+          "key": "shipBy",
+          "label": "Ship by",
+          "type": "date"
+        }
+      ],
+      "rows": [
+        {
+          "id": "creator-instagram-buildwithmaya",
+          "label": "@buildwithmaya on Instagram",
+          "values": [
+            {
+              "key": "product",
+              "value": "Marble run kit"
+            },
+            {
+              "key": "status",
+              "value": "Lost"
+            }
+          ]
+        },
+        {
+          "id": "creator-tiktok-dadbuildsit",
+          "label": "@dadbuildsit on TikTok",
+          "values": [
+            {
+              "key": "status",
+              "value": "To request"
+            },
+            {
+              "key": "shipBy",
+              "value": "2026-12-04"
+            }
+          ]
+        }
+      ]
+    },
+    "filters": {
+      "target": "posts",
+      "facets": [
+        {
+          "key": "format",
+          "label": "Format"
+        },
+        {
+          "key": "network",
+          "label": "Network"
+        }
+      ],
+      "search": true
+    }
+  },
+  "footer": {
+    "updated": "2026-11-23T14:05Z",
+    "freshness": [
+      {
+        "account": "instagram:brightsidetoys",
+        "newest": "2026-11-22",
+        "fetched": "2026-11-23"
+      },
+      {
+        "account": "tiktok:brightsidetoys",
+        "newest": "2026-11-21",
+        "fetched": "2026-11-23"
+      },
+      {
+        "account": "instagram:buildwithmaya",
+        "newest": "2026-11-20",
+        "fetched": "2026-11-22"
+      },
+      {
+        "account": "tiktok:dadbuildsit",
+        "newest": "2026-11-21",
+        "fetched": "2026-11-22"
+      }
+    ],
+    "source": "Example. Invented brands and numbers, not from Atlas or the store. Not for any decision. Internal use only. Not for public publishing."
+  }
+}

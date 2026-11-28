@@ -3,6 +3,8 @@
 #   - the fill script in page-fill.md renders every template from its example data in
 #     scripts/fixtures/page-templates/<template>.json, each example carries the Example label, and
 #     the page check (page-check.md) fails nothing on any rendered page
+#   - the page rendered from each example carries every live part its data names (templates.md,
+#     section 8) and the script that runs them, and the Dashboard example names all four
 #   - the fill script refuses each fail-<rule>*.json fixture there, on that rule and no other
 #   - page-templates.json gives every template a length budget and only typed sections the data
 #     shape (page-data.schema.json) defines, and the page check's BUDGETS hold the same numbers
@@ -55,6 +57,9 @@ for name, t in tpl["templates"].items():
     for key in t.get("needs", []) + t.get("needsOne", []) + t.get("exactlyOne", []) + t["allows"]:
         if key not in sections:
             problems.append("%s names a section the data shape does not define: %s" % (name, key))
+    for key in t.get("live", []):
+        if key == "capabilities" or key not in schema["$defs"]["live"]["properties"]:
+            problems.append("%s allows a live part the data shape does not define: %s" % (name, key))
     for key in t.get("needs", []) + t.get("exactlyOne", []):
         if key not in t["allows"]:
             problems.append("%s needs %s but does not allow it" % (name, key))
@@ -147,8 +152,17 @@ for t in $(python3 -I -c 'import json,sys; print(" ".join(json.load(open(sys.arg
   out=$(python3 -I "$tmp/page_check.py" "$tmp/$t.html" 2>&1) && code=0 || code=$?
   failed=$(grep -o '"check": "R[0-9]*", "name": "[^"]*", "result": "fail"' <<< "$out" | sed -E 's/^"check": "(R[0-9]+)".*/\1/' | tr '\n' ' ' || true)
   [ "$code" -eq 0 ] && [ -z "$failed" ] || err "the page rendered from $f fails the page check (${failed:-exit $code}): $out"
+  for part in $(python3 -I -c 'import json,sys; print(" ".join(k for k in json.load(open(sys.argv[1])).get("live", {}) if k != "capabilities"))' "$f"); do
+    grep -q "data-live=\"$part\"" "$tmp/$t.html" || err "the page rendered from $f has no $part part, though its data names one"
+  done
+  if grep -q '"live"' "$f"; then
+    grep -q '<script type="application/json" id="pf-live">' "$tmp/$t.html" || err "the page rendered from $f has live parts but no script to run them"
+  fi
   rendered=$((rendered + 1))
 done
+want=$(python3 -I -c 'import json,sys; print(" ".join(sorted(json.load(open(sys.argv[1]))["templates"]["dashboard"]["live"])))' "$PS/page-templates.json")
+have=$(python3 -I -c 'import json,sys; print(" ".join(sorted(k for k in json.load(open(sys.argv[1])).get("live", {}) if k != "capabilities")))' "$FX/dashboard.json")
+[ "$want" = "$have" ] || err "$FX/dashboard.json names live parts '$have', not every part a Dashboard allows ('$want')"
 # Figures print in fixed point with no float noise: the fill script's num() on known values.
 nums=$(python3 -I - "$tmp/page_fill.py" <<'PY' 2>&1
 import sys

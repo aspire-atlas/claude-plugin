@@ -18,6 +18,7 @@ and the order. What each part says, the reader rules, and the R1 to R15 checks s
 - [5. Length budgets](#5-length-budgets)
 - [6. Which agent uses which template](#6-which-agent-uses-which-template)
 - [7. Fitting a flow's page into the data](#7-fitting-a-flows-page-into-the-data)
+- [8. Live parts](#8-live-parts)
 
 ## 1. Making a page from data
 
@@ -27,7 +28,8 @@ and the order. What each part says, the reader rules, and the R1 to R15 checks s
    again.
 3. Run the page check (`SKILL.md`, section 5) on the page it printed, and the English read and the
    UX review on the same page. A fix goes in the data, never in the printed HTML.
-4. Publish the printed page as `SKILL.md`, section 4, step 5 says.
+4. Publish the printed page as `SKILL.md`, section 4, step 5 says. A page with live parts
+   (section 8) is published with the declaration the fill script prints with `--capabilities`.
 
 `page-data.schema.json` is the shape as JSON Schema. `page-templates.json` holds the templates,
 the page order, and the length budgets. The fill script reads both, and the page check measures
@@ -62,6 +64,7 @@ brand snapshot report where the two overlap: `title`, `answer`, `figures` with a
 | `sections` | The typed sections a template adds (below) |
 | `groups` | Optional, Shortlist only. Its own names for the yes, maybe, and no groups, shown in the group headings and the tally |
 | `theme` | Optional. A saved brand theme's token rules (`css`) and its fonts link (`fontsHref`), from `theme.md` |
+| `live` | Optional, Dashboard and Plan only. The page's live parts and the capability declaration they need (section 8) |
 | `footer` | When the numbers were read (`updated`), one `freshness` entry per cited account, any `notes`, and the `source` line word for word as `artifact-standard.md` sets it for this page |
 
 **Source labels.** Every figure, insight, action, and evidence line names where it came from:
@@ -83,8 +86,8 @@ by its name without the `atlas-` prefix. The page shows it in plain words.
 | Section | What it holds | Block |
 | ------- | ------------- | ----- |
 | `kpis` | Up to twelve more KPI tiles, shape as `figures` | 3.24 |
-| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to twelve `stats`, an optional `group` (shown as a chip on the card), and for a Maybe the question that would `settle` it. The creator card's own parts are optional: the profile picture (`image`, embedded per `creator-card.md`, **Images**), the `score` ring (a fit or match score out of 100), up to twelve labelled `details` (brand safety, notes, points per criterion, contact route, fee), and up to three post `thumbs` | 3.7 |
-| `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, and an optional quote | 3.8 |
+| `creators` | Each creator's account, profile link, `verdict` (`yes`, `maybe`, `no`), `reason`, the checks reached, up to twelve `stats`, an optional `group` (shown as a chip on the card), for a Maybe the question that would `settle` it, and its filter values (`tags`, section 8). The creator card's own parts are optional: the profile picture (`image`, embedded per `creator-card.md`, **Images**), the `score` ring (a fit or match score out of 100), up to twelve labelled `details` (brand safety, notes, points per criterion, contact route, fee), and up to three post `thumbs` | 3.7 |
+| `posts` | Each post's link, account, time, `metrics` it shows, `missing` metrics with the reason, its views against the usual, a `why` line, an optional quote, and its filter values (`tags`, section 8) | 3.8 |
 | `verdict` | The `call`, its `status`, the `reason`, and the `checks` behind it | 3.25 |
 | `steps` | Dated plan steps: `when`, `what`, and `who` | 3.17 |
 
@@ -116,6 +119,12 @@ The fill script checks these after the shape. Each problem it prints names its r
 - `page-size`: the page's images are at most 8,000,000 characters of data URIs and the printed page at most
   10,000,000, the budgets in `creator-card.md`, **Images**, **Budgets**; the message gives that section's cut order.
 - `theme`: the theme holds token rules only: custom-property declarations in plain or `@media` rules, with no `<`, backslash, `url(` or `image-set(`.
+- `live-parts`: `live` holds at least one part, and only parts the template allows (section 8).
+- `live-capabilities`: `live.capabilities` declares what each part needs, and a `team` part's `db` rules let only Editors read `team`.
+- `live-team`: the team part has a tile or a table, each reads a document under `team`, and none of its words shows an amount.
+- `live-form`: field keys and row ids are unique, a select field has options and its values are among them, and a date is a real date.
+- `live-filters`: only the filtered cards carry `tags`, each on a facet the filters name, and the page has those cards.
+- `live-approvals`: item ids are unique, question ids are unique within an item, and a held item asks no questions.
 
 ## 4. The six templates
 
@@ -125,14 +134,14 @@ next, then the source line. The mark sits at the top right, as `artifact-standar
 sets it. A typed section takes its place in that order: KPI tiles and the verdict badge go under the
 answer, plan steps follow the actions, and creators and posts are the evidence.
 
-| Template | For | Needs | Also allows |
-| -------- | --- | ----- | ----------- |
-| Readout | What happened in a period and what to do about it | Nothing beyond the parts | `kpis`, `posts` |
-| Shortlist | Ranked creators or posts, each with a verdict and its reason | `creators` or `posts` | `kpis` |
-| Verdict | One piece of work or one post, judged | `verdict` | `posts` |
-| Profile | One creator in full | Exactly one of `creators` | `kpis`, `posts` |
-| Plan | Dated steps toward one goal | `steps` | `creators`, `kpis` |
-| Dashboard | A standing page that tracks a program, its money, or its content | `kpis` | `creators`, `posts`, `steps` |
+| Template | For | Needs | Also allows | Live parts |
+| -------- | --- | ----- | ----------- | ---------- |
+| Readout | What happened in a period and what to do about it | Nothing beyond the parts | `kpis`, `posts` | None |
+| Shortlist | Ranked creators or posts, each with a verdict and its reason | `creators` or `posts` | `kpis` | None |
+| Verdict | One piece of work or one post, judged | `verdict` | `posts` | None |
+| Profile | One creator in full | Exactly one of `creators` | `kpis`, `posts` | None |
+| Plan | Dated steps toward one goal | `steps` | `creators`, `kpis` | `team` |
+| Dashboard | A standing page that tracks a program, its money, or its content | `kpis` | `creators`, `posts`, `steps` | `team`, `form`, `filters`, `approvals` |
 
 A Shortlist groups its creators by verdict and shows the tally under the answer. The tally counts
 the cards on the page; `figures` give any counts that include creators folded into `evidence`. The groups are
@@ -239,4 +248,34 @@ fields hold, it fits the content in this way and never adds HTML to the printed 
 
 **In chat,** each insight in the summary ends with "Based on: {its source labels}", the same
 labels its page data carries ("Based on: Atlas, Brand memory").
+
+## 8. Live parts
+
+A standing page sometimes does more than show: it keeps amounts from everyone but Editors, takes
+the team's entries, filters its cards, or takes an Editor's approval. Those are live parts. The
+fill script prints each one with a fallback that reads right with no runtime, plus one script that
+lights the parts up when the page's capabilities answer (`artifact-capabilities`). The agent writes
+no script and no HTML for them.
+
+`live` holds the parts and `capabilities`, the declaration the page is published with, exactly as
+passed to the Artifact tool. The fill checks that each part's needs are declared, and
+`--capabilities` prints the declaration back. Write the page data documents the parts read right
+after the publish, in one batch, as the flow's reference says.
+
+| Part | What it does | Needs | Placed | Fallback |
+| ---- | ------------ | ----- | ------ | -------- |
+| `team` | Values only Editors read: `tiles` (a `label`, the `doc` under `team` and the `field` in it, a `comparison` in words, optionally a `vsField` shown after it, and a `source`) and `tables` (a `title`, the `doc` and the `field` holding a list of rows, and up to six `columns`, each a `label` and a `field`) | `db`, with a rule that lets only Editors (`admin` or `owner`) read `team` | Under the answer | "Team view", or `team.fallback`, in place of each value |
+| `form` | A form the team fills in: `fields` (`text`, `select` with `options`, or `date`) and one row per item (`id`, `label`, and its current `values`). Each change saves to `{collection}/{row id}` with `updatedBy` and `updatedAt` | `db` and `user` | After the decisions | The values as labels. Viewers who cannot write keep the labels |
+| `filters` | Filters over the `creators` or `posts` cards (`target`): one select per facet, and a text box when `search` is true. Each card's values are its `tags`. The address hash keeps the filters | Nothing: it runs on the page's own data | Above the cards | Every card shows |
+| `approvals` | Items an Editor decides: Approve, Not now, Do this in a session, or Ask for changes (with the typed changes), with the item's `questions` answered. Each decision saves to `{collection}/{their id}/actions/{item id}` with `verdict`, `fingerprint`, `answers`, `changes` for Ask for changes, and `updatedAt`. A `held` item shows why it needs a session and has no controls | `db` and `user` | After the decisions | The items, their questions and controls switched off |
+
+- **Amounts stay in page data.** Every viewer sees a team part's words, so a label, comparison or
+  column carries no amount; the fill refuses one (`live-team`). The amounts go in the `team`
+  documents.
+- **A decision's place says who made it.** Approvals save under the deciding Editor's own id, so
+  the declaration gives each Editor write access only to their own `{collection}/{self}` (as
+  `orchestrator.md` does), and a later run reads who decided from the path.
+- **A page with no runtime still reads.** Opened outside Claude, signed out, or by a viewer the
+  rules refuse, the page shows the fallbacks and says how to make changes. Values from page data
+  are set as text, never as markup.
 

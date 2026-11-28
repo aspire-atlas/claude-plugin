@@ -13,7 +13,8 @@ d=$(mktemp -d) && cp {data file} "$d/page.json" && P="${CLAUDE_PLUGIN_ROOT}" && 
 ```
 
 - It exits 0 and prints the page when the data passes. Add `--check` to check the data and print
-  one line instead of the page.
+  one line instead of the page. Add `--capabilities` to print the capability declaration to publish
+  the page with (`live.capabilities`, or `{}` on a page with no live parts; `templates.md`, section 8).
 - It exits 1 when the data breaks a rule, and prints one JSON line per problem, with its `rule`,
   the field's `path`, and a `message`. Fix the data and run it again.
 - It exits 2 when it could not read the data file or a file beside it.
@@ -55,7 +56,10 @@ WORD = re.compile(r"[A-Za-z0-9_]+")
 # Fields that hold no words for the reader: keys, links, dates, enums, labels checked elsewhere, and style.
 NOT_READER = frozenset(("version", "template", "length", "account", "accounts", "href", "image", "source", "job",
                         "due", "by", "newest", "fetched", "changed", "updated", "status", "verdict", "level",
-                        "kind", "period", "network", "question", "tools", "theme"))
+                        "kind", "period", "network", "question", "tools", "theme",
+                        # The live parts' page data paths, ids, keys and capability declaration.
+                        "capabilities", "doc", "field", "vsField", "id", "key", "type", "fingerprint", "target",
+                        "facet", "collection"))
 CHART_SERIES = 6
 # No figure reaches a quadrillion; the bound keeps every number a float can hold exactly.
 NUMBER_BOUND = 10 ** 15
@@ -66,6 +70,11 @@ IMAGE_LIMIT = 8_000_000
 CUT_ORDER = ("cut to two thumbnails per creator card, then post images past the first five to thumbnails, "
              "then images in secondary sections, then embed again at quality 80, then one thumbnail per card, "
              "then no thumbnails past card 60 (on a lanes page, past the first 60% of each lane's cards)")
+# What each live part needs declared on publish (templates.md, section 8). Filters run on the
+# data embedded in the page and need none.
+LIVE_NEEDS = {"team": ("db",), "form": ("db", "user"), "filters": (), "approvals": ("db", "user")}
+# An amount: a currency code or sign before a digit. Team parts show amounts only from page data.
+AMOUNT = re.compile(r"(?:\b[A-Z]{3}\s?|[$\u20ac\u00a3\u00a5])\d")
 FILES = ("page-data.schema.json", "page-templates.json", "page-check.md", "glossary.md", "blocks.md", "artifact-standard.md",
          "aspire-animated.svg.md")
 
@@ -233,6 +242,7 @@ def rules(data, templates, tools, phrases):
             errs.append(("shared-page", "footer.freshness[%d].note" % i, "a page shared outside the team carries no freshness notes"))
     if shared(data) and data["gaps"]:
         errs.append(("shared-page", "gaps", "a page shared outside the team lists no gaps; return them to the main thread"))
+    errs += live_rules(data, tpl)
     if not theme_ok(data.get("theme", {}).get("css", "")):
         errs.append(("theme", "theme.css", "holds custom-property declarations only, in plain or @media rules, loading nothing"))
     for i, tool in enumerate(data["scope"].get("tools", [])):
@@ -253,6 +263,92 @@ def rules(data, templates, tools, phrases):
         for pattern, form, instead in phrases:
             if pattern.search(value):
                 errs.append(("banned-phrase", path, "uses \"%s\": %s (glossary.md)" % (form, instead)))
+    return errs
+
+def live_rules(data, tpl):
+    """The live parts (templates.md, section 8): allowed by the template, declared, and consistent."""
+    live, errs, sec = data.get("live"), [], data.get("sections", {})
+    tagged = [("sections.%s[%d].tags" % (k, i), item) for k in ("creators", "posts")
+              for i, item in enumerate(sec.get(k, [])) if "tags" in item]
+    if live is None:
+        errs += [("live-filters", path, "a card carries tags only on a page with filters") for path, _ in tagged]
+        return errs
+    parts = [k for k in LIVE_NEEDS if k in live]
+    if not parts:
+        errs.append(("live-parts", "live", "holds at least one part: team, form, filters, or approvals"))
+    for k in parts:
+        if k not in tpl.get("live", []):
+            errs.append(("live-parts", "live.%s" % k, "a %s page has no %s part" % (tpl["name"], k)))
+    caps = live["capabilities"]
+    for k in parts:
+        for cap in LIVE_NEEDS[k]:
+            if cap not in caps:
+                errs.append(("live-capabilities", "live.capabilities.%s" % cap, "the %s part needs it declared" % k))
+    if "team" in live and "db" in caps:
+        db_rules = caps["db"].get("rules", []) if isinstance(caps["db"], dict) else []
+        if not any(isinstance(r, dict) and r.get("path") == "team" and r.get("read") in ("admin", "owner") for r in db_rules):
+            errs.append(("live-capabilities", "live.capabilities.db.rules", "the team part needs a rule that lets only Editors read team"))
+    team = live.get("team", {})
+    if "team" in live and not (team.get("tiles") or team.get("tables")):
+        errs.append(("live-team", "live.team", "holds at least one tile or table"))
+    for kind in ("tiles", "tables"):
+        for i, item in enumerate(team.get(kind, [])):
+            segments = item["doc"].split("/")
+            if segments[0] != "team" or len(segments) % 2:
+                errs.append(("live-team", "live.team.%s[%d].doc" % (kind, i), "is a document under team: team, then an odd number of segments"))
+    # Everyone sees the team part's words, so they carry no amount; amounts come only from page data.
+    for path, value in reader_text(team, "live.team"):
+        if AMOUNT.search(value):
+            errs.append(("live-team", path, "shows an amount every viewer sees; put it in page data under team"))
+    form = live.get("form")
+    if form:
+        fields = {f["key"]: f for f in form["fields"]}
+        if len(fields) != len(form["fields"]):
+            errs.append(("live-form", "live.form.fields", "each field has its own key"))
+        for i, f in enumerate(form["fields"]):
+            if (f["type"] == "select") != ("options" in f):
+                errs.append(("live-form", "live.form.fields[%d]" % i, "a select field has options and no other field does"))
+        ids = [r["id"] for r in form["rows"]]
+        if len(set(ids)) != len(ids):
+            errs.append(("live-form", "live.form.rows", "each row has its own id"))
+        for i, r in enumerate(form["rows"]):
+            for j, v in enumerate(r.get("values", [])):
+                f = fields.get(v["key"])
+                if f is None:
+                    errs.append(("live-form", "live.form.rows[%d].values[%d].key" % (i, j), "is not a field of the form"))
+                elif f["type"] == "select" and v["value"] not in f.get("options", []):
+                    errs.append(("live-form", "live.form.rows[%d].values[%d].value" % (i, j), "is not one of the field's options"))
+                elif f["type"] == "date" and not real_date(v["value"]):
+                    errs.append(("live-form", "live.form.rows[%d].values[%d].value" % (i, j), "is not a real date"))
+            keys = [v["key"] for v in r.get("values", [])]
+            if len(set(keys)) != len(keys):
+                errs.append(("live-form", "live.form.rows[%d].values" % i, "gives each field once"))
+    filters = live.get("filters")
+    if filters:
+        facets = [f["key"] for f in filters["facets"]]
+        if len(set(facets)) != len(facets):
+            errs.append(("live-filters", "live.filters.facets", "each facet has its own key"))
+        if not sec.get(filters["target"]):
+            errs.append(("live-filters", "live.filters.target", "the page has no %s to filter" % filters["target"]))
+        for path, item in tagged:
+            if not path.startswith("sections.%s[" % filters["target"]):
+                errs.append(("live-filters", path, "only the cards the filters run over carry tags"))
+            for j, tag in enumerate(item["tags"]):
+                if tag["facet"] not in facets:
+                    errs.append(("live-filters", "%s[%d].facet" % (path, j), "is not one of the filters' facets"))
+    else:
+        errs += [("live-filters", path, "a card carries tags only on a page with filters") for path, _ in tagged]
+    approvals = live.get("approvals")
+    if approvals:
+        ids = [a["id"] for a in approvals["items"]]
+        if len(set(ids)) != len(ids):
+            errs.append(("live-approvals", "live.approvals.items", "each item has its own id"))
+        for i, a in enumerate(approvals["items"]):
+            qids = [q["id"] for q in a.get("questions", [])]
+            if len(set(qids)) != len(qids):
+                errs.append(("live-approvals", "live.approvals.items[%d].questions" % i, "each question has its own id"))
+            if "held" in a and a.get("questions"):
+                errs.append(("live-approvals", "live.approvals.items[%d]" % i, "a held item asks no questions on the page"))
     return errs
 
 QUOTED = re.compile(r"(?:\.quote|^sections\.creators\[\d+\]\.name)$")
@@ -574,7 +670,7 @@ def creator(c):
         parts.append('<div class="pb-thumbs">%s</div>' % "".join(
             '<a href="%s"><img src="%s" alt="%s" width="80" height="80" decoding="async" loading="lazy"></a>' % (e(t["href"]), t["image"], e(t.get("alt", "A post by " + name)))
             for t in c["thumbs"]))
-    return '<article class="pb-card pb-creator">%s</article>' % "".join(parts)
+    return '<article class="pb-card pb-creator"%s>%s</article>' % (tags_attr(c), "".join(parts))
 
 def post(p):
     name, network = handle(p["account"])
@@ -597,8 +693,8 @@ def post(p):
     if "quote" in p:
         body.append("<p data-quoted>&quot;%s&quot;</p>" % e(p["quote"]))
     img = ('<img src="%s" alt="%s" width="96" height="171">' % (p["image"], e(p.get("alt", "")))) if "image" in p else ""
-    return ('<article class="pb-card pb-post" data-block="post" data-account="%s" data-post="%s"%s>%s<div class="pb-post-body">%s</div></article>'
-            % (e(p["account"]), e(p["href"]), attr, img, "".join(body)))
+    return ('<article class="pb-card pb-post" data-block="post" data-account="%s" data-post="%s"%s%s>%s<div class="pb-post-body">%s</div></article>'
+            % (e(p["account"]), e(p["href"]), attr, tags_attr(p), img, "".join(body)))
 
 def evidence(data):
     sec, out = data.get("sections", {}), []
@@ -609,9 +705,9 @@ def evidence(data):
             if group:
                 out.append('<h3 class="pb-h" id="%s">%s</h3><div class="pb-grid">%s</div>' % (k, e(group_name(data, k)), "".join(creator(c) for c in group)))
     elif creators:
-        out.append('<div class="pb-grid">%s</div>' % "".join(creator(c) for c in creators))
+        out.append(filter_bar(data, "creators") + '<div class="pb-grid" data-live-cards="creators">%s</div>' % "".join(creator(c) for c in creators))
     if sec.get("posts"):
-        out.append('<div class="pb-grid">%s</div>' % "".join(post(p) for p in sec["posts"]))
+        out.append(filter_bar(data, "posts") + '<div class="pb-grid" data-live-cards="posts">%s</div>' % "".join(post(p) for p in sec["posts"]))
     if data.get("evidence"):
         items = "".join('<li data-source="%s">%s %s</li>' % (e(v["source"]), ('<a href="%s">%s</a>' % (e(v["href"]), e(v["text"]))) if "href" in v else e(v["text"]), source_chip(v["source"]))
                         for v in data["evidence"])
@@ -653,6 +749,323 @@ def drafts(data):
     return ('<section class="pb-card pb-draft" data-block="draft-next"><h2 class="pb-h">What Atlas can draft next</h2>'
             '<ul>%s</ul><p class="pb-muted">Nothing is sent without your approval.</p></section>' % items)
 
+# ---- The live parts (templates.md, section 8). Each prints a fallback that reads right with no
+# runtime; LIVE_SCRIPT lights it up when the page's capabilities answer.
+def tags_attr(item):
+    if "tags" not in item:
+        return ""
+    return ' data-tags="%s"' % e(json.dumps([[t["facet"], t["value"]] for t in item["tags"]]))
+
+def filter_bar(data, target):
+    f = data.get("live", {}).get("filters")
+    if not f or f["target"] != target:
+        return ""
+    values = {}
+    for item in data["sections"][target]:
+        for tag in item.get("tags", []):
+            values.setdefault(tag["facet"], [])
+            if tag["value"] not in values[tag["facet"]]:
+                values[tag["facet"]].append(tag["value"])
+    controls = []
+    for facet in f["facets"]:
+        opts = "".join('<option value="%s">%s</option>' % (e(v), e(v)) for v in sorted(values.get(facet["key"], []), key=str.lower))
+        controls.append('<label>%s <select data-live-facet="%s"><option value="">All</option>%s</select></label>'
+                        % (e(facet["label"]), e(facet["key"]), opts))
+    if f.get("search"):
+        controls.append('<label>Search <input type="search" data-live-search maxlength="80"></label>')
+    return ('<div class="pf-filters" data-live="filters" hidden>%s<span class="pb-muted" data-live-count></span></div>'
+            % "".join(controls))
+
+def team_part(data):
+    team = data.get("live", {}).get("team")
+    if not team:
+        return ""
+    fallback = e(team.get("fallback", "Team view"))
+    out = ['<h2 class="pb-h">Team view</h2><p class="pb-muted">Only Editors see these values.</p>']
+    tiles = []
+    for i, t in enumerate(team.get("tiles", [])):
+        src = '<p class="pb-kpi-src">%s</p>' % source_chip(t["source"]) if "source" in t else ""
+        said = ' data-source="%s"' % e(t["source"]) if "source" in t else ""
+        tiles.append('<article class="pb-card pb-kpi" data-block="kpi" data-status="flat" data-live-tile="%d"%s><p class="pb-label">%s</p>'
+                     '<p class="pb-kpi-value pb-num" data-live-value>%s</p><p class="pb-kpi-vs" data-vs><span class="pb-kpi-dot pb-flat"></span>%s'
+                     '<span data-live-vs></span></p>%s</article>' % (i, said, e(t["label"]), fallback, e(t["comparison"]), src))
+    if tiles:
+        out.append('<div class="pb-grid pb-kpis">%s</div>' % "".join(tiles))
+    for i, t in enumerate(team.get("tables", [])):
+        head = "".join("<th>%s</th>" % e(c["label"]) for c in t["columns"])
+        out.append('<h3 class="pb-h">%s</h3><table class="pb-table" data-live-table="%d"><thead><tr>%s</tr></thead>'
+                   '<tbody><tr><td colspan="%d">%s</td></tr></tbody></table>' % (e(t["title"]), i, head, len(t["columns"]), fallback))
+    return '<section class="pb-card pf-live" data-block="team" data-live="team">%s</section>' % "".join(out)
+
+def approvals_part(data):
+    a = data.get("live", {}).get("approvals")
+    if not a:
+        return ""
+    items = []
+    for i, item in enumerate(a["items"]):
+        parts = ["<p><b>%s</b></p>" % e(item["text"])]
+        if "held" in item:
+            parts.append("<p>%s %s</p>" % (chip("Do this in a session", "pb-warn"), e(item["held"])))
+            items.append('<li data-live-item="%d" data-held>%s</li>' % (i, "".join(parts)))
+            continue
+        for q in item.get("questions", []):
+            kind = "checkbox" if q.get("multi") else "radio"
+            opts = "".join('<label><input type="%s" name="q%d-%s" value="%s" disabled> %s</label>'
+                           % (kind, i, e(q["id"]), e(o), e(o)) for o in q["options"])
+            parts.append('<fieldset data-live-question="%s"%s><legend>%s</legend>%s</fieldset>'
+                         % (e(q["id"]), " data-multi" if q.get("multi") else "", e(q["text"]), opts))
+        parts.append('<label class="pf-changes">Changes to ask for <textarea data-live-changes maxlength="600" rows="2" disabled></textarea></label>')
+        buttons = "".join('<button type="button" data-verdict="%s" disabled>%s</button>' % (v, w) for v, w in
+                          (("approve", "Approve"), ("not-now", "Not now"), ("session", "Do this in a session"), ("revise", "Ask for changes")))
+        parts.append('<div class="pf-buttons">%s</div><p class="pb-muted" data-live-status>Editors decide here once the page has loaded.</p>' % buttons)
+        items.append('<li data-live-item="%d">%s</li>' % (i, "".join(parts)))
+    return ('<section class="pb-card pf-live" data-block="approvals" data-live="approvals"><h2 class="pb-h">Approve on this page</h2>'
+            '<ol class="pf-approvals">%s</ol></section>' % "".join(items))
+
+def form_part(data):
+    f = data.get("live", {}).get("form")
+    if not f:
+        return ""
+    head = "<th>Item</th>" + "".join("<th>%s</th>" % e(x["label"]) for x in f["fields"])
+    rows = []
+    for r in f["rows"]:
+        values = {v["key"]: v["value"] for v in r.get("values", [])}
+        cells = "".join('<td data-label="%s" data-live-key="%s"><span data-live-text>%s</span></td>'
+                        % (e(x["label"]), e(x["key"]), e(values.get(x["key"], ""))) for x in f["fields"])
+        rows.append('<tr data-live-row="%s"><td data-label="Item">%s</td>%s</tr>' % (e(r["id"]), e(r["label"]), cells))
+    if not rows:
+        rows.append('<tr><td colspan="%d">%s</td></tr>' % (len(f["fields"]) + 1, e(f.get("empty", "Nothing to fill in yet."))))
+    note = "<p>%s</p>" % e(f["note"]) if "note" in f else ""
+    return ('<section class="pb-card pf-live" data-block="form" data-live="form"><h2 class="pb-h">%s</h2>%s'
+            '<table class="pb-table pf-form"><thead><tr>%s</tr></thead><tbody>%s</tbody></table>'
+            '<p class="pb-muted" data-live-status>Contributors fill this in once the page has loaded.</p></section>'
+            % (e(f["title"]), note, head, "".join(rows)))
+
+def live_script(data):
+    live = data.get("live")
+    if not live:
+        return ""
+    config = {k: v for k, v in live.items() if k != "capabilities"}
+    # JSON inside a script stays JSON; every < is written as < so it cannot close the tag.
+    return ('<script type="application/json" id="pf-live">%s</script><script>%s</script>'
+            % (json.dumps(config).replace("<", "\\u003c"), LIVE_SCRIPT))
+
+LIVE_SCRIPT = """
+(function () {
+  "use strict";
+  var cfg = JSON.parse(document.getElementById("pf-live").textContent);
+  function all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function pick(obj, path) {
+    return path.split(".").reduce(function (o, k) { return o && typeof o === "object" ? o[k] : undefined; }, obj);
+  }
+  function shown(v) {
+    if (v === null || v === undefined) return "";
+    if (typeof v === "number") return isFinite(v) ? v.toLocaleString("en-US", {maximumFractionDigits: 2}) : "";
+    if (typeof v === "string" || typeof v === "boolean") return String(v);
+    return "";
+  }
+  function use(name) {
+    return window.claude && window.claude.use ? window.claude.use(name).catch(function () { return null; }) : Promise.resolve(null);
+  }
+
+  // Filters: run on the cards in the page; no capability.
+  if (cfg.filters) {
+    var bar = document.querySelector("[data-live=filters]");
+    var cards = all("[data-live-cards=" + cfg.filters.target + "] > article");
+    var count = bar && bar.querySelector("[data-live-count]");
+    var apply = function () {
+      var want = {}, q = "", n = 0;
+      all("[data-live-facet]", bar).forEach(function (s) { if (s.value) want[s.dataset.liveFacet] = s.value; });
+      var box = bar.querySelector("[data-live-search]");
+      if (box) q = box.value.trim().toLowerCase();
+      cards.forEach(function (c) {
+        var tags = [];
+        try { tags = JSON.parse(c.dataset.tags || "[]"); } catch (err) { tags = []; }
+        var ok = Object.keys(want).every(function (f) { return tags.some(function (t) { return t[0] === f && t[1] === want[f]; }); });
+        if (ok && q) ok = c.textContent.toLowerCase().indexOf(q) >= 0;
+        c.hidden = !ok;
+        if (ok) n += 1;
+      });
+      if (count) count.textContent = "Showing " + n + " of " + cards.length;
+      var params = new URLSearchParams();
+      Object.keys(want).forEach(function (f) { params.set(f, want[f]); });
+      if (q) params.set("q", q);
+      var hash = params.toString();
+      if (("#" + hash) !== location.hash && (hash || location.hash)) history.replaceState(null, "", hash ? "#" + hash : location.pathname + location.search);
+    };
+    if (bar) {
+      var start = new URLSearchParams(location.hash.slice(1));
+      all("[data-live-facet]", bar).forEach(function (s) {
+        var v = start.get(s.dataset.liveFacet);
+        if (v && all("option", s).some(function (o) { return o.value === v; })) s.value = v;
+        s.addEventListener("change", apply);
+      });
+      var box = bar.querySelector("[data-live-search]");
+      if (box) { box.value = start.get("q") || ""; box.addEventListener("input", apply); }
+      bar.hidden = false;
+      apply();
+    }
+  }
+
+  if (!cfg.team && !cfg.form && !cfg.approvals) return;
+  Promise.all([use("db"), use("user")]).then(function (got) {
+    var db = got[0], user = got[1];
+    if (!db || !user) {
+      all("[data-live=form] [data-live-status], [data-live=approvals] [data-live-status]").forEach(function (s) {
+        s.textContent = "Open this page in Claude, signed in, to make changes here.";
+      });
+    }
+    if (!db) return;
+
+    // Team view: Editors' reads return; everyone else keeps the fallback.
+    if (cfg.team) {
+      (cfg.team.tiles || []).forEach(function (t, i) {
+        var tile = document.querySelector("[data-live-tile='" + i + "']");
+        db.doc(t.doc).get().then(function (snap) {
+          var body = snap.exists ? snap.data() : undefined;
+          var v = body ? shown(pick(body, t.field)) : "";
+          if (!v) return;
+          tile.querySelector("[data-live-value]").textContent = v;
+          if (t.vsField) {
+            var vs = shown(pick(body, t.vsField));
+            if (vs) tile.querySelector("[data-live-vs]").textContent = ": " + vs;
+          }
+        }).catch(function () {});
+      });
+      (cfg.team.tables || []).forEach(function (t, i) {
+        var body = document.querySelector("[data-live-table='" + i + "'] tbody");
+        db.doc(t.doc).get().then(function (snap) {
+          var rows = snap.exists ? pick(snap.data(), t.field) : undefined;
+          if (!Array.isArray(rows)) return;
+          body.textContent = "";
+          if (!rows.length) {
+            var tr = body.insertRow(), td = tr.insertCell();
+            td.colSpan = t.columns.length;
+            td.textContent = t.empty || "Nothing here.";
+            return;
+          }
+          rows.forEach(function (row) {
+            var tr = body.insertRow();
+            t.columns.forEach(function (c) {
+              var td = tr.insertCell();
+              td.dataset.label = c.label;
+              td.textContent = shown(pick(row, c.field));
+            });
+          });
+        }).catch(function () {});
+      });
+    }
+
+    if (!user) return;
+    var stamp = function () { return new Date().toISOString(); };
+
+    // The form: one write per change, only for viewers who may write.
+    if (cfg.form) {
+      var section = document.querySelector("[data-live=form]");
+      var status = section.querySelector("[data-live-status]");
+      Promise.all([user.can("data.write"), user.id()]).then(function (r) {
+        var canWrite = r[0], uid = r[1];
+        var coll = db.collection(cfg.form.collection);
+        var inputs = {};
+        if (canWrite !== false && uid) {
+          all("[data-live-row]", section).forEach(function (tr) {
+            var id = tr.dataset.liveRow;
+            inputs[id] = {};
+            cfg.form.fields.forEach(function (f) {
+              var cell = tr.querySelector("[data-live-key='" + f.key + "']");
+              var text = cell.querySelector("[data-live-text]");
+              var input;
+              if (f.type === "select") {
+                input = document.createElement("select");
+                [""].concat(f.options).forEach(function (o) {
+                  var opt = document.createElement("option");
+                  opt.value = o; opt.textContent = o || "Choose";
+                  input.appendChild(opt);
+                });
+              } else {
+                input = document.createElement("input");
+                input.type = f.type === "date" ? "date" : "text";
+                input.maxLength = 200;
+              }
+              input.value = text.textContent;
+              input.setAttribute("aria-label", f.label);
+              input.addEventListener("change", function () {
+                var patch = {updatedBy: uid, updatedAt: stamp()};
+                patch[f.key] = input.value;
+                var ref = coll.doc(id);
+                status.textContent = "Saving...";
+                ref.update(patch).catch(function () { return ref.set(patch); }).then(function () {
+                  status.textContent = "Saved.";
+                }, function () { status.textContent = "Not saved: you may not have edit access."; });
+              });
+              cell.replaceChild(input, text);
+              inputs[id][f.key] = input;
+            });
+          });
+          status.textContent = "Changes save as you make them.";
+        } else {
+          status.textContent = "Ask for Contributor access to fill this in.";
+        }
+        coll.onSnapshot(function (snap) {
+          snap.docs.forEach(function (d) {
+            var tr = section.querySelector("[data-live-row='" + CSS.escape(d.id) + "']");
+            if (!tr) return;
+            var body = d.data() || {};
+            cfg.form.fields.forEach(function (f) {
+              if (!(f.key in body)) return;
+              var v = shown(body[f.key]);
+              var input = inputs[d.id] && inputs[d.id][f.key];
+              if (input) { if (document.activeElement !== input) input.value = v; }
+              else { var cell = tr.querySelector("[data-live-key='" + f.key + "'] [data-live-text]"); if (cell) cell.textContent = v; }
+            });
+          });
+        }, function () {});
+      });
+    }
+
+    // Approvals: each Editor's decision is saved under their own id.
+    if (cfg.approvals) {
+      Promise.all([user.canEdit(), user.id()]).then(function (r) {
+        var canEdit = r[0], uid = r[1];
+        cfg.approvals.items.forEach(function (item, i) {
+          var li = document.querySelector("[data-live-item='" + i + "']");
+          if (item.held || !li) return;
+          var status = li.querySelector("[data-live-status]");
+          if (!canEdit || !uid) { status.textContent = "Only Editors decide on this page."; return; }
+          var ref = db.doc(cfg.approvals.collection + "/" + uid + "/actions/" + item.id);
+          all("input, textarea, button", li).forEach(function (el) { el.disabled = false; });
+          status.textContent = "Not decided yet.";
+          ref.get().then(function (snap) {
+            if (!snap.exists) return;
+            var d = snap.data();
+            status.textContent = d.fingerprint === item.fingerprint ? "You chose: " + shown(d.verdict) + "."
+              : "Changed since you decided. Decide again.";
+          }).catch(function () {});
+          all("[data-verdict]", li).forEach(function (b) {
+            b.addEventListener("click", function () {
+              var answers = {};
+              all("[data-live-question]", li).forEach(function (fs) {
+                var picked = all("input:checked", fs).map(function (x) { return x.value; });
+                answers[fs.dataset.liveQuestion] = fs.hasAttribute("data-multi") ? picked : (picked[0] || "");
+              });
+              var decision = {verdict: b.dataset.verdict, fingerprint: item.fingerprint, answers: answers, updatedAt: stamp()};
+              if (b.dataset.verdict === "revise") {
+                var text = li.querySelector("[data-live-changes]").value.trim();
+                if (!text) { status.textContent = "Type the changes to ask for first."; return; }
+                decision.changes = text;
+              }
+              status.textContent = "Saving...";
+              ref.set(decision).then(function () { status.textContent = "You chose: " + decision.verdict + "."; },
+                                     function () { status.textContent = "Not saved: only Editors decide on this page."; });
+            });
+          });
+        });
+      });
+    }
+  });
+})();
+"""
+
 def footer(data, year):
     f, entries = data["footer"], []
     for x in f["freshness"]:
@@ -687,6 +1100,15 @@ body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 var(--font-b
 .pf-evidence a,.pb-card a{color:var(--brand-ink)}
 .atlas-footnote{color:var(--muted);font-size:.84rem;display:grid;gap:6px;border-top:1px solid var(--border);padding-top:12px}
 .atlas-footnote p{margin:0}
+.pf-live h3{margin:8px 0 0}
+.pf-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pf-filters select,.pf-filters input,.pf-form input,.pf-form select,.pf-live textarea{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 6px}
+.pf-approvals{margin:0;padding-left:18px;display:grid;gap:14px}
+.pf-approvals fieldset{border:1px solid var(--border);border-radius:8px;margin:6px 0;display:flex;flex-wrap:wrap;gap:4px 12px}
+.pf-changes{display:grid;gap:4px;margin:6px 0}
+.pf-buttons{display:flex;flex-wrap:wrap;gap:6px}
+.pf-buttons button{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer}
+.pf-buttons button:disabled{cursor:default;opacity:.6}
 </style>"""
 
 def fenced(text, start, end):
@@ -717,14 +1139,15 @@ def page(data, d):
     body = ['</head><body><main class="pf-page" data-template="%s"%s>' % (data["template"], (' data-length="%s"' % data["length"]) if "length" in data else ""),
             '<div class="pf-head"><div><p class="pb-label">%s</p><div class="pf-chips">%s</div></div><span class="pf-mark">%s</span></div>'
             % (e(data["title"]), "".join(chips), mark),
-            scope(data), answer(data), insights(data), actions(data, year), decisions(data, year), evidence(data),
-            method(data), gaps(data), drafts(data), footer(data, year), "</main></body></html>"]
+            scope(data), answer(data), team_part(data), insights(data), actions(data, year), decisions(data, year),
+            approvals_part(data), form_part(data), evidence(data), method(data), gaps(data), drafts(data), footer(data, year),
+            "</main>", live_script(data), "</body></html>"]
     return "\n".join(head + body).encode("ascii", "xmlcharrefreplace").decode("ascii")
 
 def main(argv):
     names = [a for a in argv if not a.startswith("--")]
     if len(names) != 1:
-        print("usage: page_fill.py [--check] {page data file}", file=sys.stderr)
+        print("usage: page_fill.py [--check | --capabilities] {page data file}", file=sys.stderr)
         return 2
     path = Path(names[0])
     try:
@@ -756,6 +1179,10 @@ def main(argv):
         return 1
     if "--check" in argv:
         print(json.dumps({"ok": True, "template": data["template"]}))
+        return 0
+    if "--capabilities" in argv:
+        # The declaration to pass to the Artifact publish; {} on a page with no live parts.
+        print(json.dumps(data.get("live", {}).get("capabilities", {})))
         return 0
     print(html_page)
     return 0
